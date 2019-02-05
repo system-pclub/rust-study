@@ -1,0 +1,54 @@
+[[package]]
+name = "libc"
+version = "0.2.48"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "mach"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.48 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "slice-deque"
+version = "0.1.16"
+dependencies = [
+ "libc 0.2.48 (registry+https://github.com/rust-lang/crates.io-index)",
+ "mach 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "slice_bug"
+version = "0.1.0"
+dependencies = [
+ "slice-deque 0.1.16",
+]
+
+[[package]]
+name = "winapi"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "winapi-i686-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winapi-x86_64-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "winapi-i686-pc-windows-gnu"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "winapi-x86_64-pc-windows-gnu"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum libc 0.2.48 (registry+https://github.com/rust-lang/crates.io-index)" = "e962c7641008ac010fa60a7dfdc1712449f29c44ef2d4702394aea943ee75047"
+"checksum mach 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "86dd2487cdfea56def77b88438a2c915fb45113c5319bfe7e14306ca4cd0b0e1"
+"checksum winapi 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)" = "92c1eb33641e276cfa214a0522acad57be5c56b10cb348b3c5117db75f3ac4b0"
+"checksum winapi-i686-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
+"checksum winapi-x86_64-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
