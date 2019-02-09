@@ -1,0 +1,6 @@
+[package]
+name = "RUSTSEC-2018-0011"
+version = "0.1.0"
+authors = ["Yilun <chen2709@purdue.edu>"]
+
+[dependencies]
