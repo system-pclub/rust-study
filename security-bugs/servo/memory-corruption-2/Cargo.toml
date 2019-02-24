@@ -1,0 +1,8 @@
+[package]
+name = "memory-corruption-2"
+version = "0.1.0"
+authors = ["Yilun <chen2709@purdue.edu>"]
+edition = "2018"
+
+[dependencies]
+libc = "0.1"
