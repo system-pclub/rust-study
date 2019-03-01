@@ -1,0 +1,7 @@
+[package]
+name = "global-variable"
+version = "0.1.0"
+authors = ["bzq16"]
+edition = "2018"
+
+[dependencies]
