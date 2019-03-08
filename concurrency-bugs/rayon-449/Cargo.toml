@@ -1,0 +1,7 @@
+[package]
+name = "rayon-449"
+version = "0.1.0"
+authors = ["linhai.song <songlinhai0543@gmail.com>"]
+
+[dependencies]
+rayon={path="rayon"}
