@@ -15,13 +15,21 @@ mod tests {
         size += 1;
         let mut sum = 0;
         b.iter(|| {
-            for i in 0..size {
+            let mut i :usize = 0;
+            while i < size {
                 let a = array[i];
-                unsafe {
-                    sum += a;
-                }
+                sum += a;
+                //i += 10;
+                i += 1;
             }
+           // for i in 0..size {
+           //     let a = array[i];
+           //     unsafe {
+           //         sum += a;
+           //     }
+           // }
         });
+        println!("{}", sum);
     }
 
     #[bench] 
@@ -32,13 +40,23 @@ mod tests {
         size += 1;
         let mut sum = 0;
         b.iter(|| {
-            for i in 0..size {
+            let mut i :usize = 0;
+            while i < size {
                 unsafe {
                     let a = array.get_unchecked(i);
                     sum += a;
                 }
+                //i += 10;
+                i += 1;
             }
+            //for i in 0..size {
+            //    unsafe {
+            //        let a = array.get_unchecked(i);
+            //        sum += a;
+            //    }
+            //}
         });
+        println!("{}", sum);
     }
 
     
@@ -50,12 +68,20 @@ mod tests {
         size += 1;
         let mut sum = 0;
         b.iter(|| {
-            for i in 0..size {
+            let mut i:usize = 0;
+            while i < size {
                 let a = array[i % ARRAY_SIZE];
-                unsafe {
-                    sum += a;
-                }
+                sum += a;
+                //i += 10;
+                i += 1;
             }
+            //for i in 0..size {
+            //    let a = array[i % ARRAY_SIZE];
+            //    unsafe {
+            //        sum += a;
+            //    }
+            //}
         });
+        println!("{}", sum);
     }
 }
