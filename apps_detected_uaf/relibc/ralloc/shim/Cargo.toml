@@ -1,0 +1,19 @@
+[package]
+name = "ralloc_shim"
+version = "0.1.1"
+authors = ["Ticki", "Jeremy Soller <jackpot51@gmail.com>"]
+
+[profile.release]
+panic = "abort"
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+
+[target.'cfg(not(target_os = "redox"))'.dependencies]
+sc = "0.2.1"
+
+[target.'cfg(target_os = "redox")'.dependencies]
+redox_syscall = "0.1"

@@ -1,0 +1,10 @@
+sys_includes = ["sys/types.h"]
+include_guard = "_SYS_TIME_H"
+language = "C"
+trailer = "#include <bits/sys/time.h>"
+style = "Tag"
+no_includes = true
+cpp_compat = true
+
+[enum]
+prefix_with_name = true

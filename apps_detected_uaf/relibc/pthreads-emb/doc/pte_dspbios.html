@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>PTE on DSP/BIOS</title></head><body><br><big><big><big><span style="font-weight: bold;">PTE on DSP/BIOS</span></big></big></big><meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8"><title></title><meta name="GENERATOR" content="OpenOffice.org 2.3  (Linux)">
+	
+	
+	<style type="text/css">
+	<!--
+		@page { size: 8.5in 11in; margin: 0.79in }
+		P { margin-bottom: 0.08in }
+		H1 { margin-bottom: 0.08in }
+		H1.western { font-family: "Helvetica"; font-size: 16pt }
+		H1.cjk { font-family: "AR PL ShanHeiSun Uni"; font-size: 16pt }
+		H1.ctl { font-family: "Tahoma"; font-size: 16pt }
+		H2 { margin-bottom: 0.08in }
+		H2.western { font-family: "Helvetica"; font-size: 14pt; font-style: italic }
+		H2.cjk { font-family: "AR PL ShanHeiSun Uni"; font-size: 14pt; font-style: italic }
+		H2.ctl { font-size: 14pt; font-style: italic }
+	-->
+	</style>
+
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;">The DSP/BIOS OSAL is relatively
+straightforward and maps relatively cleanly to the DSP/BIOS API.  For
+instance, most mutex and semaphore operations are supported directly
+using the LCK and SEM API's.  Specific details and exceptions are
+described below.</p>
+<h1 class="western">Threads</h1>
+<h2 class="western">Thread creation</h2>
+<p>OsThreadCreate allocates a dspbiosThreadData structure that
+contains semaphores used for joining to a thread, cancelling a thread
+and the initial priority requested by the user.  A pointer to this
+structure is stored as a TLS value.  
+</p>
+<p>OsThreadCreate must create threads in a suspended state.  In
+DSP/BIOS this is done by setting the initial priority to zero.  The
+initial priority is stored in the per thread control data.  When
+OsThreadStart is called, it retrieves the initial priority from the
+control data attached to the thread and then sets the priority of the
+thread, which starts execution.</p>
+<h2 class="western">Thread termination</h2>
+<p>In order for pthread_join to wait for a thread, OsThreadWaitForEnd
+is called.   Since DSP/BIOS doesn't have a explicit system call for
+this, we emulate it using a semaphore that is posted to when the
+thread exits.  This semaphore is saved in the per thread control
+structure.</p>
+<h2 class="western">Thread cleanup</h2>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;">The PTE library calls <font face="Courier New, monospace">OsThreadDelete</font>
+to signal to the OSAL that the resources for a task can be freed. 
+For DSP/BIOS, this means a call to TSK_delete (task resources are <i>not</i><span style="font-style: normal;">
+automatically freed by DSP/BIOS when the thread exits).</span></p>
+<p style="margin-bottom: 0in; font-style: normal;"><br>
+</p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><span style="font-style: normal;">OsThreadDelete</span></font><span style="font-style: normal;">
+will be called at a number of points.  For attached threads, it will
+be called when </span><font face="Courier New, monospace"><span style="font-style: normal;">pthread_join</span></font><span style="font-style: normal;">
+is called and returns or when </span><font face="Courier New, monospace"><span style="font-style: normal;">pthread_detach</span></font><span style="font-style: normal;">
+is called for a terminated thread.  For detached threads
+</span><font face="Courier New, monospace"><span style="font-style: normal;">OsThreadDelete</span></font><span style="font-style: normal;">
+will be called when the thread exits.</span></p>
+<p style="margin-bottom: 0in; font-style: normal;"><br>
+</p>
+<p style="margin-bottom: 0in;"><span style="font-style: normal;">The
+problem is that </span><font face="Courier New, monospace"><span style="font-style: normal;">TSK_delete</span></font><span style="font-style: normal;">
+naturally can not be called from the same context as the thread that
+we're trying to free.  For the first two cases (</span><font face="Courier New, monospace"><span style="font-style: normal;">pthread_join</span></font><span style="font-style: normal;">
+and </span><font face="Courier New, monospace"><span style="font-style: normal;">pthread_detach</span></font><span style="font-style: normal;">)
+this is not a problem as these will always be called from another
+thread.  However, for detached threads </span><font face="Courier New, monospace"><span style="font-style: normal;">OsThreadDelete</span></font><span style="font-style: normal;">
+will be called from the same context.</span></p>
+<p style="margin-bottom: 0in; font-style: normal;"><br>
+</p>
+<p style="margin-bottom: 0in;"><span style="font-style: normal;">To
+work around it, the DSP/BIOS OSAL includes a low priority that will
+clean up detached threads.  If </span><font face="Courier New, monospace"><span style="font-style: normal;">OsThreadDelete</span></font><span style="font-style: normal;">
+detects that it is being called from the same context, it will post a
+message to a mailbox that the garbage collector thread is waiting on.
+ The garbage collector thread will then call </span><font face="Courier New, monospace"><span style="font-style: normal;">TSK_delete</span></font><span style="font-style: normal;">
+for that thread, as well as to clean up any resources that were
+allocated when the thread was created.</span></p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h1 class="western">Thread Local Storage</h1>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;">TLS is implemented using the
+&#8220;environment&#8221; of DSP/BIOS threads.  This allows a single value to
+be associated with a thread.  The TLS helper routines are used to
+provide full TLS functionality; these routines allocate a structure
+that holds multiple TLS keys and values.  The DSP/BIOS environment is
+used to hold a pointer to this structure.</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h1 class="western">Thread Cancellation</h1>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;">Since DSP/BIOS does not natively
+provide a way to break out of blocked operations, this functionality
+is emulated using a cancellation semaphore that is stored in the per
+thread control data.  When the user requests that a thread be
+canceled (i.e. <font face="Courier New, monospace">OsThreadCancel</font>
+is called) this semaphore is posted to.  In
+<font face="Courier New, monospace">OsSemaphoreCancellablePend</font>,
+the cancellation semaphore as well as the user semaphore are polled
+(rather than blocking) and the routine returns if the cancellation
+semaphore is posted to.</p>
+</body></html>

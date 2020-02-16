@@ -1,0 +1,6 @@
+# GENERATED FILE -- DO NOT EDIT!
+# This file contains tconf options for file "Configuration1.tcf",
+# for use by the Gconf graphical configuration tool.
+# The options are exported from the following CCS project: 
+# Z:\PTHREAD\PLATFORM\DSPBIOS\PTE_TEST\pte_test.pjt, "C" configuration.
+-Dconfig.importPath="C:\CCStudio_v3.3/bios_5_31_02/packages;"

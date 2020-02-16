@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>PTE Porting Guide</title></head><body>
+
+
+	<meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8"><title></title><meta name="GENERATOR" content="OpenOffice.org 2.3  (Linux)"><meta name="CHANGEDBY" content="Jason"><meta name="CHANGEDBY" content="Jason"><meta name="CHANGEDBY" content="Jason"><meta name="CHANGEDBY" content="Jason">
+	
+	
+	
+	
+	
+	
+	<style type="text/css">
+	<!--
+		@page { size: 8.5in 11in; margin: 0.79in }
+		P { margin-bottom: 0.08in }
+		H1 { margin-bottom: 0.08in }
+		H1.western { font-family: "Helvetica"; font-size: 16pt }
+		H1.cjk { font-family: "AR PL ShanHeiSun Uni"; font-size: 16pt }
+		H1.ctl { font-family: "Tahoma"; font-size: 16pt }
+		H2 { margin-bottom: 0.08in }
+		H3 { margin-bottom: 0.08in }
+		P.code-western { font-family: "Courier New", monospace }
+	-->
+	</style>
+
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h1 class="western" align="center">Pthreads-Embedded (PTE) Porting
+Guide</h1>
+<p>The PTE library consists of both a platform independent component,
+which contains the bulk of the pthreads functionality, and a platform
+specific component which connects the platform independent component
+to the underlying OS. Naturally, the platform specific layer is the
+only layer that needs to be modified when porting PTE.</p>
+<p>The OS adaptation layer (OSAL) must provide the following
+functionality:</p>
+<ol><li><p>Threads</p>
+	</li><li><p>Semaphores</p>
+	</li><li><p>Mutexes</p>
+	</li><li><p>Atomic operations</p>
+	</li><li><p>Thread local storage</p>
+</li></ol>
+<p>The underlying OS does not necessarily have to provide all of this
+functionality &#8211; it is possible for the OSAL to emulate behavior.
+For instance, mutexes can be emulated using semaphores provided by
+the OS. The sections below present a high level of the required
+functionality as well as how it fits into a &#8220;typical&#8221; embedded
+OS. Specifics such as function parameters, etc are covered in the
+OSAL API reference.</p>
+<h2 align="center">Threads</h2>
+<h3>Thread Initialization</h3>
+<p class="code-western"><b>OsThreadCreate, OsThreadStart</b></p>
+<p>Thread initialization is separated into two steps: create and
+start. When <font face="Courier New, monospace">OSThreadCreate</font>
+is called, the OS should create a new thread, but it must be started
+in a suspended state. The thread should not start executing until
+<font face="Courier New, monospace">OSThreadStart</font> is called.
+This separation in functionality is due necessary to avoid race
+condFor instance, if the target OS supports TLS but only allows a
+single TLS value, this single value could contain a pointer to a
+structure that contains multiple TLS values.  The PTE distribution
+includes a helper file to implement this functionality
+(/platform/helper/tls-helper.c).  See the DSP/BIOS port for an
+example of using tls-helper.c.itions in the PTE library<span style="font-style: normal;">.</span></p>
+<p><span style="font-style: normal;">Since the actual prototype of an
+thread entry point varies between OS and thus will more than likely
+</span><i>not</i> <span style="font-style: normal;">match that used by
+</span><font face="Courier New, monospace"><span style="font-style: normal;">OsThreadCreate</span></font><span style="font-style: normal;">,
+it will usually be necessary to create a stub function that matches
+your OS's entry point prototype. This stub function simply calls the
+entry point specified by </span><font face="Courier New, monospace"><span style="font-style: normal;">OsThreadCreate</span></font>
+<span style="font-style: normal;">(see DSP/BIOS and PSP-OS ports).</span></p>
+<p>Typically, OsThreadCreate will also perform other initialization;
+for instance to initialize TLS structures, allocate other control
+resources. This of course varies depending on the target OS. 
+</p>
+<p>Some OS's require additional parameters to start a thread.  For
+instance, DSP/BIOS requires the priority in order to start the
+thread.  Rather than pass these parameters to both <font face="Courier New, monospace">OsThreadCreate</font>
+and <font face="Courier New, monospace">OsThreadStart</font>, the
+OSAL should store any necessary information as thread specific values
+during <font face="Courier New, monospace">OsThreadCreate</font> and
+then retrieve them as necessary in <font face="Courier New, monospace">OsThreadStart</font>.</p>
+<p><br><br>
+</p>
+<h3>Thread Destruction</h3>
+<p class="code-western"><b>OsThreadExit, OsThreadDelete,
+OsThreadExitAndDelete, OsThreadWaitForEnd</b></p>
+<p>Thread destruction is broken into three API calls to support the
+different use cases of the pthreads API.  <font face="Courier New, monospace">OsThreadExit</font>
+should cause the currently executing thread to stop execution;
+resources should not yet be freed.  This is called when a thread
+exits but the thread is not detached &#8211; resource deallocation must
+wait until the user calls <font face="Courier New, monospace">pthread_join</font>
+(or <font face="Courier New, monospace">pthread_detach</font>) at
+which point <font face="Courier New, monospace">OsThreadDelete</font>
+will be called.</p>
+<p>Alternatively, if a detached thread exits, thread resource
+deallocation and thread termination can occur simultaneously.  In
+this case, <font face="Courier New, monospace">OsThreadExitAndDelete</font>
+will be called.</p>
+<p><font face="Courier New, monospace">OsThreadWaitForEnd</font>
+should block until the specified thread exists. For OS's that do not
+directly support this functionality, a semaphore can be used to
+emulate this behavior (see DSP/BIOS port).  Note that this call
+should be cancellable &#8211; that is, it should return (even if the
+target thread has not exited) if <font face="Courier New, monospace">OsThreadCancel</font>
+is called.</p>
+<h3>Thread Priority</h3>
+<p class="code-western"><b>OsThreadSetPriority, OsThreadGetPriority,
+OsThreadGetMaxPriority, OsThreadGetMinPriority</b></p>
+<p>The OSAL provides the upper and lower bounds of it's priority
+range when <font face="Courier New, monospace">OsThreadGetMaxPriority</font>
+and <font face="Courier New, monospace">OsThreadGetMinPriority</font>
+are called.  The PTE library will ensure that all priorities passed
+to the OSAL (e.g. through <font face="Courier New, monospace">OsThreadCreate</font>)
+are within these bounds.</p>
+<h3>Thread Cancellation</h3>
+<p class="code-western"><b>OsThreadCancel, OsThreadCheckCancel</b></p>
+<p>Currently, the PTE library only supports deferred cancellation
+(see PTE notes). While the PTE library handles most of the
+complexities of cancellation, there are three hooks required from the
+OSAL. When <font face="Courier New, monospace">OsThreadCancel</font>
+is called, it must cause <font face="Courier New, monospace">OsSemaphorePendCancellable</font>
+and <font face="Courier New, monospace">OsThreadWaitForEnd </font>to
+return (this function is used by the PTE library to implement pthread
+cancellation points). Since most embedded OS's do not support this
+kind of functionality, it can be implemented using semaphores (see
+DSP/BIOS and PSP-OS ports). <font face="Courier New, monospace">OsThreadCheckCancel</font>
+simply returns whether <font face="Courier New, monospace">OsThreadCancel</font>
+has been called for this thread.</p>
+<h3>Miscellaneous Thread Functionality</h3>
+
+<p class="code-western"><b>OsThreadGetHandle, OsThreadSleep,
+OsThreadGetMaxPriority, OsThreadGetMinPriority,
+OsThreadGetDefaultPriority</b><br><br>
+</p>
+<h2 align="center"></h2>
+<h2 style="page-break-before: always;" align="center">Semaphores</h2>
+<p align="center"><br><br>
+</p>
+<p class="code-western"><b>OsSemaphoreCreate, OsSemaphoreDelete,
+OsSemaphorePend, OsSemaphorePort</b></p>
+<p>This basic semaphore functionality should map directly to almost
+all embedded OS's. 
+</p>
+<p class="code-western"><b>OsSemaphoreCancellablePend</b></p>
+<p>In order to implement deferred cancellation, a &#8220;cancellable&#8221;
+pend (<font face="Courier New, monospace">OsSemaphorePendCancellable</font>)
+must also be supported. As discussed above,
+<font face="Courier New, monospace">OsSemaphorePendCancellable</font>
+must return when <font face="Courier New, monospace">OsThreadCancel</font>
+has been called on the thread that is currently pending, regardless
+of whether the semaphore has been posted to or not. The way that this
+is implemented in other ports (e.g. DSP/BIOS and PSP-OS) is to use an
+additional semaphore, and then poll on both semaphores, as shown in
+the pseudo-code below:</p>
+
+<p><font face="Courier New, monospace">loop forever:</font></p>
+<p><font face="Courier New, monospace">poll main semaphore</font></p>
+<p><font face="Courier New, monospace">if semaphore was posted to,
+return OK</font></p>
+<p><font face="Courier New, monospace">else</font></p>
+<p><font face="Courier New, monospace">check timeout</font></p>
+<p><font face="Courier New, monospace">if timeout has expired, return
+'timed out'</font></p>
+<p><font face="Courier New, monospace">else</font></p>
+<p><font face="Courier New, monospace">poll cancellation semaphore </font>
+</p>
+<p><font face="Courier New, monospace">if cancellation semaphore has
+been posted to, return 'canceled'</font></p>
+<p><font face="Courier New, monospace">else</font></p>
+<p><font face="Courier New, monospace">sleep for small amount of time</font></p>
+<p>For instance, if the target OS supports TLS but only allows a
+single TLS value, this single value could contain a pointer to a
+structure that contains multiple TLS values.  The PTE distribution
+includes a helper file to implement this functionality
+(/platform/helper/tls-helper.c).  See the DSP/BIOS port for an
+example of using tls-helper.c.</p>
+<h2 align="center">Mutexes</h2>
+<p>Mutexes are only included as an optimization as some OS's mutex
+operation is much faster than semaphore operations. If the target OS
+does not support mutexes, they can easily be implemented using
+semaphores.</p>
+<p><br><br>
+</p>
+<h2 align="center">Atomic operations</h2>
+<p class="code-western"><b>OsAtomicExchange, OsAtomicCompareExchange,
+OsAtomicExchangeIncrement, OsAtomicDecrement, OsAtomicIncrement</b></p>
+<p align="left">The PTE library requires five atomic operations to be
+supplied by the OSAL.  Macros are used in case the target platform
+supports direct assembly instructions to perform some or all of these
+operations.  However, under most OS's these macros will simply refer
+to functions that disable interrupts and then perform the required
+operations.</p>
+<p><br><br>
+</p>
+<h2 align="center">Thread local storage</h2>
+<p class="code-western"><b>OsTlsInit, OsTlsAlloc, OsTlsFree,
+OsTlsSetValue, OsTlsGetValue</b></p>
+<p>The OSAL must be able to allocate and free TLS keys, and retrieve
+thread specific data.  If the target OS does not support this level
+of TLS functionality, but does have limited TLS support, it is
+possible to emulate the behavior required by the PTE library.</p>
+<p>For instance, if the target OS supports TLS but only allows a
+single TLS value, this single value could contain a pointer to a
+structure that contains multiple TLS values.  The PTE distribution
+includes a helper file to implement this functionality
+(/platform/helper/tls-helper.c).  See the DSP/BIOS port for an
+example of using tls-helper.c.</p>
+<p>If the OS contains no TLS support, it might still be possible to
+emulate TLS functionality.  See the PSP-OS port for an example of how
+this can be accomplished.  Be warned &#8211; it is not a pretty solution,
+but it works.</p>
+<p>It is important to note that TLS functionality is <i>required </i><span style="font-style: normal;">by
+the PTE library &#8211; it is used for more than just the pthread TLS
+functions, but is used extensively throughout the library.</span></p>
+<p style="font-style: normal;">One potentially tricky issue with TLS
+is how to handle the case of when pthread TLS functions are called
+from non-pthread threads (i.e. pure native threads that were not
+created through pthread_create).  Technically, according to the
+pthread spec, this should work.  However, it is problematic in that
+OsTlsInit would not have been called for that thread, since it is
+called in response to pthread_create().  Different ports handle this
+differently &#8211; see the notes for a particular ports.</p>
+<h2 align="center">Miscellaneous Functionality</h2>
+<p class="code-western"><b>ftime</b></p>
+<p>Since pthreads uses absolute time for timeouts, the PTE library
+requires the OS to supply the current time.  Note that this does not
+have to be the actual world time, but can be an internal timebase
+(for example, since the unit started up).   However, the time source
+should be the same one that the caller to pthread would use.</p>
+<h2 align="center">Types and Constants</h2>
+<p align="left">The OSAL layer must declare a number of types and
+constants.  
+</p>
+<p align="left">The following types must be defined to map to the
+appropriate OS constructs:</p>
+<p class="code-western">OsThreadHandle</p>
+<p class="code-western">OsSemaphoreHandle</p>
+
+<p class="code-western">OsMutexHandle<br><br><br>
+</p>
+<p>The following constants must be defined:</p>
+<p align="left"><font face="Courier New, monospace">OS_DEFAULT_PRIO</font>
+&#8211; default priority for a created thread.</p>
+<p align="left"><font face="Courier New, monospace">OS_MIN_PRIO</font>
+&#8211; minimum thread priority.</p>
+<p align="left"><font face="Courier New, monospace">OS_MAX_PRIO</font>
+&#8211; maximum thread priority.</p>
+<p align="left"><font face="Courier New, monospace">OS_MAX_SIMUL_THREADS</font>
+&#8211; maximum number of threads that may be active simultaneously.</p>
+<p align="left"><br><br>
+</p>
+<p align="left">Each port must also include a file, pte_types.h, that
+defines all of the following types.  This may be done by explicitly
+typedef'ing the structure (for OS's that do not natively support the
+type) or simply by including the appropriate header file:</p>
+<p align="left"><font face="Courier New, monospace">pid_t</font></p>
+<p align="left"><font face="Courier New, monospace">struct timespec</font></p>
+<p align="left"><font face="Courier New, monospace">mode_t</font></p>
+<p align="left"><font face="Courier New, monospace">struct timeb</font></p>
+<h2 align="center">File structure</h2>
+<p align="left">The OSAL layer must include a file named pte_osal.h. 
+This file must include pte_generic_osal.h as well as the platform
+specific header file (e.g. dspbios_osal.h).</p>
+</body></html>
