@@ -1,0 +1,688 @@
+// MIR for `cms::<impl at openssl/src/cms.rs:109:1: 169:2>::sign`
+// source = MirSource { instance: Item(DefId(0:388 ~ openssl[c7dd]::cms[0]::{{impl}}[1]::sign[0])), promoted: None }
+// pass_name = PreCodegen
+// disambiguator = after
+
+| User Type Annotations
+| 0: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Region(U0) }, CanonicalVarInfo { kind: Region(U0) }], value: TypeOf(DefId(0:48 ~ openssl[c7dd]::bio[0]::{{impl}}[1]::new[0]), UserSubsts { substs: [ReLateBound(DebruijnIndex(0), BrAnon(0))], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(0:46 ~ openssl[c7dd]::bio[0]::{{impl}}[1]), self_ty: bio::MemBioSlice<'_> }) }) } at openssl/src/cms.rs:150:31: 150:47
+|
+fn  cms::<impl at openssl/src/cms.rs:109:1: 169:2>::sign(_1: std::option::Option<&x509::X509>, _2: std::option::Option<&pkey::PKeyRef<T>>, _3: std::option::Option<&stack::Stack<x509::X509>>, _4: std::option::Option<&[u8]>, _5: cms::CMSOptions) -> std::result::Result<cms::CmsContentInfo, error::ErrorStack> {
+    let mut _0: std::result::Result<cms::CmsContentInfo, error::ErrorStack>; // return place in scope 0 at openssl/src/cms.rs:139:10: 139:44
+    let mut _7: isize;                   // in scope 0 at openssl/src/cms.rs:142:17: 142:27
+    let mut _9: &x509::X509;             // in scope 0 at openssl/src/cms.rs:142:31: 142:35
+    let mut _11: isize;                  // in scope 0 at openssl/src/cms.rs:146:17: 146:27
+    let mut _13: &pkey::PKeyRef<T>;      // in scope 0 at openssl/src/cms.rs:146:31: 146:35
+    let mut _15: isize;                  // in scope 0 at openssl/src/cms.rs:150:17: 150:27
+    let mut _17: &bio::MemBioSlice;      // in scope 0 at openssl/src/cms.rs:150:31: 150:54
+    let _18: bio::MemBioSlice;           // in scope 0 at openssl/src/cms.rs:150:31: 150:54
+    let mut _19: std::result::Result<bio::MemBioSlice, error::ErrorStack>; // in scope 0 at openssl/src/cms.rs:150:31: 150:54
+    let mut _20: std::result::Result<bio::MemBioSlice, error::ErrorStack>; // in scope 0 at openssl/src/cms.rs:150:31: 150:53
+    let mut _21: &[u8];                  // in scope 0 at openssl/src/cms.rs:150:48: 150:52
+    let mut _22: isize;                  // in scope 0 at openssl/src/cms.rs:150:53: 150:54
+    let mut _24: error::ErrorStack;      // in scope 0 at openssl/src/cms.rs:150:53: 150:54
+    let mut _25: error::ErrorStack;      // in scope 0 at openssl/src/cms.rs:150:53: 150:54
+    let mut _28: isize;                  // in scope 0 at openssl/src/cms.rs:154:17: 154:28
+    let mut _30: &stack::Stack<x509::X509>; // in scope 0 at openssl/src/cms.rs:154:32: 154:37
+    let mut _32: std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack>; // in scope 0 at openssl/src/cms.rs:158:23: 164:16
+    let mut _33: std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack>; // in scope 0 at openssl/src/cms.rs:158:23: 164:15
+    let mut _34: *mut ffi::CMS_ContentInfo; // in scope 0 at openssl/src/cms.rs:158:29: 164:14
+    let mut _35: *mut ffi::X509;         // in scope 0 at openssl/src/cms.rs:159:17: 159:25
+    let mut _36: *mut ffi::EVP_PKEY;     // in scope 0 at openssl/src/cms.rs:160:17: 160:21
+    let mut _37: *mut ffi::stack_st_X509; // in scope 0 at openssl/src/cms.rs:161:17: 161:22
+    let mut _38: *mut ffi::BIO;          // in scope 0 at openssl/src/cms.rs:162:17: 162:29
+    let mut _39: u32;                    // in scope 0 at openssl/src/cms.rs:163:17: 163:29
+    let mut _40: &cms::CMSOptions;       // in scope 0 at openssl/src/cms.rs:163:17: 163:22
+    let mut _41: isize;                  // in scope 0 at openssl/src/cms.rs:164:15: 164:16
+    let mut _43: error::ErrorStack;      // in scope 0 at openssl/src/cms.rs:164:15: 164:16
+    let mut _44: error::ErrorStack;      // in scope 0 at openssl/src/cms.rs:164:15: 164:16
+    let mut _46: cms::CmsContentInfo;    // in scope 0 at openssl/src/cms.rs:166:16: 166:45
+    let mut _47: *mut ffi::CMS_ContentInfo; // in scope 0 at openssl/src/cms.rs:166:41: 166:44
+    let mut _48: bool;                   // in scope 0 at openssl/src/cms.rs:150:62: 150:63
+    let mut _49: bool;                   // in scope 0 at openssl/src/cms.rs:150:62: 150:63
+    let mut _50: isize;                  // in scope 0 at openssl/src/cms.rs:150:62: 150:63
+    let mut _51: isize;                  // in scope 0 at openssl/src/cms.rs:150:62: 150:63
+    let mut _52: isize;                  // in scope 0 at openssl/src/cms.rs:150:62: 150:63
+    let mut _53: isize;                  // in scope 0 at openssl/src/cms.rs:164:16: 164:17
+    let mut _54: isize;                  // in scope 0 at openssl/src/cms.rs:164:16: 164:17
+    scope 1 {
+        let _6: *mut ffi::X509;          // "signcert" in scope 1 at openssl/src/cms.rs:141:17: 141:25
+        let _8: &x509::X509;             // "cert" in scope 1 at openssl/src/cms.rs:142:22: 142:26
+        scope 2 {
+            let _10: *mut ffi::EVP_PKEY; // "pkey" in scope 2 at openssl/src/cms.rs:145:17: 145:21
+            let _12: &pkey::PKeyRef<T>;  // "pkey" in scope 2 at openssl/src/cms.rs:146:22: 146:26
+            scope 4 {
+                let _14: *mut ffi::BIO;  // "data_bio_ptr" in scope 4 at openssl/src/cms.rs:149:17: 149:29
+                let _16: &[u8];          // "data" in scope 4 at openssl/src/cms.rs:150:22: 150:26
+                scope 6 {
+                    let _27: *mut ffi::stack_st_X509; // "certs" in scope 6 at openssl/src/cms.rs:153:17: 153:22
+                    let _29: &stack::Stack<x509::X509>; // "certs" in scope 6 at openssl/src/cms.rs:154:22: 154:27
+                    scope 12 {
+                        let _31: *mut ffi::CMS_ContentInfo; // "cms" in scope 12 at openssl/src/cms.rs:158:17: 158:20
+                        let _42: error::ErrorStack; // "err" in scope 12 at openssl/src/cms.rs:164:15: 164:16
+                        let _45: *mut ffi::CMS_ContentInfo; // "val" in scope 12 at openssl/src/cms.rs:158:23: 164:16
+                        scope 14 {
+                        }
+                        scope 15 {
+                            scope 16 {
+                            }
+                        }
+                        scope 17 {
+                            scope 18 {
+                            }
+                        }
+                    }
+                    scope 13 {
+                    }
+                }
+                scope 7 {
+                    let _23: error::ErrorStack; // "err" in scope 7 at openssl/src/cms.rs:150:53: 150:54
+                    let _26: bio::MemBioSlice; // "val" in scope 7 at openssl/src/cms.rs:150:31: 150:54
+                    scope 8 {
+                        scope 9 {
+                        }
+                    }
+                    scope 10 {
+                        scope 11 {
+                        }
+                    }
+                }
+            }
+            scope 5 {
+            }
+        }
+        scope 3 {
+        }
+    }
+
+    bb0: {
+        _48 = const false;               // bb0[0]: scope 1 at openssl/src/cms.rs:141:17: 141:25
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:141:17: 141:25
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        _49 = const false;               // bb0[1]: scope 1 at openssl/src/cms.rs:141:17: 141:25
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:141:17: 141:25
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        StorageLive(_6);                 // bb0[2]: scope 1 at openssl/src/cms.rs:141:17: 141:25
+        _7 = discriminant(_1);           // bb0[3]: scope 1 at openssl/src/cms.rs:142:17: 142:27
+        switchInt(move _7) -> [0isize: bb2, 1isize: bb4, otherwise: bb3]; // bb0[4]: scope 1 at openssl/src/cms.rs:142:17: 142:27
+    }
+
+    bb1 (cleanup): {
+        resume;                          // bb1[0]: scope 0 at openssl/src/cms.rs:133:5: 168:6
+    }
+
+    bb2: {
+        _6 = const std::ptr::null_mut::<ffi::X509>() -> bb6; // bb2[0]: scope 1 at openssl/src/cms.rs:143:25: 143:40
+                                         // ty::Const
+                                         // + ty: fn() -> *mut ffi::X509 {std::ptr::null_mut::<ffi::X509>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:143:25: 143:38
+                                         // + ty: fn() -> *mut ffi::X509 {std::ptr::null_mut::<ffi::X509>}
+                                         // + literal: Const { ty: fn() -> *mut ffi::X509 {std::ptr::null_mut::<ffi::X509>}, val: Scalar(<ZST>) }
+    }
+
+    bb3: {
+        unreachable;                     // bb3[0]: scope 1 at openssl/src/cms.rs:141:34: 141:42
+    }
+
+    bb4: {
+        StorageLive(_8);                 // bb4[0]: scope 1 at openssl/src/cms.rs:142:22: 142:26
+        _8 = ((_1 as Some).0: &x509::X509); // bb4[1]: scope 1 at openssl/src/cms.rs:142:22: 142:26
+        StorageLive(_9);                 // bb4[2]: scope 3 at openssl/src/cms.rs:142:31: 142:35
+        _9 = _8;                         // bb4[3]: scope 3 at openssl/src/cms.rs:142:31: 142:35
+        _6 = const <x509::X509 as foreign_types::ForeignType>::as_ptr(move _9) -> bb5; // bb4[4]: scope 3 at openssl/src/cms.rs:142:31: 142:44
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r x509::X509) -> *mut <x509::X509 as foreign_types::ForeignType>::CType {<x509::X509 as foreign_types::ForeignType>::as_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:142:36: 142:42
+                                         // + ty: for<'r> fn(&'r x509::X509) -> *mut <x509::X509 as foreign_types::ForeignType>::CType {<x509::X509 as foreign_types::ForeignType>::as_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r x509::X509) -> *mut <x509::X509 as foreign_types::ForeignType>::CType {<x509::X509 as foreign_types::ForeignType>::as_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb5: {
+        StorageDead(_9);                 // bb5[0]: scope 3 at openssl/src/cms.rs:142:43: 142:44
+        StorageDead(_8);                 // bb5[1]: scope 1 at openssl/src/cms.rs:142:44: 142:45
+        goto -> bb6;                     // bb5[2]: scope 1 at openssl/src/cms.rs:141:28: 144:14
+    }
+
+    bb6: {
+        StorageLive(_10);                // bb6[0]: scope 2 at openssl/src/cms.rs:145:17: 145:21
+        _11 = discriminant(_2);          // bb6[1]: scope 2 at openssl/src/cms.rs:146:17: 146:27
+        switchInt(move _11) -> [0isize: bb7, 1isize: bb9, otherwise: bb8]; // bb6[2]: scope 2 at openssl/src/cms.rs:146:17: 146:27
+    }
+
+    bb7: {
+        _10 = const std::ptr::null_mut::<ffi::EVP_PKEY>() -> bb11; // bb7[0]: scope 2 at openssl/src/cms.rs:147:25: 147:40
+                                         // ty::Const
+                                         // + ty: fn() -> *mut ffi::EVP_PKEY {std::ptr::null_mut::<ffi::EVP_PKEY>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:147:25: 147:38
+                                         // + ty: fn() -> *mut ffi::EVP_PKEY {std::ptr::null_mut::<ffi::EVP_PKEY>}
+                                         // + literal: Const { ty: fn() -> *mut ffi::EVP_PKEY {std::ptr::null_mut::<ffi::EVP_PKEY>}, val: Scalar(<ZST>) }
+    }
+
+    bb8: {
+        unreachable;                     // bb8[0]: scope 2 at openssl/src/cms.rs:145:30: 145:34
+    }
+
+    bb9: {
+        StorageLive(_12);                // bb9[0]: scope 2 at openssl/src/cms.rs:146:22: 146:26
+        _12 = ((_2 as Some).0: &pkey::PKeyRef<T>); // bb9[1]: scope 2 at openssl/src/cms.rs:146:22: 146:26
+        StorageLive(_13);                // bb9[2]: scope 5 at openssl/src/cms.rs:146:31: 146:35
+        _13 = _12;                       // bb9[3]: scope 5 at openssl/src/cms.rs:146:31: 146:35
+        _10 = const <pkey::PKeyRef<T> as foreign_types::ForeignTypeRef>::as_ptr(move _13) -> bb10; // bb9[4]: scope 5 at openssl/src/cms.rs:146:31: 146:44
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r pkey::PKeyRef<T>) -> *mut <pkey::PKeyRef<T> as foreign_types::ForeignTypeRef>::CType {<pkey::PKeyRef<T> as foreign_types::ForeignTypeRef>::as_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:146:36: 146:42
+                                         // + ty: for<'r> fn(&'r pkey::PKeyRef<T>) -> *mut <pkey::PKeyRef<T> as foreign_types::ForeignTypeRef>::CType {<pkey::PKeyRef<T> as foreign_types::ForeignTypeRef>::as_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r pkey::PKeyRef<T>) -> *mut <pkey::PKeyRef<T> as foreign_types::ForeignTypeRef>::CType {<pkey::PKeyRef<T> as foreign_types::ForeignTypeRef>::as_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb10: {
+        StorageDead(_13);                // bb10[0]: scope 5 at openssl/src/cms.rs:146:43: 146:44
+        StorageDead(_12);                // bb10[1]: scope 2 at openssl/src/cms.rs:146:44: 146:45
+        goto -> bb11;                    // bb10[2]: scope 2 at openssl/src/cms.rs:145:24: 148:14
+    }
+
+    bb11: {
+        StorageLive(_14);                // bb11[0]: scope 4 at openssl/src/cms.rs:149:17: 149:29
+        _15 = discriminant(_4);          // bb11[1]: scope 4 at openssl/src/cms.rs:150:17: 150:27
+        switchInt(move _15) -> [0isize: bb12, 1isize: bb14, otherwise: bb13]; // bb11[2]: scope 4 at openssl/src/cms.rs:150:17: 150:27
+    }
+
+    bb12: {
+        _14 = const std::ptr::null_mut::<ffi::BIO>() -> bb27; // bb12[0]: scope 4 at openssl/src/cms.rs:151:25: 151:40
+                                         // ty::Const
+                                         // + ty: fn() -> *mut ffi::BIO {std::ptr::null_mut::<ffi::BIO>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:151:25: 151:38
+                                         // + ty: fn() -> *mut ffi::BIO {std::ptr::null_mut::<ffi::BIO>}
+                                         // + literal: Const { ty: fn() -> *mut ffi::BIO {std::ptr::null_mut::<ffi::BIO>}, val: Scalar(<ZST>) }
+    }
+
+    bb13: {
+        unreachable;                     // bb13[0]: scope 4 at openssl/src/cms.rs:149:38: 149:42
+    }
+
+    bb14: {
+        StorageLive(_16);                // bb14[0]: scope 4 at openssl/src/cms.rs:150:22: 150:26
+        _16 = ((_4 as Some).0: &[u8]);   // bb14[1]: scope 4 at openssl/src/cms.rs:150:22: 150:26
+        StorageLive(_17);                // bb14[2]: scope 7 at openssl/src/cms.rs:150:31: 150:54
+        StorageLive(_18);                // bb14[3]: scope 7 at openssl/src/cms.rs:150:31: 150:54
+        StorageLive(_19);                // bb14[4]: scope 7 at openssl/src/cms.rs:150:31: 150:54
+        StorageLive(_20);                // bb14[5]: scope 7 at openssl/src/cms.rs:150:31: 150:53
+        StorageLive(_21);                // bb14[6]: scope 7 at openssl/src/cms.rs:150:48: 150:52
+        _21 = _16;                       // bb14[7]: scope 7 at openssl/src/cms.rs:150:48: 150:52
+        _20 = const bio::MemBioSlice::new(move _21) -> bb15; // bb14[8]: scope 7 at openssl/src/cms.rs:150:31: 150:53
+                                         // ty::Const
+                                         // + ty: fn(&[u8]) -> std::result::Result<bio::MemBioSlice, error::ErrorStack> {bio::MemBioSlice::new}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:31: 150:47
+                                         // + ty: fn(&[u8]) -> std::result::Result<bio::MemBioSlice, error::ErrorStack> {bio::MemBioSlice::new}
+                                         // + user_ty: UserType(0)
+                                         // + literal: Const { ty: fn(&[u8]) -> std::result::Result<bio::MemBioSlice, error::ErrorStack> {bio::MemBioSlice::new}, val: Scalar(<ZST>) }
+    }
+
+    bb15: {
+        StorageDead(_21);                // bb15[0]: scope 7 at openssl/src/cms.rs:150:52: 150:53
+        _19 = const <std::result::Result<bio::MemBioSlice, error::ErrorStack> as std::ops::Try>::into_result(move _20) -> bb16; // bb15[1]: scope 7 at openssl/src/cms.rs:150:31: 150:54
+                                         // ty::Const
+                                         // + ty: fn(std::result::Result<bio::MemBioSlice, error::ErrorStack>) -> std::result::Result<<std::result::Result<bio::MemBioSlice, error::ErrorStack> as std::ops::Try>::Ok, <std::result::Result<bio::MemBioSlice, error::ErrorStack> as std::ops::Try>::Error> {<std::result::Result<bio::MemBioSlice, error::ErrorStack> as std::ops::Try>::into_result}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:31: 150:54
+                                         // + ty: fn(std::result::Result<bio::MemBioSlice, error::ErrorStack>) -> std::result::Result<<std::result::Result<bio::MemBioSlice, error::ErrorStack> as std::ops::Try>::Ok, <std::result::Result<bio::MemBioSlice, error::ErrorStack> as std::ops::Try>::Error> {<std::result::Result<bio::MemBioSlice, error::ErrorStack> as std::ops::Try>::into_result}
+                                         // + literal: Const { ty: fn(std::result::Result<bio::MemBioSlice, error::ErrorStack>) -> std::result::Result<<std::result::Result<bio::MemBioSlice, error::ErrorStack> as std::ops::Try>::Ok, <std::result::Result<bio::MemBioSlice, error::ErrorStack> as std::ops::Try>::Error> {<std::result::Result<bio::MemBioSlice, error::ErrorStack> as std::ops::Try>::into_result}, val: Scalar(<ZST>) }
+    }
+
+    bb16: {
+        _48 = const true;                // bb16[0]: scope 7 at openssl/src/cms.rs:150:53: 150:54
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x01)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:53: 150:54
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x01) }
+        _49 = const true;                // bb16[1]: scope 7 at openssl/src/cms.rs:150:53: 150:54
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x01)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:53: 150:54
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x01) }
+        StorageDead(_20);                // bb16[2]: scope 7 at openssl/src/cms.rs:150:53: 150:54
+        _22 = discriminant(_19);         // bb16[3]: scope 7 at openssl/src/cms.rs:150:53: 150:54
+        switchInt(move _22) -> [0isize: bb24, 1isize: bb19, otherwise: bb18]; // bb16[4]: scope 7 at openssl/src/cms.rs:150:53: 150:54
+    }
+
+    bb17 (cleanup): {
+        _50 = discriminant(_19);         // bb17[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+        switchInt(move _50) -> [0isize: bb45, otherwise: bb47]; // bb17[1]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb18: {
+        unreachable;                     // bb18[0]: scope 7 at openssl/src/cms.rs:150:31: 150:54
+    }
+
+    bb19: {
+        StorageLive(_23);                // bb19[0]: scope 7 at openssl/src/cms.rs:150:53: 150:54
+        _49 = const false;               // bb19[1]: scope 7 at openssl/src/cms.rs:150:53: 150:54
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:53: 150:54
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        _23 = move ((_19 as Err).0: error::ErrorStack); // bb19[2]: scope 7 at openssl/src/cms.rs:150:53: 150:54
+        StorageLive(_24);                // bb19[3]: scope 9 at openssl/src/cms.rs:150:53: 150:54
+        StorageLive(_25);                // bb19[4]: scope 9 at openssl/src/cms.rs:150:53: 150:54
+        _25 = move _23;                  // bb19[5]: scope 9 at openssl/src/cms.rs:150:53: 150:54
+        _24 = const <error::ErrorStack as std::convert::From<error::ErrorStack>>::from(move _25) -> [return: bb21, unwind: bb17]; // bb19[6]: scope 9 at openssl/src/cms.rs:150:53: 150:54
+                                         // ty::Const
+                                         // + ty: fn(error::ErrorStack) -> error::ErrorStack {<error::ErrorStack as std::convert::From<error::ErrorStack>>::from}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:53: 150:54
+                                         // + ty: fn(error::ErrorStack) -> error::ErrorStack {<error::ErrorStack as std::convert::From<error::ErrorStack>>::from}
+                                         // + literal: Const { ty: fn(error::ErrorStack) -> error::ErrorStack {<error::ErrorStack as std::convert::From<error::ErrorStack>>::from}, val: Scalar(<ZST>) }
+    }
+
+    bb20: {
+        return;                          // bb20[0]: scope 0 at openssl/src/cms.rs:168:6: 168:6
+    }
+
+    bb21: {
+        StorageDead(_25);                // bb21[0]: scope 9 at openssl/src/cms.rs:150:53: 150:54
+        _0 = const <std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::from_error(move _24) -> [return: bb22, unwind: bb17]; // bb21[1]: scope 9 at openssl/src/cms.rs:150:53: 150:54
+                                         // ty::Const
+                                         // + ty: fn(<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::Error) -> std::result::Result<cms::CmsContentInfo, error::ErrorStack> {<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::from_error}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:31: 150:54
+                                         // + ty: fn(<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::Error) -> std::result::Result<cms::CmsContentInfo, error::ErrorStack> {<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::from_error}
+                                         // + literal: Const { ty: fn(<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::Error) -> std::result::Result<cms::CmsContentInfo, error::ErrorStack> {<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::from_error}, val: Scalar(<ZST>) }
+    }
+
+    bb22: {
+        StorageDead(_24);                // bb22[0]: scope 9 at openssl/src/cms.rs:150:53: 150:54
+        StorageDead(_23);                // bb22[1]: scope 7 at openssl/src/cms.rs:150:53: 150:54
+        _51 = discriminant(_19);         // bb22[2]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+        switchInt(move _51) -> [0isize: bb50, otherwise: bb49]; // bb22[3]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb23: {
+        StorageDead(_14);                // bb23[0]: scope 4 at openssl/src/cms.rs:167:9: 167:10
+        StorageDead(_10);                // bb23[1]: scope 2 at openssl/src/cms.rs:167:9: 167:10
+        StorageDead(_6);                 // bb23[2]: scope 1 at openssl/src/cms.rs:167:9: 167:10
+        goto -> bb20;                    // bb23[3]: scope 0 at openssl/src/cms.rs:150:53: 150:54
+    }
+
+    bb24: {
+        StorageLive(_26);                // bb24[0]: scope 7 at openssl/src/cms.rs:150:31: 150:54
+        _48 = const false;               // bb24[1]: scope 7 at openssl/src/cms.rs:150:31: 150:54
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:31: 150:54
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        _26 = move ((_19 as Ok).0: bio::MemBioSlice); // bb24[2]: scope 7 at openssl/src/cms.rs:150:31: 150:54
+        _18 = move _26;                  // bb24[3]: scope 11 at openssl/src/cms.rs:150:31: 150:54
+        StorageDead(_26);                // bb24[4]: scope 7 at openssl/src/cms.rs:150:53: 150:54
+        _17 = &_18;                      // bb24[5]: scope 7 at openssl/src/cms.rs:150:31: 150:54
+        _14 = const bio::MemBioSlice::as_ptr(move _17) -> [return: bb25, unwind: bb26]; // bb24[6]: scope 7 at openssl/src/cms.rs:150:31: 150:63
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r bio::MemBioSlice) -> *mut ffi::BIO {bio::MemBioSlice::as_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:55: 150:61
+                                         // + ty: for<'r> fn(&'r bio::MemBioSlice) -> *mut ffi::BIO {bio::MemBioSlice::as_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r bio::MemBioSlice) -> *mut ffi::BIO {bio::MemBioSlice::as_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb25: {
+        drop(_18) -> [return: bb53, unwind: bb17]; // bb25[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb26 (cleanup): {
+        drop(_18) -> bb17;               // bb26[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb27: {
+        StorageLive(_27);                // bb27[0]: scope 6 at openssl/src/cms.rs:153:17: 153:22
+        _28 = discriminant(_3);          // bb27[1]: scope 6 at openssl/src/cms.rs:154:17: 154:28
+        switchInt(move _28) -> [0isize: bb28, 1isize: bb30, otherwise: bb29]; // bb27[2]: scope 6 at openssl/src/cms.rs:154:17: 154:28
+    }
+
+    bb28: {
+        _27 = const std::ptr::null_mut::<ffi::stack_st_X509>() -> bb32; // bb28[0]: scope 6 at openssl/src/cms.rs:155:25: 155:40
+                                         // ty::Const
+                                         // + ty: fn() -> *mut ffi::stack_st_X509 {std::ptr::null_mut::<ffi::stack_st_X509>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:155:25: 155:38
+                                         // + ty: fn() -> *mut ffi::stack_st_X509 {std::ptr::null_mut::<ffi::stack_st_X509>}
+                                         // + literal: Const { ty: fn() -> *mut ffi::stack_st_X509 {std::ptr::null_mut::<ffi::stack_st_X509>}, val: Scalar(<ZST>) }
+    }
+
+    bb29: {
+        unreachable;                     // bb29[0]: scope 6 at openssl/src/cms.rs:153:31: 153:36
+    }
+
+    bb30: {
+        StorageLive(_29);                // bb30[0]: scope 6 at openssl/src/cms.rs:154:22: 154:27
+        _29 = ((_3 as Some).0: &stack::Stack<x509::X509>); // bb30[1]: scope 6 at openssl/src/cms.rs:154:22: 154:27
+        StorageLive(_30);                // bb30[2]: scope 13 at openssl/src/cms.rs:154:32: 154:37
+        _30 = _29;                       // bb30[3]: scope 13 at openssl/src/cms.rs:154:32: 154:37
+        _27 = const <stack::Stack<x509::X509> as foreign_types::ForeignType>::as_ptr(move _30) -> bb31; // bb30[4]: scope 13 at openssl/src/cms.rs:154:32: 154:46
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r stack::Stack<x509::X509>) -> *mut <stack::Stack<x509::X509> as foreign_types::ForeignType>::CType {<stack::Stack<x509::X509> as foreign_types::ForeignType>::as_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:154:38: 154:44
+                                         // + ty: for<'r> fn(&'r stack::Stack<x509::X509>) -> *mut <stack::Stack<x509::X509> as foreign_types::ForeignType>::CType {<stack::Stack<x509::X509> as foreign_types::ForeignType>::as_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r stack::Stack<x509::X509>) -> *mut <stack::Stack<x509::X509> as foreign_types::ForeignType>::CType {<stack::Stack<x509::X509> as foreign_types::ForeignType>::as_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb31: {
+        StorageDead(_30);                // bb31[0]: scope 13 at openssl/src/cms.rs:154:45: 154:46
+        StorageDead(_29);                // bb31[1]: scope 6 at openssl/src/cms.rs:154:46: 154:47
+        goto -> bb32;                    // bb31[2]: scope 6 at openssl/src/cms.rs:153:25: 156:14
+    }
+
+    bb32: {
+        StorageLive(_31);                // bb32[0]: scope 12 at openssl/src/cms.rs:158:17: 158:20
+        StorageLive(_32);                // bb32[1]: scope 12 at openssl/src/cms.rs:158:23: 164:16
+        StorageLive(_33);                // bb32[2]: scope 12 at openssl/src/cms.rs:158:23: 164:15
+        StorageLive(_34);                // bb32[3]: scope 12 at openssl/src/cms.rs:158:29: 164:14
+        StorageLive(_35);                // bb32[4]: scope 12 at openssl/src/cms.rs:159:17: 159:25
+        _35 = _6;                        // bb32[5]: scope 12 at openssl/src/cms.rs:159:17: 159:25
+        StorageLive(_36);                // bb32[6]: scope 12 at openssl/src/cms.rs:160:17: 160:21
+        _36 = _10;                       // bb32[7]: scope 12 at openssl/src/cms.rs:160:17: 160:21
+        StorageLive(_37);                // bb32[8]: scope 12 at openssl/src/cms.rs:161:17: 161:22
+        _37 = _27;                       // bb32[9]: scope 12 at openssl/src/cms.rs:161:17: 161:22
+        StorageLive(_38);                // bb32[10]: scope 12 at openssl/src/cms.rs:162:17: 162:29
+        _38 = _14;                       // bb32[11]: scope 12 at openssl/src/cms.rs:162:17: 162:29
+        StorageLive(_39);                // bb32[12]: scope 12 at openssl/src/cms.rs:163:17: 163:29
+        StorageLive(_40);                // bb32[13]: scope 12 at openssl/src/cms.rs:163:17: 163:22
+        _40 = &_5;                       // bb32[14]: scope 12 at openssl/src/cms.rs:163:17: 163:22
+        _39 = const cms::CMSOptions::bits(move _40) -> bb33; // bb32[15]: scope 12 at openssl/src/cms.rs:163:17: 163:29
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r cms::CMSOptions) -> u32 {cms::CMSOptions::bits}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:163:23: 163:27
+                                         // + ty: for<'r> fn(&'r cms::CMSOptions) -> u32 {cms::CMSOptions::bits}
+                                         // + literal: Const { ty: for<'r> fn(&'r cms::CMSOptions) -> u32 {cms::CMSOptions::bits}, val: Scalar(<ZST>) }
+    }
+
+    bb33: {
+        StorageDead(_40);                // bb33[0]: scope 12 at openssl/src/cms.rs:163:28: 163:29
+        _34 = const ffi::CMS_sign(move _35, move _36, move _37, move _38, move _39) -> bb34; // bb33[1]: scope 12 at openssl/src/cms.rs:158:29: 164:14
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn(*mut ffi::X509, *mut ffi::EVP_PKEY, *mut ffi::stack_st_X509, *mut ffi::BIO, u32) -> *mut ffi::CMS_ContentInfo {ffi::CMS_sign}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:158:29: 158:42
+                                         // + ty: unsafe extern "C" fn(*mut ffi::X509, *mut ffi::EVP_PKEY, *mut ffi::stack_st_X509, *mut ffi::BIO, u32) -> *mut ffi::CMS_ContentInfo {ffi::CMS_sign}
+                                         // + literal: Const { ty: unsafe extern "C" fn(*mut ffi::X509, *mut ffi::EVP_PKEY, *mut ffi::stack_st_X509, *mut ffi::BIO, u32) -> *mut ffi::CMS_ContentInfo {ffi::CMS_sign}, val: Scalar(<ZST>) }
+    }
+
+    bb34: {
+        StorageDead(_39);                // bb34[0]: scope 12 at openssl/src/cms.rs:164:13: 164:14
+        StorageDead(_38);                // bb34[1]: scope 12 at openssl/src/cms.rs:164:13: 164:14
+        StorageDead(_37);                // bb34[2]: scope 12 at openssl/src/cms.rs:164:13: 164:14
+        StorageDead(_36);                // bb34[3]: scope 12 at openssl/src/cms.rs:164:13: 164:14
+        StorageDead(_35);                // bb34[4]: scope 12 at openssl/src/cms.rs:164:13: 164:14
+        _33 = const cvt_p::<ffi::CMS_ContentInfo>(move _34) -> bb35; // bb34[5]: scope 12 at openssl/src/cms.rs:158:23: 164:15
+                                         // ty::Const
+                                         // + ty: fn(*mut ffi::CMS_ContentInfo) -> std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> {cvt_p::<ffi::CMS_ContentInfo>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:158:23: 158:28
+                                         // + ty: fn(*mut ffi::CMS_ContentInfo) -> std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> {cvt_p::<ffi::CMS_ContentInfo>}
+                                         // + literal: Const { ty: fn(*mut ffi::CMS_ContentInfo) -> std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> {cvt_p::<ffi::CMS_ContentInfo>}, val: Scalar(<ZST>) }
+    }
+
+    bb35: {
+        StorageDead(_34);                // bb35[0]: scope 12 at openssl/src/cms.rs:164:14: 164:15
+        _32 = const <std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> as std::ops::Try>::into_result(move _33) -> bb37; // bb35[1]: scope 12 at openssl/src/cms.rs:158:23: 164:16
+                                         // ty::Const
+                                         // + ty: fn(std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack>) -> std::result::Result<<std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> as std::ops::Try>::Ok, <std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> as std::ops::Try>::Error> {<std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> as std::ops::Try>::into_result}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:158:23: 164:16
+                                         // + ty: fn(std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack>) -> std::result::Result<<std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> as std::ops::Try>::Ok, <std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> as std::ops::Try>::Error> {<std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> as std::ops::Try>::into_result}
+                                         // + literal: Const { ty: fn(std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack>) -> std::result::Result<<std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> as std::ops::Try>::Ok, <std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> as std::ops::Try>::Error> {<std::result::Result<*mut ffi::CMS_ContentInfo, error::ErrorStack> as std::ops::Try>::into_result}, val: Scalar(<ZST>) }
+    }
+
+    bb36 (cleanup): {
+        _53 = discriminant(_32);         // bb36[0]: scope 12 at openssl/src/cms.rs:164:16: 164:17
+        switchInt(move _53) -> [1isize: bb1, otherwise: bb54]; // bb36[1]: scope 12 at openssl/src/cms.rs:164:16: 164:17
+    }
+
+    bb37: {
+        StorageDead(_33);                // bb37[0]: scope 12 at openssl/src/cms.rs:164:15: 164:16
+        _41 = discriminant(_32);         // bb37[1]: scope 12 at openssl/src/cms.rs:164:15: 164:16
+        switchInt(move _41) -> [0isize: bb42, 1isize: bb39, otherwise: bb38]; // bb37[2]: scope 12 at openssl/src/cms.rs:164:15: 164:16
+    }
+
+    bb38: {
+        unreachable;                     // bb38[0]: scope 12 at openssl/src/cms.rs:158:23: 164:16
+    }
+
+    bb39: {
+        StorageLive(_42);                // bb39[0]: scope 12 at openssl/src/cms.rs:164:15: 164:16
+        _42 = move ((_32 as Err).0: error::ErrorStack); // bb39[1]: scope 12 at openssl/src/cms.rs:164:15: 164:16
+        StorageLive(_43);                // bb39[2]: scope 16 at openssl/src/cms.rs:164:15: 164:16
+        StorageLive(_44);                // bb39[3]: scope 16 at openssl/src/cms.rs:164:15: 164:16
+        _44 = move _42;                  // bb39[4]: scope 16 at openssl/src/cms.rs:164:15: 164:16
+        _43 = const <error::ErrorStack as std::convert::From<error::ErrorStack>>::from(move _44) -> [return: bb40, unwind: bb36]; // bb39[5]: scope 16 at openssl/src/cms.rs:164:15: 164:16
+                                         // ty::Const
+                                         // + ty: fn(error::ErrorStack) -> error::ErrorStack {<error::ErrorStack as std::convert::From<error::ErrorStack>>::from}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:164:15: 164:16
+                                         // + ty: fn(error::ErrorStack) -> error::ErrorStack {<error::ErrorStack as std::convert::From<error::ErrorStack>>::from}
+                                         // + literal: Const { ty: fn(error::ErrorStack) -> error::ErrorStack {<error::ErrorStack as std::convert::From<error::ErrorStack>>::from}, val: Scalar(<ZST>) }
+    }
+
+    bb40: {
+        StorageDead(_44);                // bb40[0]: scope 16 at openssl/src/cms.rs:164:15: 164:16
+        _0 = const <std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::from_error(move _43) -> [return: bb41, unwind: bb36]; // bb40[1]: scope 16 at openssl/src/cms.rs:164:15: 164:16
+                                         // ty::Const
+                                         // + ty: fn(<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::Error) -> std::result::Result<cms::CmsContentInfo, error::ErrorStack> {<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::from_error}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:158:23: 164:16
+                                         // + ty: fn(<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::Error) -> std::result::Result<cms::CmsContentInfo, error::ErrorStack> {<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::from_error}
+                                         // + literal: Const { ty: fn(<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::Error) -> std::result::Result<cms::CmsContentInfo, error::ErrorStack> {<std::result::Result<cms::CmsContentInfo, error::ErrorStack> as std::ops::Try>::from_error}, val: Scalar(<ZST>) }
+    }
+
+    bb41: {
+        StorageDead(_43);                // bb41[0]: scope 16 at openssl/src/cms.rs:164:15: 164:16
+        StorageDead(_42);                // bb41[1]: scope 12 at openssl/src/cms.rs:164:15: 164:16
+        _54 = discriminant(_32);         // bb41[2]: scope 12 at openssl/src/cms.rs:164:16: 164:17
+        switchInt(move _54) -> [1isize: bb55, otherwise: bb56]; // bb41[3]: scope 12 at openssl/src/cms.rs:164:16: 164:17
+    }
+
+    bb42: {
+        StorageLive(_45);                // bb42[0]: scope 12 at openssl/src/cms.rs:158:23: 164:16
+        _45 = ((_32 as Ok).0: *mut ffi::CMS_ContentInfo); // bb42[1]: scope 12 at openssl/src/cms.rs:158:23: 164:16
+        _31 = _45;                       // bb42[2]: scope 18 at openssl/src/cms.rs:158:23: 164:16
+        StorageDead(_45);                // bb42[3]: scope 12 at openssl/src/cms.rs:164:15: 164:16
+        drop(_32) -> bb43;               // bb42[4]: scope 12 at openssl/src/cms.rs:164:16: 164:17
+    }
+
+    bb43: {
+        StorageDead(_32);                // bb43[0]: scope 12 at openssl/src/cms.rs:164:16: 164:17
+        StorageLive(_46);                // bb43[1]: scope 14 at openssl/src/cms.rs:166:16: 166:45
+        StorageLive(_47);                // bb43[2]: scope 14 at openssl/src/cms.rs:166:41: 166:44
+        _47 = _31;                       // bb43[3]: scope 14 at openssl/src/cms.rs:166:41: 166:44
+        _46 = const <cms::CmsContentInfo as foreign_types::ForeignType>::from_ptr(move _47) -> bb44; // bb43[4]: scope 14 at openssl/src/cms.rs:166:16: 166:45
+                                         // ty::Const
+                                         // + ty: unsafe fn(*mut <cms::CmsContentInfo as foreign_types::ForeignType>::CType) -> cms::CmsContentInfo {<cms::CmsContentInfo as foreign_types::ForeignType>::from_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:166:16: 166:40
+                                         // + ty: unsafe fn(*mut <cms::CmsContentInfo as foreign_types::ForeignType>::CType) -> cms::CmsContentInfo {<cms::CmsContentInfo as foreign_types::ForeignType>::from_ptr}
+                                         // + literal: Const { ty: unsafe fn(*mut <cms::CmsContentInfo as foreign_types::ForeignType>::CType) -> cms::CmsContentInfo {<cms::CmsContentInfo as foreign_types::ForeignType>::from_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb44: {
+        StorageDead(_47);                // bb44[0]: scope 14 at openssl/src/cms.rs:166:44: 166:45
+        ((_0 as Ok).0: cms::CmsContentInfo) = move _46; // bb44[1]: scope 14 at openssl/src/cms.rs:166:13: 166:46
+        discriminant(_0) = 0;            // bb44[2]: scope 14 at openssl/src/cms.rs:166:13: 166:46
+        StorageDead(_46);                // bb44[3]: scope 14 at openssl/src/cms.rs:166:45: 166:46
+        StorageDead(_31);                // bb44[4]: scope 12 at openssl/src/cms.rs:167:9: 167:10
+        StorageDead(_27);                // bb44[5]: scope 6 at openssl/src/cms.rs:167:9: 167:10
+        StorageDead(_14);                // bb44[6]: scope 4 at openssl/src/cms.rs:167:9: 167:10
+        StorageDead(_10);                // bb44[7]: scope 2 at openssl/src/cms.rs:167:9: 167:10
+        StorageDead(_6);                 // bb44[8]: scope 1 at openssl/src/cms.rs:167:9: 167:10
+        goto -> bb20;                    // bb44[9]: scope 0 at openssl/src/cms.rs:168:6: 168:6
+    }
+
+    bb45 (cleanup): {
+        switchInt(_48) -> [false: bb1, otherwise: bb46]; // bb45[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb46 (cleanup): {
+        _48 = const false;               // bb46[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:62: 150:63
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        drop(((_19 as Ok).0: bio::MemBioSlice)) -> bb1; // bb46[1]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb47 (cleanup): {
+        switchInt(_49) -> [false: bb1, otherwise: bb48]; // bb47[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb48 (cleanup): {
+        _49 = const false;               // bb48[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:62: 150:63
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        drop(((_19 as Err).0: error::ErrorStack)) -> bb1; // bb48[1]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb49: {
+        _48 = const false;               // bb49[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:62: 150:63
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        _49 = const false;               // bb49[1]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:62: 150:63
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        StorageDead(_19);                // bb49[2]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+        StorageDead(_18);                // bb49[3]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+        StorageDead(_17);                // bb49[4]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+        StorageDead(_16);                // bb49[5]: scope 4 at openssl/src/cms.rs:150:63: 150:64
+        goto -> bb23;                    // bb49[6]: scope 4 at openssl/src/cms.rs:150:53: 150:54
+    }
+
+    bb50: {
+        _48 = const false;               // bb50[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:62: 150:63
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        drop(((_19 as Ok).0: bio::MemBioSlice)) -> bb49; // bb50[1]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb51: {
+        _48 = const false;               // bb51[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:62: 150:63
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        _49 = const false;               // bb51[1]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:62: 150:63
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        StorageDead(_19);                // bb51[2]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+        StorageDead(_18);                // bb51[3]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+        StorageDead(_17);                // bb51[4]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+        StorageDead(_16);                // bb51[5]: scope 4 at openssl/src/cms.rs:150:63: 150:64
+        goto -> bb27;                    // bb51[6]: scope 4 at openssl/src/cms.rs:149:32: 152:14
+    }
+
+    bb52: {
+        _49 = const false;               // bb52[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: openssl/src/cms.rs:150:62: 150:63
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        drop(((_19 as Err).0: error::ErrorStack)) -> bb51; // bb52[1]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb53: {
+        _52 = discriminant(_19);         // bb53[0]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+        switchInt(move _52) -> [0isize: bb51, otherwise: bb52]; // bb53[1]: scope 7 at openssl/src/cms.rs:150:62: 150:63
+    }
+
+    bb54 (cleanup): {
+        drop(_32) -> bb1;                // bb54[0]: scope 12 at openssl/src/cms.rs:164:16: 164:17
+    }
+
+    bb55: {
+        StorageDead(_32);                // bb55[0]: scope 12 at openssl/src/cms.rs:164:16: 164:17
+        StorageDead(_31);                // bb55[1]: scope 12 at openssl/src/cms.rs:167:9: 167:10
+        StorageDead(_27);                // bb55[2]: scope 6 at openssl/src/cms.rs:167:9: 167:10
+        goto -> bb23;                    // bb55[3]: scope 4 at openssl/src/cms.rs:164:15: 164:16
+    }
+
+    bb56: {
+        drop(_32) -> bb55;               // bb56[0]: scope 12 at openssl/src/cms.rs:164:16: 164:17
+    }
+}
