@@ -1,0 +1,274 @@
+// MIR for `treiber_stack::<impl at src/treiber_stack.rs:20:1: 75:2>::try_pop`
+// source = MirSource { instance: Item(DefId(0:162 ~ crossbeam[6d09]::treiber_stack[0]::{{impl}}[0]::try_pop[0])), promoted: None }
+// pass_name = PreCodegen
+// disambiguator = after
+
+fn  treiber_stack::<impl at src/treiber_stack.rs:20:1: 75:2>::try_pop(_1: &treiber_stack::TreiberStack<T>) -> std::option::Option<T> {
+    let mut _0: std::option::Option<T>;  // return place in scope 0 at src/treiber_stack.rs:48:30: 48:39
+    let _2: crossbeam_epoch::Guard;      // "guard" in scope 0 at src/treiber_stack.rs:49:13: 49:18
+    let mut _4: &crossbeam_epoch::Atomic<treiber_stack::Node<T>>; // in scope 0 at src/treiber_stack.rs:51:31: 51:40
+    let mut _5: std::sync::atomic::Ordering; // in scope 0 at src/treiber_stack.rs:51:46: 51:53
+    let mut _6: &crossbeam_epoch::Guard; // in scope 0 at src/treiber_stack.rs:51:55: 51:61
+    let mut _7: &crossbeam_epoch::Guard; // in scope 0 at src/treiber_stack.rs:51:55: 51:61
+    let mut _8: std::option::Option<&treiber_stack::Node<T>>; // in scope 0 at src/treiber_stack.rs:52:19: 52:50
+    let mut _9: &crossbeam_epoch::Shared<treiber_stack::Node<T>>; // in scope 0 at src/treiber_stack.rs:52:28: 52:39
+    let mut _10: isize;                  // in scope 0 at src/treiber_stack.rs:53:17: 53:27
+    let mut _13: &crossbeam_epoch::Atomic<treiber_stack::Node<T>>; // in scope 0 at src/treiber_stack.rs:54:32: 54:41
+    let mut _14: std::sync::atomic::Ordering; // in scope 0 at src/treiber_stack.rs:54:47: 54:54
+    let mut _15: &crossbeam_epoch::Guard; // in scope 0 at src/treiber_stack.rs:54:56: 54:62
+    let mut _16: &crossbeam_epoch::Guard; // in scope 0 at src/treiber_stack.rs:54:56: 54:62
+    let mut _17: bool;                   // in scope 0 at src/treiber_stack.rs:55:24: 57:33
+    let mut _18: &std::result::Result<crossbeam_epoch::Shared<treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>>; // in scope 0 at src/treiber_stack.rs:55:24: 56:77
+    let _19: std::result::Result<crossbeam_epoch::Shared<treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>>; // in scope 0 at src/treiber_stack.rs:55:24: 56:77
+    let mut _20: &crossbeam_epoch::Atomic<treiber_stack::Node<T>>; // in scope 0 at src/treiber_stack.rs:55:24: 55:33
+    let mut _21: crossbeam_epoch::Shared<treiber_stack::Node<T>>; // in scope 0 at src/treiber_stack.rs:56:42: 56:53
+    let mut _22: crossbeam_epoch::Shared<treiber_stack::Node<T>>; // in scope 0 at src/treiber_stack.rs:56:55: 56:59
+    let mut _23: std::sync::atomic::Ordering; // in scope 0 at src/treiber_stack.rs:56:61: 56:68
+    let mut _24: &crossbeam_epoch::Guard; // in scope 0 at src/treiber_stack.rs:56:70: 56:76
+    let mut _25: &crossbeam_epoch::Guard; // in scope 0 at src/treiber_stack.rs:56:70: 56:76
+    let _26: ();                         // in scope 0 at src/treiber_stack.rs:60:29: 60:74
+    let mut _27: &crossbeam_epoch::Guard; // in scope 0 at src/treiber_stack.rs:60:29: 60:34
+    let mut _28: [closure@src/treiber_stack.rs:60:41: 60:73 head_shared:crossbeam_epoch::Shared<treiber_stack::Node<T>>]; // in scope 0 at src/treiber_stack.rs:60:41: 60:73
+    let mut _29: T;                      // in scope 0 at src/treiber_stack.rs:61:41: 61:65
+    let mut _30: *const T;               // in scope 0 at src/treiber_stack.rs:61:51: 61:64
+    let mut _31: &T;                     // in scope 0 at src/treiber_stack.rs:61:51: 61:64
+    let mut _32: &T;                     // in scope 0 at src/treiber_stack.rs:61:51: 61:64
+    scope 1 {
+        let _3: crossbeam_epoch::Shared<treiber_stack::Node<T>>; // "head_shared" in scope 1 at src/treiber_stack.rs:51:17: 51:28
+        scope 2 {
+            let _11: &treiber_stack::Node<T>; // "head" in scope 2 at src/treiber_stack.rs:53:22: 53:26
+            scope 3 {
+            }
+            scope 4 {
+                let _12: crossbeam_epoch::Shared<treiber_stack::Node<T>>; // "next" in scope 4 at src/treiber_stack.rs:54:25: 54:29
+                scope 5 {
+                    scope 6 {
+                    }
+                }
+            }
+        }
+    }
+
+    bb0: {
+        StorageLive(_2);                 // bb0[0]: scope 0 at src/treiber_stack.rs:49:13: 49:18
+        _2 = const crossbeam_epoch::pin() -> bb2; // bb0[1]: scope 0 at src/treiber_stack.rs:49:21: 49:33
+                                         // ty::Const
+                                         // + ty: fn() -> crossbeam_epoch::Guard {crossbeam_epoch::pin}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/treiber_stack.rs:49:21: 49:31
+                                         // + ty: fn() -> crossbeam_epoch::Guard {crossbeam_epoch::pin}
+                                         // + literal: Const { ty: fn() -> crossbeam_epoch::Guard {crossbeam_epoch::pin}, val: Scalar(<ZST>) }
+    }
+
+    bb1 (cleanup): {
+        resume;                          // bb1[0]: scope 0 at src/treiber_stack.rs:48:5: 68:6
+    }
+
+    bb2: {
+        goto -> bb3;                     // bb2[0]: scope 1 at src/treiber_stack.rs:50:9: 67:10
+    }
+
+    bb3: {
+        StorageLive(_3);                 // bb3[0]: scope 1 at src/treiber_stack.rs:51:17: 51:28
+        StorageLive(_4);                 // bb3[1]: scope 1 at src/treiber_stack.rs:51:31: 51:40
+        _4 = &((*_1).0: crossbeam_epoch::Atomic<treiber_stack::Node<T>>); // bb3[2]: scope 1 at src/treiber_stack.rs:51:31: 51:40
+        StorageLive(_5);                 // bb3[3]: scope 1 at src/treiber_stack.rs:51:46: 51:53
+        discriminant(_5) = 2;            // bb3[4]: scope 1 at src/treiber_stack.rs:51:46: 51:53
+        StorageLive(_6);                 // bb3[5]: scope 1 at src/treiber_stack.rs:51:55: 51:61
+        StorageLive(_7);                 // bb3[6]: scope 1 at src/treiber_stack.rs:51:55: 51:61
+        _7 = &_2;                        // bb3[7]: scope 1 at src/treiber_stack.rs:51:55: 51:61
+        _6 = _7;                         // bb3[8]: scope 1 at src/treiber_stack.rs:51:55: 51:61
+        _3 = const crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::load(move _4, move _5, move _6) -> [return: bb5, unwind: bb4]; // bb3[9]: scope 1 at src/treiber_stack.rs:51:31: 51:62
+                                         // ty::Const
+                                         // + ty: for<'r, 'g> fn(&'r crossbeam_epoch::Atomic<treiber_stack::Node<T>>, std::sync::atomic::Ordering, &'g crossbeam_epoch::Guard) -> crossbeam_epoch::Shared<'g, treiber_stack::Node<T>> {crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::load}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/treiber_stack.rs:51:41: 51:45
+                                         // + ty: for<'r, 'g> fn(&'r crossbeam_epoch::Atomic<treiber_stack::Node<T>>, std::sync::atomic::Ordering, &'g crossbeam_epoch::Guard) -> crossbeam_epoch::Shared<'g, treiber_stack::Node<T>> {crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::load}
+                                         // + literal: Const { ty: for<'r, 'g> fn(&'r crossbeam_epoch::Atomic<treiber_stack::Node<T>>, std::sync::atomic::Ordering, &'g crossbeam_epoch::Guard) -> crossbeam_epoch::Shared<'g, treiber_stack::Node<T>> {crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::load}, val: Scalar(<ZST>) }
+    }
+
+    bb4 (cleanup): {
+        drop(_2) -> bb1;                 // bb4[0]: scope 0 at src/treiber_stack.rs:68:5: 68:6
+    }
+
+    bb5: {
+        StorageDead(_6);                 // bb5[0]: scope 1 at src/treiber_stack.rs:51:61: 51:62
+        StorageDead(_5);                 // bb5[1]: scope 1 at src/treiber_stack.rs:51:61: 51:62
+        StorageDead(_4);                 // bb5[2]: scope 1 at src/treiber_stack.rs:51:61: 51:62
+        StorageDead(_7);                 // bb5[3]: scope 1 at src/treiber_stack.rs:51:62: 51:63
+        StorageLive(_8);                 // bb5[4]: scope 2 at src/treiber_stack.rs:52:19: 52:50
+        StorageLive(_9);                 // bb5[5]: scope 3 at src/treiber_stack.rs:52:28: 52:39
+        _9 = &_3;                        // bb5[6]: scope 3 at src/treiber_stack.rs:52:28: 52:39
+        _8 = const crossbeam_epoch::Shared::<treiber_stack::Node<T>>::as_ref(move _9) -> [return: bb6, unwind: bb4]; // bb5[7]: scope 3 at src/treiber_stack.rs:52:28: 52:48
+                                         // ty::Const
+                                         // + ty: for<'r> unsafe fn(&'r crossbeam_epoch::Shared<treiber_stack::Node<T>>) -> std::option::Option<&treiber_stack::Node<T>> {crossbeam_epoch::Shared::<treiber_stack::Node<T>>::as_ref}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/treiber_stack.rs:52:40: 52:46
+                                         // + ty: for<'r> unsafe fn(&'r crossbeam_epoch::Shared<treiber_stack::Node<T>>) -> std::option::Option<&treiber_stack::Node<T>> {crossbeam_epoch::Shared::<treiber_stack::Node<T>>::as_ref}
+                                         // + literal: Const { ty: for<'r> unsafe fn(&'r crossbeam_epoch::Shared<treiber_stack::Node<T>>) -> std::option::Option<&treiber_stack::Node<T>> {crossbeam_epoch::Shared::<treiber_stack::Node<T>>::as_ref}, val: Scalar(<ZST>) }
+    }
+
+    bb6: {
+        StorageDead(_9);                 // bb6[0]: scope 3 at src/treiber_stack.rs:52:47: 52:48
+        _10 = discriminant(_8);          // bb6[1]: scope 2 at src/treiber_stack.rs:53:17: 53:27
+        switchInt(move _10) -> [0isize: bb7, 1isize: bb9, otherwise: bb8]; // bb6[2]: scope 2 at src/treiber_stack.rs:53:17: 53:27
+    }
+
+    bb7: {
+        discriminant(_0) = 0;            // bb7[0]: scope 2 at src/treiber_stack.rs:65:32: 65:36
+        goto -> bb17;                    // bb7[1]: scope 1 at src/treiber_stack.rs:65:25: 65:36
+    }
+
+    bb8: {
+        unreachable;                     // bb8[0]: scope 2 at src/treiber_stack.rs:52:19: 52:50
+    }
+
+    bb9: {
+        StorageLive(_11);                // bb9[0]: scope 2 at src/treiber_stack.rs:53:22: 53:26
+        _11 = ((_8 as Some).0: &treiber_stack::Node<T>); // bb9[1]: scope 2 at src/treiber_stack.rs:53:22: 53:26
+        StorageLive(_12);                // bb9[2]: scope 4 at src/treiber_stack.rs:54:25: 54:29
+        StorageLive(_13);                // bb9[3]: scope 4 at src/treiber_stack.rs:54:32: 54:41
+        _13 = &((*_11).1: crossbeam_epoch::Atomic<treiber_stack::Node<T>>); // bb9[4]: scope 4 at src/treiber_stack.rs:54:32: 54:41
+        StorageLive(_14);                // bb9[5]: scope 4 at src/treiber_stack.rs:54:47: 54:54
+        discriminant(_14) = 0;           // bb9[6]: scope 4 at src/treiber_stack.rs:54:47: 54:54
+        StorageLive(_15);                // bb9[7]: scope 4 at src/treiber_stack.rs:54:56: 54:62
+        StorageLive(_16);                // bb9[8]: scope 4 at src/treiber_stack.rs:54:56: 54:62
+        _16 = &_2;                       // bb9[9]: scope 4 at src/treiber_stack.rs:54:56: 54:62
+        _15 = _16;                       // bb9[10]: scope 4 at src/treiber_stack.rs:54:56: 54:62
+        _12 = const crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::load(move _13, move _14, move _15) -> [return: bb10, unwind: bb4]; // bb9[11]: scope 4 at src/treiber_stack.rs:54:32: 54:63
+                                         // ty::Const
+                                         // + ty: for<'r, 'g> fn(&'r crossbeam_epoch::Atomic<treiber_stack::Node<T>>, std::sync::atomic::Ordering, &'g crossbeam_epoch::Guard) -> crossbeam_epoch::Shared<'g, treiber_stack::Node<T>> {crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::load}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/treiber_stack.rs:54:42: 54:46
+                                         // + ty: for<'r, 'g> fn(&'r crossbeam_epoch::Atomic<treiber_stack::Node<T>>, std::sync::atomic::Ordering, &'g crossbeam_epoch::Guard) -> crossbeam_epoch::Shared<'g, treiber_stack::Node<T>> {crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::load}
+                                         // + literal: Const { ty: for<'r, 'g> fn(&'r crossbeam_epoch::Atomic<treiber_stack::Node<T>>, std::sync::atomic::Ordering, &'g crossbeam_epoch::Guard) -> crossbeam_epoch::Shared<'g, treiber_stack::Node<T>> {crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::load}, val: Scalar(<ZST>) }
+    }
+
+    bb10: {
+        StorageDead(_15);                // bb10[0]: scope 4 at src/treiber_stack.rs:54:62: 54:63
+        StorageDead(_14);                // bb10[1]: scope 4 at src/treiber_stack.rs:54:62: 54:63
+        StorageDead(_13);                // bb10[2]: scope 4 at src/treiber_stack.rs:54:62: 54:63
+        StorageDead(_16);                // bb10[3]: scope 4 at src/treiber_stack.rs:54:63: 54:64
+        StorageLive(_17);                // bb10[4]: scope 5 at src/treiber_stack.rs:55:24: 57:33
+        StorageLive(_18);                // bb10[5]: scope 5 at src/treiber_stack.rs:55:24: 56:77
+        StorageLive(_19);                // bb10[6]: scope 5 at src/treiber_stack.rs:55:24: 56:77
+        StorageLive(_20);                // bb10[7]: scope 5 at src/treiber_stack.rs:55:24: 55:33
+        _20 = &((*_1).0: crossbeam_epoch::Atomic<treiber_stack::Node<T>>); // bb10[8]: scope 5 at src/treiber_stack.rs:55:24: 55:33
+        StorageLive(_21);                // bb10[9]: scope 5 at src/treiber_stack.rs:56:42: 56:53
+        _21 = _3;                        // bb10[10]: scope 5 at src/treiber_stack.rs:56:42: 56:53
+        StorageLive(_22);                // bb10[11]: scope 5 at src/treiber_stack.rs:56:55: 56:59
+        _22 = _12;                       // bb10[12]: scope 5 at src/treiber_stack.rs:56:55: 56:59
+        StorageLive(_23);                // bb10[13]: scope 5 at src/treiber_stack.rs:56:61: 56:68
+        discriminant(_23) = 1;           // bb10[14]: scope 5 at src/treiber_stack.rs:56:61: 56:68
+        StorageLive(_24);                // bb10[15]: scope 5 at src/treiber_stack.rs:56:70: 56:76
+        StorageLive(_25);                // bb10[16]: scope 5 at src/treiber_stack.rs:56:70: 56:76
+        _25 = &_2;                       // bb10[17]: scope 5 at src/treiber_stack.rs:56:70: 56:76
+        _24 = _25;                       // bb10[18]: scope 5 at src/treiber_stack.rs:56:70: 56:76
+        _19 = const crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::compare_and_set::<std::sync::atomic::Ordering, crossbeam_epoch::Shared<treiber_stack::Node<T>>>(move _20, move _21, move _22, move _23, move _24) -> [return: bb11, unwind: bb4]; // bb10[19]: scope 5 at src/treiber_stack.rs:55:24: 56:77
+                                         // ty::Const
+                                         // + ty: for<'r, 's, 'g> fn(&'r crossbeam_epoch::Atomic<treiber_stack::Node<T>>, crossbeam_epoch::Shared<'s, treiber_stack::Node<T>>, crossbeam_epoch::Shared<treiber_stack::Node<T>>, std::sync::atomic::Ordering, &'g crossbeam_epoch::Guard) -> std::result::Result<crossbeam_epoch::Shared<'g, treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<'g, treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>> {crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::compare_and_set::<std::sync::atomic::Ordering, crossbeam_epoch::Shared<treiber_stack::Node<T>>>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/treiber_stack.rs:56:26: 56:41
+                                         // + ty: for<'r, 's, 'g> fn(&'r crossbeam_epoch::Atomic<treiber_stack::Node<T>>, crossbeam_epoch::Shared<'s, treiber_stack::Node<T>>, crossbeam_epoch::Shared<treiber_stack::Node<T>>, std::sync::atomic::Ordering, &'g crossbeam_epoch::Guard) -> std::result::Result<crossbeam_epoch::Shared<'g, treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<'g, treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>> {crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::compare_and_set::<std::sync::atomic::Ordering, crossbeam_epoch::Shared<treiber_stack::Node<T>>>}
+                                         // + literal: Const { ty: for<'r, 's, 'g> fn(&'r crossbeam_epoch::Atomic<treiber_stack::Node<T>>, crossbeam_epoch::Shared<'s, treiber_stack::Node<T>>, crossbeam_epoch::Shared<treiber_stack::Node<T>>, std::sync::atomic::Ordering, &'g crossbeam_epoch::Guard) -> std::result::Result<crossbeam_epoch::Shared<'g, treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<'g, treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>> {crossbeam_epoch::Atomic::<treiber_stack::Node<T>>::compare_and_set::<std::sync::atomic::Ordering, crossbeam_epoch::Shared<treiber_stack::Node<T>>>}, val: Scalar(<ZST>) }
+    }
+
+    bb11: {
+        _18 = &_19;                      // bb11[0]: scope 5 at src/treiber_stack.rs:55:24: 56:77
+        StorageDead(_24);                // bb11[1]: scope 5 at src/treiber_stack.rs:56:76: 56:77
+        StorageDead(_23);                // bb11[2]: scope 5 at src/treiber_stack.rs:56:76: 56:77
+        StorageDead(_22);                // bb11[3]: scope 5 at src/treiber_stack.rs:56:76: 56:77
+        StorageDead(_21);                // bb11[4]: scope 5 at src/treiber_stack.rs:56:76: 56:77
+        StorageDead(_20);                // bb11[5]: scope 5 at src/treiber_stack.rs:56:76: 56:77
+        _17 = const std::result::Result::<crossbeam_epoch::Shared<treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>>::is_ok(move _18) -> [return: bb12, unwind: bb4]; // bb11[6]: scope 5 at src/treiber_stack.rs:55:24: 57:33
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r std::result::Result<crossbeam_epoch::Shared<treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>>) -> bool {std::result::Result::<crossbeam_epoch::Shared<treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>>::is_ok}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/treiber_stack.rs:57:26: 57:31
+                                         // + ty: for<'r> fn(&'r std::result::Result<crossbeam_epoch::Shared<treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>>) -> bool {std::result::Result::<crossbeam_epoch::Shared<treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>>::is_ok}
+                                         // + literal: Const { ty: for<'r> fn(&'r std::result::Result<crossbeam_epoch::Shared<treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>>) -> bool {std::result::Result::<crossbeam_epoch::Shared<treiber_stack::Node<T>>, crossbeam_epoch::CompareAndSetError<treiber_stack::Node<T>, crossbeam_epoch::Shared<treiber_stack::Node<T>>>>::is_ok}, val: Scalar(<ZST>) }
+    }
+
+    bb12: {
+        StorageDead(_25);                // bb12[0]: scope 5 at src/treiber_stack.rs:57:32: 57:33
+        StorageDead(_19);                // bb12[1]: scope 5 at src/treiber_stack.rs:57:32: 57:33
+        StorageDead(_18);                // bb12[2]: scope 5 at src/treiber_stack.rs:57:32: 57:33
+        switchInt(_17) -> [false: bb13, otherwise: bb14]; // bb12[3]: scope 5 at src/treiber_stack.rs:55:21: 63:22
+    }
+
+    bb13: {
+        StorageDead(_12);                // bb13[0]: scope 4 at src/treiber_stack.rs:64:17: 64:18
+        StorageDead(_17);                // bb13[1]: scope 4 at src/treiber_stack.rs:64:17: 64:18
+        StorageDead(_11);                // bb13[2]: scope 2 at src/treiber_stack.rs:65:20: 65:21
+        StorageDead(_3);                 // bb13[3]: scope 1 at src/treiber_stack.rs:67:9: 67:10
+        StorageDead(_8);                 // bb13[4]: scope 1 at src/treiber_stack.rs:67:9: 67:10
+        goto -> bb3;                     // bb13[5]: scope 1 at src/treiber_stack.rs:50:9: 67:10
+    }
+
+    bb14: {
+        StorageLive(_26);                // bb14[0]: scope 6 at src/treiber_stack.rs:60:29: 60:74
+        StorageLive(_27);                // bb14[1]: scope 6 at src/treiber_stack.rs:60:29: 60:34
+        _27 = &_2;                       // bb14[2]: scope 6 at src/treiber_stack.rs:60:29: 60:34
+        StorageLive(_28);                // bb14[3]: scope 6 at src/treiber_stack.rs:60:41: 60:73
+        (_28.0: crossbeam_epoch::Shared<treiber_stack::Node<T>>) = _3; // bb14[4]: scope 6 at src/treiber_stack.rs:60:41: 60:73
+        _26 = const crossbeam_epoch::Guard::defer::<[closure@src/treiber_stack.rs:60:41: 60:73 head_shared:crossbeam_epoch::Shared<treiber_stack::Node<T>>], crossbeam_epoch::Owned<treiber_stack::Node<T>>>(move _27, move _28) -> [return: bb15, unwind: bb4]; // bb14[5]: scope 6 at src/treiber_stack.rs:60:29: 60:74
+                                         // ty::Const
+                                         // + ty: for<'r> unsafe fn(&'r crossbeam_epoch::Guard, [closure@src/treiber_stack.rs:60:41: 60:73 head_shared:crossbeam_epoch::Shared<treiber_stack::Node<T>>]) {crossbeam_epoch::Guard::defer::<[closure@src/treiber_stack.rs:60:41: 60:73 head_shared:crossbeam_epoch::Shared<treiber_stack::Node<T>>], crossbeam_epoch::Owned<treiber_stack::Node<T>>>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/treiber_stack.rs:60:35: 60:40
+                                         // + ty: for<'r> unsafe fn(&'r crossbeam_epoch::Guard, [closure@src/treiber_stack.rs:60:41: 60:73 head_shared:crossbeam_epoch::Shared<treiber_stack::Node<T>>]) {crossbeam_epoch::Guard::defer::<[closure@src/treiber_stack.rs:60:41: 60:73 head_shared:crossbeam_epoch::Shared<treiber_stack::Node<T>>], crossbeam_epoch::Owned<treiber_stack::Node<T>>>}
+                                         // + literal: Const { ty: for<'r> unsafe fn(&'r crossbeam_epoch::Guard, [closure@src/treiber_stack.rs:60:41: 60:73 head_shared:crossbeam_epoch::Shared<treiber_stack::Node<T>>]) {crossbeam_epoch::Guard::defer::<[closure@src/treiber_stack.rs:60:41: 60:73 head_shared:crossbeam_epoch::Shared<treiber_stack::Node<T>>], crossbeam_epoch::Owned<treiber_stack::Node<T>>>}, val: Scalar(<ZST>) }
+    }
+
+    bb15: {
+        StorageDead(_28);                // bb15[0]: scope 6 at src/treiber_stack.rs:60:73: 60:74
+        StorageDead(_27);                // bb15[1]: scope 6 at src/treiber_stack.rs:60:73: 60:74
+        StorageDead(_26);                // bb15[2]: scope 6 at src/treiber_stack.rs:60:74: 60:75
+        StorageLive(_29);                // bb15[3]: scope 6 at src/treiber_stack.rs:61:41: 61:65
+        StorageLive(_30);                // bb15[4]: scope 6 at src/treiber_stack.rs:61:51: 61:64
+        StorageLive(_31);                // bb15[5]: scope 6 at src/treiber_stack.rs:61:51: 61:64
+        StorageLive(_32);                // bb15[6]: scope 6 at src/treiber_stack.rs:61:51: 61:64
+        _32 = &((*_11).0: T);            // bb15[7]: scope 6 at src/treiber_stack.rs:61:51: 61:64
+        _31 = _32;                       // bb15[8]: scope 6 at src/treiber_stack.rs:61:51: 61:64
+        _30 = move _31 as *const T (Misc); // bb15[9]: scope 6 at src/treiber_stack.rs:61:51: 61:64
+        StorageDead(_31);                // bb15[10]: scope 6 at src/treiber_stack.rs:61:63: 61:64
+        _29 = const std::ptr::read::<T>(move _30) -> [return: bb16, unwind: bb4]; // bb15[11]: scope 6 at src/treiber_stack.rs:61:41: 61:65
+                                         // ty::Const
+                                         // + ty: unsafe fn(*const T) -> T {std::ptr::read::<T>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/treiber_stack.rs:61:41: 61:50
+                                         // + ty: unsafe fn(*const T) -> T {std::ptr::read::<T>}
+                                         // + literal: Const { ty: unsafe fn(*const T) -> T {std::ptr::read::<T>}, val: Scalar(<ZST>) }
+    }
+
+    bb16: {
+        StorageDead(_30);                // bb16[0]: scope 6 at src/treiber_stack.rs:61:64: 61:65
+        ((_0 as Some).0: T) = move _29;  // bb16[1]: scope 6 at src/treiber_stack.rs:61:36: 61:66
+        discriminant(_0) = 1;            // bb16[2]: scope 6 at src/treiber_stack.rs:61:36: 61:66
+        StorageDead(_29);                // bb16[3]: scope 6 at src/treiber_stack.rs:61:65: 61:66
+        StorageDead(_32);                // bb16[4]: scope 6 at src/treiber_stack.rs:61:66: 61:67
+        StorageDead(_12);                // bb16[5]: scope 4 at src/treiber_stack.rs:64:17: 64:18
+        StorageDead(_17);                // bb16[6]: scope 4 at src/treiber_stack.rs:64:17: 64:18
+        StorageDead(_11);                // bb16[7]: scope 2 at src/treiber_stack.rs:65:20: 65:21
+        goto -> bb17;                    // bb16[8]: scope 1 at src/treiber_stack.rs:61:29: 61:66
+    }
+
+    bb17: {
+        StorageDead(_3);                 // bb17[0]: scope 1 at src/treiber_stack.rs:67:9: 67:10
+        StorageDead(_8);                 // bb17[1]: scope 1 at src/treiber_stack.rs:67:9: 67:10
+        drop(_2) -> bb18;                // bb17[2]: scope 0 at src/treiber_stack.rs:68:5: 68:6
+    }
+
+    bb18: {
+        StorageDead(_2);                 // bb18[0]: scope 0 at src/treiber_stack.rs:68:5: 68:6
+        return;                          // bb18[1]: scope 0 at src/treiber_stack.rs:68:6: 68:6
+    }
+}

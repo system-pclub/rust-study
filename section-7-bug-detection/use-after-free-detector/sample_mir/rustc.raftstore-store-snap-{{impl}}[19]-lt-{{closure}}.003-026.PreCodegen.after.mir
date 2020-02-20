@@ -1,0 +1,90 @@
+// MIR for `raftstore::store::snap::<impl at src/raftstore/store/snap.rs:99:38: 99:48>::lt::{{closure}}#0`
+// source = MirSource { instance: Item(DefId(0:14008 ~ tikv[95e1]::raftstore[0]::store[0]::snap[0]::{{impl}}[19]::lt[0]::{{closure}}[0])), promoted: None }
+// pass_name = PreCodegen
+// disambiguator = after
+
+| User Type Annotations
+| 0: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Ty(General(U0)) }], value: TypeOf(DefId(2:2054 ~ core[84eb]::cmp[0]::{{impl}}[0]::then_with[0]), UserSubsts { substs: [^0], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(2:2051 ~ core[84eb]::cmp[0]::{{impl}}[0]), self_ty: std::cmp::Ordering }) }) } at src/raftstore/store/snap.rs:102:5: 102:18
+| 1: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Ty(General(U0)) }, CanonicalVarInfo { kind: Ty(General(U0)) }], value: TypeOf(DefId(2:4781 ~ core[84eb]::option[0]::{{impl}}[0]::unwrap_or[0]), UserSubsts { substs: [^0], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(2:4765 ~ core[84eb]::option[0]::{{impl}}[0]), self_ty: std::option::Option<^1> }) }) } at src/raftstore/store/snap.rs:102:5: 102:18
+|
+fn  raftstore::store::snap::<impl at src/raftstore/store/snap.rs:99:38: 99:48>::lt::{{closure}}#0(_1: [closure@src/raftstore/store/snap.rs:101:5: 101:23 __self_0_1:&&u64, __self_1_1:&&u64, __self_0_2:&&u64, __self_1_2:&&u64]) -> std::cmp::Ordering {
+    let mut _0: std::cmp::Ordering;      // return place in scope 0 at src/raftstore/store/snap.rs:101:5: 101:23
+    let mut _2: std::cmp::Ordering;      // in scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+    let mut _3: std::option::Option<std::cmp::Ordering>; // in scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+    let mut _4: &u64;                    // in scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+    let mut _5: &u64;                    // in scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+    let mut _6: &u64;                    // in scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+    let mut _7: &u64;                    // in scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+    let mut _8: std::cmp::Ordering;      // in scope 0 at src/raftstore/store/snap.rs:99:38: 99:48
+    let mut _9: [closure@src/raftstore/store/snap.rs:102:5: 102:18 __self_0_2:&&u64, __self_1_2:&&u64]; // in scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+    let mut _10: &&u64;                  // in scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+    let mut _11: &&u64;                  // in scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+
+    bb0: {
+        StorageLive(_2);                 // bb0[0]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        StorageLive(_3);                 // bb0[1]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        StorageLive(_4);                 // bb0[2]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        StorageLive(_5);                 // bb0[3]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        _5 = (*(_1.0: &&u64));           // bb0[4]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        _4 = _5;                         // bb0[5]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        StorageLive(_6);                 // bb0[6]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        StorageLive(_7);                 // bb0[7]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        _7 = (*(_1.1: &&u64));           // bb0[8]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        _6 = _7;                         // bb0[9]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        _3 = const <u64 as std::cmp::PartialOrd>::partial_cmp(move _4, move _6) -> bb1; // bb0[10]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+                                         // ty::Const
+                                         // + ty: for<'r, 's> fn(&'r u64, &'s u64) -> std::option::Option<std::cmp::Ordering> {<u64 as std::cmp::PartialOrd>::partial_cmp}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/raftstore/store/snap.rs:102:5: 102:18
+                                         // + ty: for<'r, 's> fn(&'r u64, &'s u64) -> std::option::Option<std::cmp::Ordering> {<u64 as std::cmp::PartialOrd>::partial_cmp}
+                                         // + literal: Const { ty: for<'r, 's> fn(&'r u64, &'s u64) -> std::option::Option<std::cmp::Ordering> {<u64 as std::cmp::PartialOrd>::partial_cmp}, val: Scalar(<ZST>) }
+    }
+
+    bb1: {
+        StorageDead(_6);                 // bb1[0]: scope 0 at src/raftstore/store/snap.rs:102:17: 102:18
+        StorageDead(_4);                 // bb1[1]: scope 0 at src/raftstore/store/snap.rs:102:17: 102:18
+        StorageLive(_8);                 // bb1[2]: scope 0 at src/raftstore/store/snap.rs:99:38: 99:48
+        discriminant(_8) = 1;            // bb1[3]: scope 0 at src/raftstore/store/snap.rs:99:38: 99:48
+        _2 = const std::option::Option::<std::cmp::Ordering>::unwrap_or(move _3, move _8) -> bb2; // bb1[4]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+                                         // ty::Const
+                                         // + ty: fn(std::option::Option<std::cmp::Ordering>, std::cmp::Ordering) -> std::cmp::Ordering {std::option::Option::<std::cmp::Ordering>::unwrap_or}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/raftstore/store/snap.rs:102:5: 102:18
+                                         // + ty: fn(std::option::Option<std::cmp::Ordering>, std::cmp::Ordering) -> std::cmp::Ordering {std::option::Option::<std::cmp::Ordering>::unwrap_or}
+                                         // + user_ty: UserType(1)
+                                         // + literal: Const { ty: fn(std::option::Option<std::cmp::Ordering>, std::cmp::Ordering) -> std::cmp::Ordering {std::option::Option::<std::cmp::Ordering>::unwrap_or}, val: Scalar(<ZST>) }
+    }
+
+    bb2: {
+        StorageDead(_8);                 // bb2[0]: scope 0 at src/raftstore/store/snap.rs:102:17: 102:18
+        StorageDead(_3);                 // bb2[1]: scope 0 at src/raftstore/store/snap.rs:102:17: 102:18
+        StorageLive(_9);                 // bb2[2]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        StorageLive(_10);                // bb2[3]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        _10 = (_1.2: &&u64);             // bb2[4]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        StorageLive(_11);                // bb2[5]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        _11 = (_1.3: &&u64);             // bb2[6]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        (_9.0: &&u64) = move _10;        // bb2[7]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        (_9.1: &&u64) = move _11;        // bb2[8]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+        StorageDead(_11);                // bb2[9]: scope 0 at src/raftstore/store/snap.rs:102:17: 102:18
+        StorageDead(_10);                // bb2[10]: scope 0 at src/raftstore/store/snap.rs:102:17: 102:18
+        _0 = const std::cmp::Ordering::then_with::<[closure@src/raftstore/store/snap.rs:102:5: 102:18 __self_0_2:&&u64, __self_1_2:&&u64]>(move _2, move _9) -> bb3; // bb2[11]: scope 0 at src/raftstore/store/snap.rs:102:5: 102:18
+                                         // ty::Const
+                                         // + ty: fn(std::cmp::Ordering, [closure@src/raftstore/store/snap.rs:102:5: 102:18 __self_0_2:&&u64, __self_1_2:&&u64]) -> std::cmp::Ordering {std::cmp::Ordering::then_with::<[closure@src/raftstore/store/snap.rs:102:5: 102:18 __self_0_2:&&u64, __self_1_2:&&u64]>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/raftstore/store/snap.rs:102:5: 102:18
+                                         // + ty: fn(std::cmp::Ordering, [closure@src/raftstore/store/snap.rs:102:5: 102:18 __self_0_2:&&u64, __self_1_2:&&u64]) -> std::cmp::Ordering {std::cmp::Ordering::then_with::<[closure@src/raftstore/store/snap.rs:102:5: 102:18 __self_0_2:&&u64, __self_1_2:&&u64]>}
+                                         // + user_ty: UserType(0)
+                                         // + literal: Const { ty: fn(std::cmp::Ordering, [closure@src/raftstore/store/snap.rs:102:5: 102:18 __self_0_2:&&u64, __self_1_2:&&u64]) -> std::cmp::Ordering {std::cmp::Ordering::then_with::<[closure@src/raftstore/store/snap.rs:102:5: 102:18 __self_0_2:&&u64, __self_1_2:&&u64]>}, val: Scalar(<ZST>) }
+    }
+
+    bb3: {
+        StorageDead(_9);                 // bb3[0]: scope 0 at src/raftstore/store/snap.rs:102:17: 102:18
+        StorageDead(_7);                 // bb3[1]: scope 0 at src/raftstore/store/snap.rs:102:17: 102:18
+        StorageDead(_5);                 // bb3[2]: scope 0 at src/raftstore/store/snap.rs:102:17: 102:18
+        StorageDead(_2);                 // bb3[3]: scope 0 at src/raftstore/store/snap.rs:102:17: 102:18
+        return;                          // bb3[4]: scope 0 at src/raftstore/store/snap.rs:101:23: 101:23
+    }
+}

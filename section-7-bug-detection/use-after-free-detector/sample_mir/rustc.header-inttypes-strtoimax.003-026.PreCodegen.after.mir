@@ -1,0 +1,881 @@
+// MIR for `header::inttypes::strtoimax`
+// source = MirSource { instance: Item(DefId(0:768 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0])), promoted: None }
+// pass_name = PreCodegen
+// disambiguator = after
+
+fn  header::inttypes::strtoimax(_1: *const i8, _2: *mut *mut i8, _3: i32) -> i64 {
+    let mut _0: i64;                     // return place in scope 0 at src/header/inttypes/mod.rs:31:6: 31:14
+    let _4: [closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]; // "set_endptr" in scope 0 at src/macros.rs:138:13: 138:23
+    let mut _5: &*mut *mut i8;           // in scope 0 at src/macros.rs:138:26: 146:10
+    let mut _6: &*const i8;              // in scope 0 at src/macros.rs:138:26: 146:10
+    let mut _8: &[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]; // in scope 0 at src/macros.rs:148:29: 151:10
+    let mut _9: bool;                    // in scope 0 at src/macros.rs:154:12: 154:51
+    let mut _10: bool;                   // in scope 0 at src/macros.rs:154:12: 154:22
+    let mut _11: i32;                    // in scope 0 at src/macros.rs:154:12: 154:17
+    let mut _12: bool;                   // in scope 0 at src/macros.rs:154:26: 154:51
+    let mut _13: bool;                   // in scope 0 at src/macros.rs:154:27: 154:36
+    let mut _14: i32;                    // in scope 0 at src/macros.rs:154:27: 154:32
+    let mut _15: bool;                   // in scope 0 at src/macros.rs:154:40: 154:50
+    let mut _16: i32;                    // in scope 0 at src/macros.rs:154:40: 154:45
+    let _17: ();                         // in scope 0 at src/macros.rs:155:13: 155:28
+    let mut _18: &[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]]; // in scope 0 at src/macros.rs:155:13: 155:26
+    let mut _19: ();                     // in scope 0 at src/macros.rs:155:13: 155:28
+    let mut _21: bool;                   // in scope 0 at src/macros.rs:162:15: 162:60
+    let mut _22: i32;                    // in scope 0 at src/macros.rs:162:15: 162:55
+    let mut _23: i32;                    // in scope 0 at src/macros.rs:162:30: 162:54
+    let mut _24: i8;                     // in scope 0 at src/macros.rs:162:30: 162:45
+    let mut _25: *const i8;              // in scope 0 at src/macros.rs:162:31: 162:45
+    let mut _26: *const i8;              // in scope 0 at src/macros.rs:162:31: 162:33
+    let mut _27: isize;                  // in scope 0 at src/macros.rs:162:41: 162:44
+    let mut _28: (isize, bool);          // in scope 0 at src/macros.rs:163:13: 163:21
+    let mut _30: core::option::Option<(bool, isize)>; // in scope 0 at src/macros.rs:167:30: 167:58
+    let mut _31: i8;                     // in scope 0 at src/macros.rs:167:42: 167:57
+    let mut _32: *const i8;              // in scope 0 at src/macros.rs:167:43: 167:57
+    let mut _33: *const i8;              // in scope 0 at src/macros.rs:167:43: 167:45
+    let mut _34: isize;                  // in scope 0 at src/macros.rs:167:53: 167:56
+    let mut _35: isize;                  // in scope 0 at src/macros.rs:168:13: 168:27
+    let mut _38: isize;                  // in scope 0 at src/macros.rs:169:24: 169:25
+    let mut _39: (isize, bool);          // in scope 0 at src/macros.rs:169:17: 169:25
+    let _40: ();                         // in scope 0 at src/macros.rs:173:17: 173:32
+    let mut _41: &[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]]; // in scope 0 at src/macros.rs:173:17: 173:30
+    let mut _42: ();                     // in scope 0 at src/macros.rs:173:17: 173:32
+    let mut _44: *const i8;              // in scope 0 at src/macros.rs:179:23: 179:25
+    let mut _45: isize;                  // in scope 0 at src/macros.rs:179:33: 179:36
+    let mut _47: core::option::Option<(i32, isize)>; // in scope 0 at src/macros.rs:181:18: 181:38
+    let mut _48: *const i8;              // in scope 0 at src/macros.rs:181:30: 181:37
+    let mut _49: [closure@src/macros.rs:182:27: 182:81 num_str:&*const i8]; // in scope 0 at src/macros.rs:182:27: 182:81
+    let mut _50: &*const i8;             // in scope 0 at src/macros.rs:182:27: 182:81
+    let mut _51: *const i8;              // in scope 0 at src/macros.rs:183:32: 183:39
+    let mut _52: *const i8;              // in scope 0 at src/macros.rs:184:31: 184:38
+    let mut _53: *const i8;              // in scope 0 at src/macros.rs:185:34: 185:41
+    let mut _54: i32;                    // in scope 0 at src/macros.rs:185:43: 185:48
+    let mut _58: (u64, isize, bool);     // in scope 0 at src/macros.rs:190:34: 196:10
+    let mut _59: isize;                  // in scope 0 at src/macros.rs:191:13: 191:22
+    let _61: ();                         // in scope 0 at src/macros.rs:193:17: 193:32
+    let mut _62: &[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]]; // in scope 0 at src/macros.rs:193:17: 193:30
+    let mut _63: ();                     // in scope 0 at src/macros.rs:193:17: 193:32
+    let mut _64: isize;                  // in scope 0 at src/macros.rs:197:16: 197:17
+    let mut _65: (isize, bool);          // in scope 0 at src/macros.rs:197:9: 197:17
+    let mut _67: bool;                   // in scope 0 at src/macros.rs:199:27: 199:37
+    let mut _68: bool;                   // in scope 0 at src/macros.rs:200:13: 200:21
+    let mut _69: bool;                   // in scope 0 at src/macros.rs:200:25: 200:54
+    let mut _70: i64;                    // in scope 0 at src/macros.rs:200:25: 200:40
+    let mut _71: u64;                    // in scope 0 at src/macros.rs:200:26: 200:29
+    let mut _73: u64;                    // in scope 0 at src/macros.rs:205:19: 205:22
+    let mut _75: bool;                   // in scope 0 at src/macros.rs:206:22: 206:30
+    let mut _76: bool;                   // in scope 0 at src/macros.rs:208:16: 208:26
+    let mut _77: bool;                   // in scope 0 at src/macros.rs:209:20: 209:28
+    let mut _78: bool;                   // in scope 0 at src/macros.rs:218:16: 218:24
+    let mut _79: (i64, bool);            // in scope 0 at src/macros.rs:222:17: 222:38
+    let mut _80: i64;                    // in scope 0 at src/macros.rs:222:17: 222:20
+    let _81: ();                         // in scope 0 at src/macros.rs:226:9: 226:24
+    let mut _82: &[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]; // in scope 0 at src/macros.rs:226:9: 226:19
+    let mut _83: (isize,);               // in scope 0 at src/macros.rs:226:9: 226:24
+    let mut _84: isize;                  // in scope 0 at src/macros.rs:226:20: 226:23
+    scope 1 {
+        let _7: [closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]]; // "invalid_input" in scope 1 at src/macros.rs:148:13: 148:26
+        scope 2 {
+            let mut _20: isize;          // "idx" in scope 2 at src/macros.rs:159:13: 159:20
+            scope 3 {
+                let _29: bool;           // "positive" in scope 3 at src/macros.rs:167:13: 167:21
+                let _36: bool;           // "pos" in scope 3 at src/macros.rs:168:19: 168:22
+                let _37: isize;          // "i" in scope 3 at src/macros.rs:168:24: 168:25
+                scope 4 {
+                    let _43: *const i8;  // "num_str" in scope 4 at src/macros.rs:179:13: 179:20
+                    scope 6 {
+                        let _46: core::option::Option<(u64, isize, bool)>; // "res" in scope 6 at src/macros.rs:180:13: 180:16
+                        scope 7 {
+                            let _55: u64; // "num" in scope 7 at src/macros.rs:190:14: 190:17
+                            let _56: isize; // "i" in scope 7 at src/macros.rs:190:19: 190:20
+                            let _57: bool; // "overflow" in scope 7 at src/macros.rs:190:22: 190:30
+                            let _60: (u64, isize, bool); // "res" in scope 7 at src/macros.rs:191:18: 191:21
+                            scope 8 {
+                                let _66: bool; // "overflow" in scope 8 at src/macros.rs:199:13: 199:21
+                                scope 10 {
+                                    let _72: i64; // "num" in scope 10 at src/macros.rs:205:13: 205:16
+                                    scope 11 {
+                                        let _74: i64; // "num" in scope 11 at src/macros.rs:206:13: 206:16
+                                        scope 12 {
+                                        }
+                                    }
+                                }
+                            }
+                            scope 9 {
+                            }
+                        }
+                    }
+                }
+                scope 5 {
+                }
+            }
+        }
+    }
+
+    bb0: {
+        StorageLive(_4);                 // bb0[0]: scope 0 at src/macros.rs:138:13: 138:23
+        StorageLive(_5);                 // bb0[1]: scope 0 at src/macros.rs:138:26: 146:10
+        _5 = &_2;                        // bb0[2]: scope 0 at src/macros.rs:138:26: 146:10
+        StorageLive(_6);                 // bb0[3]: scope 0 at src/macros.rs:138:26: 146:10
+        _6 = &_1;                        // bb0[4]: scope 0 at src/macros.rs:138:26: 146:10
+        (_4.0: &*mut *mut i8) = move _5; // bb0[5]: scope 0 at src/macros.rs:138:26: 146:10
+        (_4.1: &*const i8) = move _6;    // bb0[6]: scope 0 at src/macros.rs:138:26: 146:10
+        StorageDead(_6);                 // bb0[7]: scope 0 at src/macros.rs:146:9: 146:10
+        StorageDead(_5);                 // bb0[8]: scope 0 at src/macros.rs:146:9: 146:10
+        StorageLive(_7);                 // bb0[9]: scope 1 at src/macros.rs:148:13: 148:26
+        StorageLive(_8);                 // bb0[10]: scope 1 at src/macros.rs:148:29: 151:10
+        _8 = &_4;                        // bb0[11]: scope 1 at src/macros.rs:148:29: 151:10
+        (_7.0: &[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]) = move _8; // bb0[12]: scope 1 at src/macros.rs:148:29: 151:10
+        StorageDead(_8);                 // bb0[13]: scope 1 at src/macros.rs:151:9: 151:10
+        StorageLive(_9);                 // bb0[14]: scope 2 at src/macros.rs:154:12: 154:51
+        StorageLive(_10);                // bb0[15]: scope 2 at src/macros.rs:154:12: 154:22
+        StorageLive(_11);                // bb0[16]: scope 2 at src/macros.rs:154:12: 154:17
+        _11 = _3;                        // bb0[17]: scope 2 at src/macros.rs:154:12: 154:17
+        _10 = Ne(move _11, const 0i32);  // bb0[18]: scope 2 at src/macros.rs:154:12: 154:22
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000000)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:154:21: 154:22
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000000) }
+        StorageDead(_11);                // bb0[19]: scope 2 at src/macros.rs:154:21: 154:22
+        switchInt(move _10) -> [false: bb2, otherwise: bb3]; // bb0[20]: scope 2 at src/macros.rs:154:12: 154:51
+    }
+
+    bb1: {
+        _9 = const true;                 // bb1[0]: scope 2 at src/macros.rs:154:12: 154:51
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x01)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:154:12: 154:51
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x01) }
+        goto -> bb4;                     // bb1[1]: scope 2 at src/macros.rs:154:12: 154:51
+    }
+
+    bb2: {
+        _9 = const false;                // bb2[0]: scope 2 at src/macros.rs:154:12: 154:51
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:154:12: 154:51
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        goto -> bb4;                     // bb2[1]: scope 2 at src/macros.rs:154:12: 154:51
+    }
+
+    bb3: {
+        StorageLive(_12);                // bb3[0]: scope 2 at src/macros.rs:154:26: 154:51
+        StorageLive(_13);                // bb3[1]: scope 2 at src/macros.rs:154:27: 154:36
+        StorageLive(_14);                // bb3[2]: scope 2 at src/macros.rs:154:27: 154:32
+        _14 = _3;                        // bb3[3]: scope 2 at src/macros.rs:154:27: 154:32
+        _13 = Lt(move _14, const 2i32);  // bb3[4]: scope 2 at src/macros.rs:154:27: 154:36
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000002)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:154:35: 154:36
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000002) }
+        StorageDead(_14);                // bb3[5]: scope 2 at src/macros.rs:154:35: 154:36
+        switchInt(move _13) -> [false: bb7, otherwise: bb5]; // bb3[6]: scope 2 at src/macros.rs:154:26: 154:51
+    }
+
+    bb4: {
+        StorageDead(_12);                // bb4[0]: scope 2 at src/macros.rs:154:50: 154:51
+        StorageDead(_10);                // bb4[1]: scope 2 at src/macros.rs:154:50: 154:51
+        switchInt(_9) -> [false: bb9, otherwise: bb10]; // bb4[2]: scope 2 at src/macros.rs:154:9: 157:10
+    }
+
+    bb5: {
+        _12 = const true;                // bb5[0]: scope 2 at src/macros.rs:154:26: 154:51
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x01)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:154:26: 154:51
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x01) }
+        goto -> bb8;                     // bb5[1]: scope 2 at src/macros.rs:154:26: 154:51
+    }
+
+    bb6: {
+        _12 = const false;               // bb6[0]: scope 2 at src/macros.rs:154:26: 154:51
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:154:26: 154:51
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        goto -> bb8;                     // bb6[1]: scope 2 at src/macros.rs:154:26: 154:51
+    }
+
+    bb7: {
+        StorageLive(_15);                // bb7[0]: scope 2 at src/macros.rs:154:40: 154:50
+        StorageLive(_16);                // bb7[1]: scope 2 at src/macros.rs:154:40: 154:45
+        _16 = _3;                        // bb7[2]: scope 2 at src/macros.rs:154:40: 154:45
+        _15 = Gt(move _16, const 36i32); // bb7[3]: scope 2 at src/macros.rs:154:40: 154:50
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000024)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:154:48: 154:50
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000024) }
+        StorageDead(_16);                // bb7[4]: scope 2 at src/macros.rs:154:49: 154:50
+        switchInt(move _15) -> [false: bb6, otherwise: bb5]; // bb7[5]: scope 2 at src/macros.rs:154:26: 154:51
+    }
+
+    bb8: {
+        StorageDead(_15);                // bb8[0]: scope 2 at src/macros.rs:154:50: 154:51
+        StorageDead(_13);                // bb8[1]: scope 2 at src/macros.rs:154:50: 154:51
+        switchInt(move _12) -> [false: bb2, otherwise: bb1]; // bb8[2]: scope 2 at src/macros.rs:154:12: 154:51
+    }
+
+    bb9: {
+        StorageDead(_9);                 // bb9[0]: scope 2 at src/macros.rs:157:9: 157:10
+        StorageLive(_20);                // bb9[1]: scope 2 at src/macros.rs:159:13: 159:20
+        _20 = const 0isize;              // bb9[2]: scope 2 at src/macros.rs:159:23: 159:24
+                                         // ty::Const
+                                         // + ty: isize
+                                         // + val: Scalar(0x0000000000000000)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:159:23: 159:24
+                                         // + ty: isize
+                                         // + literal: Const { ty: isize, val: Scalar(0x0000000000000000) }
+        goto -> bb14;                    // bb9[3]: scope 3 at src/macros.rs:162:9: 164:10
+    }
+
+    bb10: {
+        StorageLive(_17);                // bb10[0]: scope 2 at src/macros.rs:155:13: 155:28
+        StorageLive(_18);                // bb10[1]: scope 2 at src/macros.rs:155:13: 155:26
+        _18 = &_7;                       // bb10[2]: scope 2 at src/macros.rs:155:13: 155:26
+        StorageLive(_19);                // bb10[3]: scope 2 at src/macros.rs:155:13: 155:28
+        _17 = const <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call(move _18, move _19) -> bb11; // bb10[4]: scope 2 at src/macros.rs:155:13: 155:28
+                                         // ty::Const
+                                         // + ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]], ()) -> <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::FnOnce<()>>::Output {<[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:155:13: 155:26
+                                         // + ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]], ()) -> <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::FnOnce<()>>::Output {<[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call}
+                                         // + literal: Const { ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]], ()) -> <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::FnOnce<()>>::Output {<[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call}, val: Scalar(<ZST>) }
+    }
+
+    bb11: {
+        StorageDead(_19);                // bb11[0]: scope 2 at src/macros.rs:155:27: 155:28
+        StorageDead(_18);                // bb11[1]: scope 2 at src/macros.rs:155:27: 155:28
+        StorageDead(_17);                // bb11[2]: scope 2 at src/macros.rs:155:28: 155:29
+        _0 = const 0i64;                 // bb11[3]: scope 2 at src/macros.rs:156:20: 156:21
+                                         // ty::Const
+                                         // + ty: i64
+                                         // + val: Scalar(0x0000000000000000)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:156:20: 156:21
+                                         // + ty: i64
+                                         // + literal: Const { ty: i64, val: Scalar(0x0000000000000000) }
+        StorageDead(_9);                 // bb11[4]: scope 2 at src/macros.rs:157:9: 157:10
+        goto -> bb13;                    // bb11[5]: scope 1 at src/macros.rs:156:13: 156:21
+    }
+
+    bb12: {
+        return;                          // bb12[0]: scope 0 at src/header/inttypes/mod.rs:41:2: 41:2
+    }
+
+    bb13: {
+        StorageDead(_7);                 // bb13[0]: scope 1 at src/macros.rs:229:5: 229:6
+        StorageDead(_4);                 // bb13[1]: scope 0 at src/macros.rs:229:5: 229:6
+        goto -> bb12;                    // bb13[2]: scope 0 at src/macros.rs:156:13: 156:21
+    }
+
+    bb14: {
+        StorageLive(_21);                // bb14[0]: scope 3 at src/macros.rs:162:15: 162:60
+        StorageLive(_22);                // bb14[1]: scope 3 at src/macros.rs:162:15: 162:55
+        StorageLive(_23);                // bb14[2]: scope 3 at src/macros.rs:162:30: 162:54
+        StorageLive(_24);                // bb14[3]: scope 3 at src/macros.rs:162:30: 162:45
+        StorageLive(_25);                // bb14[4]: scope 3 at src/macros.rs:162:31: 162:45
+        StorageLive(_26);                // bb14[5]: scope 3 at src/macros.rs:162:31: 162:33
+        _26 = _1;                        // bb14[6]: scope 3 at src/macros.rs:162:31: 162:33
+        StorageLive(_27);                // bb14[7]: scope 3 at src/macros.rs:162:41: 162:44
+        _27 = _20;                       // bb14[8]: scope 3 at src/macros.rs:162:41: 162:44
+        _25 = const core::ptr::<impl *const i8>::offset(move _26, move _27) -> bb15; // bb14[9]: scope 3 at src/macros.rs:162:31: 162:45
+                                         // ty::Const
+                                         // + ty: unsafe fn(*const i8, isize) -> *const i8 {core::ptr::<impl *const i8>::offset}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:162:34: 162:40
+                                         // + ty: unsafe fn(*const i8, isize) -> *const i8 {core::ptr::<impl *const i8>::offset}
+                                         // + literal: Const { ty: unsafe fn(*const i8, isize) -> *const i8 {core::ptr::<impl *const i8>::offset}, val: Scalar(<ZST>) }
+    }
+
+    bb15: {
+        StorageDead(_27);                // bb15[0]: scope 3 at src/macros.rs:162:44: 162:45
+        StorageDead(_26);                // bb15[1]: scope 3 at src/macros.rs:162:44: 162:45
+        _24 = (*_25);                    // bb15[2]: scope 3 at src/macros.rs:162:30: 162:45
+        _23 = move _24 as i32 (Misc);    // bb15[3]: scope 3 at src/macros.rs:162:30: 162:54
+        StorageDead(_24);                // bb15[4]: scope 3 at src/macros.rs:162:53: 162:54
+        _22 = const header::ctype::isspace(move _23) -> bb16; // bb15[5]: scope 3 at src/macros.rs:162:15: 162:55
+                                         // ty::Const
+                                         // + ty: extern "C" fn(i32) -> i32 {header::ctype::isspace}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:162:15: 162:29
+                                         // + ty: extern "C" fn(i32) -> i32 {header::ctype::isspace}
+                                         // + literal: Const { ty: extern "C" fn(i32) -> i32 {header::ctype::isspace}, val: Scalar(<ZST>) }
+    }
+
+    bb16: {
+        StorageDead(_23);                // bb16[0]: scope 3 at src/macros.rs:162:54: 162:55
+        _21 = Ne(move _22, const 0i32);  // bb16[1]: scope 3 at src/macros.rs:162:15: 162:60
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000000)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:162:59: 162:60
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000000) }
+        StorageDead(_25);                // bb16[2]: scope 3 at src/macros.rs:162:59: 162:60
+        StorageDead(_22);                // bb16[3]: scope 3 at src/macros.rs:162:59: 162:60
+        switchInt(_21) -> [false: bb17, otherwise: bb18]; // bb16[4]: scope 3 at src/macros.rs:162:9: 164:10
+    }
+
+    bb17: {
+        StorageDead(_21);                // bb17[0]: scope 3 at src/macros.rs:162:59: 162:60
+        StorageLive(_29);                // bb17[1]: scope 3 at src/macros.rs:167:13: 167:21
+        StorageLive(_30);                // bb17[2]: scope 3 at src/macros.rs:167:30: 167:58
+        StorageLive(_31);                // bb17[3]: scope 3 at src/macros.rs:167:42: 167:57
+        StorageLive(_32);                // bb17[4]: scope 3 at src/macros.rs:167:43: 167:57
+        StorageLive(_33);                // bb17[5]: scope 3 at src/macros.rs:167:43: 167:45
+        _33 = _1;                        // bb17[6]: scope 3 at src/macros.rs:167:43: 167:45
+        StorageLive(_34);                // bb17[7]: scope 3 at src/macros.rs:167:53: 167:56
+        _34 = _20;                       // bb17[8]: scope 3 at src/macros.rs:167:53: 167:56
+        _32 = const core::ptr::<impl *const i8>::offset(move _33, move _34) -> bb20; // bb17[9]: scope 3 at src/macros.rs:167:43: 167:57
+                                         // ty::Const
+                                         // + ty: unsafe fn(*const i8, isize) -> *const i8 {core::ptr::<impl *const i8>::offset}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:167:46: 167:52
+                                         // + ty: unsafe fn(*const i8, isize) -> *const i8 {core::ptr::<impl *const i8>::offset}
+                                         // + literal: Const { ty: unsafe fn(*const i8, isize) -> *const i8 {core::ptr::<impl *const i8>::offset}, val: Scalar(<ZST>) }
+    }
+
+    bb18: {
+        _28 = CheckedAdd(_20, const 1isize); // bb18[0]: scope 3 at src/macros.rs:163:13: 163:21
+                                         // ty::Const
+                                         // + ty: isize
+                                         // + val: Scalar(0x0000000000000001)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:163:20: 163:21
+                                         // + ty: isize
+                                         // + literal: Const { ty: isize, val: Scalar(0x0000000000000001) }
+        assert(!move (_28.1: bool), "attempt to add with overflow") -> bb19; // bb18[1]: scope 3 at src/macros.rs:163:13: 163:21
+    }
+
+    bb19: {
+        _20 = move (_28.0: isize);       // bb19[0]: scope 3 at src/macros.rs:163:13: 163:21
+        StorageDead(_21);                // bb19[1]: scope 3 at src/macros.rs:162:59: 162:60
+        goto -> bb14;                    // bb19[2]: scope 3 at src/macros.rs:162:9: 164:10
+    }
+
+    bb20: {
+        StorageDead(_34);                // bb20[0]: scope 3 at src/macros.rs:167:56: 167:57
+        StorageDead(_33);                // bb20[1]: scope 3 at src/macros.rs:167:56: 167:57
+        _31 = (*_32);                    // bb20[2]: scope 3 at src/macros.rs:167:42: 167:57
+        _30 = const header::stdlib::is_positive(move _31) -> bb21; // bb20[3]: scope 3 at src/macros.rs:167:30: 167:58
+                                         // ty::Const
+                                         // + ty: fn(i8) -> core::option::Option<(bool, isize)> {header::stdlib::is_positive}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:167:30: 167:41
+                                         // + ty: fn(i8) -> core::option::Option<(bool, isize)> {header::stdlib::is_positive}
+                                         // + literal: Const { ty: fn(i8) -> core::option::Option<(bool, isize)> {header::stdlib::is_positive}, val: Scalar(<ZST>) }
+    }
+
+    bb21: {
+        StorageDead(_31);                // bb21[0]: scope 3 at src/macros.rs:167:57: 167:58
+        _35 = discriminant(_30);         // bb21[1]: scope 3 at src/macros.rs:168:13: 168:27
+        switchInt(move _35) -> [0isize: bb22, 1isize: bb24, otherwise: bb23]; // bb21[2]: scope 3 at src/macros.rs:168:13: 168:27
+    }
+
+    bb22: {
+        StorageLive(_40);                // bb22[0]: scope 3 at src/macros.rs:173:17: 173:32
+        StorageLive(_41);                // bb22[1]: scope 3 at src/macros.rs:173:17: 173:30
+        _41 = &_7;                       // bb22[2]: scope 3 at src/macros.rs:173:17: 173:30
+        StorageLive(_42);                // bb22[3]: scope 3 at src/macros.rs:173:17: 173:32
+        _40 = const <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call(move _41, move _42) -> bb26; // bb22[4]: scope 3 at src/macros.rs:173:17: 173:32
+                                         // ty::Const
+                                         // + ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]], ()) -> <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::FnOnce<()>>::Output {<[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:173:17: 173:30
+                                         // + ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]], ()) -> <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::FnOnce<()>>::Output {<[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call}
+                                         // + literal: Const { ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]], ()) -> <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::FnOnce<()>>::Output {<[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call}, val: Scalar(<ZST>) }
+    }
+
+    bb23: {
+        unreachable;                     // bb23[0]: scope 3 at src/macros.rs:167:30: 167:58
+    }
+
+    bb24: {
+        StorageLive(_36);                // bb24[0]: scope 3 at src/macros.rs:168:19: 168:22
+        _36 = (((_30 as Some).0: (bool, isize)).0: bool); // bb24[1]: scope 3 at src/macros.rs:168:19: 168:22
+        StorageLive(_37);                // bb24[2]: scope 3 at src/macros.rs:168:24: 168:25
+        _37 = (((_30 as Some).0: (bool, isize)).1: isize); // bb24[3]: scope 3 at src/macros.rs:168:24: 168:25
+        StorageLive(_38);                // bb24[4]: scope 5 at src/macros.rs:169:24: 169:25
+        _38 = _37;                       // bb24[5]: scope 5 at src/macros.rs:169:24: 169:25
+        _39 = CheckedAdd(_20, move _38); // bb24[6]: scope 5 at src/macros.rs:169:17: 169:25
+        assert(!move (_39.1: bool), "attempt to add with overflow") -> bb25; // bb24[7]: scope 5 at src/macros.rs:169:17: 169:25
+    }
+
+    bb25: {
+        _20 = move (_39.0: isize);       // bb25[0]: scope 5 at src/macros.rs:169:17: 169:25
+        StorageDead(_38);                // bb25[1]: scope 5 at src/macros.rs:169:24: 169:25
+        _29 = _36;                       // bb25[2]: scope 5 at src/macros.rs:170:17: 170:20
+        StorageDead(_37);                // bb25[3]: scope 3 at src/macros.rs:172:16: 172:17
+        StorageDead(_36);                // bb25[4]: scope 3 at src/macros.rs:172:16: 172:17
+        StorageDead(_32);                // bb25[5]: scope 3 at src/macros.rs:176:10: 176:11
+        StorageDead(_30);                // bb25[6]: scope 3 at src/macros.rs:176:10: 176:11
+        StorageLive(_43);                // bb25[7]: scope 4 at src/macros.rs:179:13: 179:20
+        StorageLive(_44);                // bb25[8]: scope 4 at src/macros.rs:179:23: 179:25
+        _44 = _1;                        // bb25[9]: scope 4 at src/macros.rs:179:23: 179:25
+        StorageLive(_45);                // bb25[10]: scope 4 at src/macros.rs:179:33: 179:36
+        _45 = _20;                       // bb25[11]: scope 4 at src/macros.rs:179:33: 179:36
+        _43 = const core::ptr::<impl *const i8>::offset(move _44, move _45) -> bb28; // bb25[12]: scope 4 at src/macros.rs:179:23: 179:37
+                                         // ty::Const
+                                         // + ty: unsafe fn(*const i8, isize) -> *const i8 {core::ptr::<impl *const i8>::offset}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:179:26: 179:32
+                                         // + ty: unsafe fn(*const i8, isize) -> *const i8 {core::ptr::<impl *const i8>::offset}
+                                         // + literal: Const { ty: unsafe fn(*const i8, isize) -> *const i8 {core::ptr::<impl *const i8>::offset}, val: Scalar(<ZST>) }
+    }
+
+    bb26: {
+        StorageDead(_42);                // bb26[0]: scope 3 at src/macros.rs:173:31: 173:32
+        StorageDead(_41);                // bb26[1]: scope 3 at src/macros.rs:173:31: 173:32
+        StorageDead(_40);                // bb26[2]: scope 3 at src/macros.rs:173:32: 173:33
+        _0 = const 0i64;                 // bb26[3]: scope 3 at src/macros.rs:174:24: 174:25
+                                         // ty::Const
+                                         // + ty: i64
+                                         // + val: Scalar(0x0000000000000000)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:174:24: 174:25
+                                         // + ty: i64
+                                         // + literal: Const { ty: i64, val: Scalar(0x0000000000000000) }
+        StorageDead(_32);                // bb26[4]: scope 3 at src/macros.rs:176:10: 176:11
+        StorageDead(_30);                // bb26[5]: scope 3 at src/macros.rs:176:10: 176:11
+        goto -> bb27;                    // bb26[6]: scope 3 at src/macros.rs:174:17: 174:25
+    }
+
+    bb27: {
+        StorageDead(_29);                // bb27[0]: scope 3 at src/macros.rs:229:5: 229:6
+        StorageDead(_20);                // bb27[1]: scope 2 at src/macros.rs:229:5: 229:6
+        goto -> bb13;                    // bb27[2]: scope 1 at src/macros.rs:174:17: 174:25
+    }
+
+    bb28: {
+        StorageDead(_45);                // bb28[0]: scope 4 at src/macros.rs:179:36: 179:37
+        StorageDead(_44);                // bb28[1]: scope 4 at src/macros.rs:179:36: 179:37
+        StorageLive(_46);                // bb28[2]: scope 6 at src/macros.rs:180:13: 180:16
+        switchInt(_3) -> [0i32: bb30, 8i32: bb33, 16i32: bb35, otherwise: bb29]; // bb28[3]: scope 6 at src/macros.rs:181:13: 181:14
+    }
+
+    bb29: {
+        StorageLive(_53);                // bb29[0]: scope 6 at src/macros.rs:185:34: 185:41
+        _53 = _43;                       // bb29[1]: scope 6 at src/macros.rs:185:34: 185:41
+        StorageLive(_54);                // bb29[2]: scope 6 at src/macros.rs:185:43: 185:48
+        _54 = _3;                        // bb29[3]: scope 6 at src/macros.rs:185:43: 185:48
+        _46 = const header::stdlib::convert_integer(move _53, move _54) -> bb37; // bb29[4]: scope 6 at src/macros.rs:185:18: 185:49
+                                         // ty::Const
+                                         // + ty: unsafe fn(*const i8, i32) -> core::option::Option<(u64, isize, bool)> {header::stdlib::convert_integer}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:185:18: 185:33
+                                         // + ty: unsafe fn(*const i8, i32) -> core::option::Option<(u64, isize, bool)> {header::stdlib::convert_integer}
+                                         // + literal: Const { ty: unsafe fn(*const i8, i32) -> core::option::Option<(u64, isize, bool)> {header::stdlib::convert_integer}, val: Scalar(<ZST>) }
+    }
+
+    bb30: {
+        StorageLive(_47);                // bb30[0]: scope 6 at src/macros.rs:181:18: 181:38
+        StorageLive(_48);                // bb30[1]: scope 6 at src/macros.rs:181:30: 181:37
+        _48 = _43;                       // bb30[2]: scope 6 at src/macros.rs:181:30: 181:37
+        _47 = const header::stdlib::detect_base(move _48) -> bb31; // bb30[3]: scope 6 at src/macros.rs:181:18: 181:38
+                                         // ty::Const
+                                         // + ty: unsafe fn(*const i8) -> core::option::Option<(i32, isize)> {header::stdlib::detect_base}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:181:18: 181:29
+                                         // + ty: unsafe fn(*const i8) -> core::option::Option<(i32, isize)> {header::stdlib::detect_base}
+                                         // + literal: Const { ty: unsafe fn(*const i8) -> core::option::Option<(i32, isize)> {header::stdlib::detect_base}, val: Scalar(<ZST>) }
+    }
+
+    bb31: {
+        StorageDead(_48);                // bb31[0]: scope 6 at src/macros.rs:181:37: 181:38
+        StorageLive(_49);                // bb31[1]: scope 6 at src/macros.rs:182:27: 182:81
+        StorageLive(_50);                // bb31[2]: scope 6 at src/macros.rs:182:27: 182:81
+        _50 = &_43;                      // bb31[3]: scope 6 at src/macros.rs:182:27: 182:81
+        (_49.0: &*const i8) = move _50;  // bb31[4]: scope 6 at src/macros.rs:182:27: 182:81
+        StorageDead(_50);                // bb31[5]: scope 6 at src/macros.rs:182:80: 182:81
+        _46 = const core::option::Option::<(i32, isize)>::and_then::<(u64, isize, bool), [closure@src/macros.rs:182:27: 182:81 num_str:&*const i8]>(move _47, move _49) -> bb32; // bb31[6]: scope 6 at src/macros.rs:181:18: 182:82
+                                         // ty::Const
+                                         // + ty: fn(core::option::Option<(i32, isize)>, [closure@src/macros.rs:182:27: 182:81 num_str:&*const i8]) -> core::option::Option<(u64, isize, bool)> {core::option::Option::<(i32, isize)>::and_then::<(u64, isize, bool), [closure@src/macros.rs:182:27: 182:81 num_str:&*const i8]>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:182:18: 182:26
+                                         // + ty: fn(core::option::Option<(i32, isize)>, [closure@src/macros.rs:182:27: 182:81 num_str:&*const i8]) -> core::option::Option<(u64, isize, bool)> {core::option::Option::<(i32, isize)>::and_then::<(u64, isize, bool), [closure@src/macros.rs:182:27: 182:81 num_str:&*const i8]>}
+                                         // + literal: Const { ty: fn(core::option::Option<(i32, isize)>, [closure@src/macros.rs:182:27: 182:81 num_str:&*const i8]) -> core::option::Option<(u64, isize, bool)> {core::option::Option::<(i32, isize)>::and_then::<(u64, isize, bool), [closure@src/macros.rs:182:27: 182:81 num_str:&*const i8]>}, val: Scalar(<ZST>) }
+    }
+
+    bb32: {
+        StorageDead(_49);                // bb32[0]: scope 6 at src/macros.rs:182:81: 182:82
+        StorageDead(_47);                // bb32[1]: scope 6 at src/macros.rs:182:81: 182:82
+        goto -> bb38;                    // bb32[2]: scope 6 at src/macros.rs:180:19: 186:10
+    }
+
+    bb33: {
+        StorageLive(_51);                // bb33[0]: scope 6 at src/macros.rs:183:32: 183:39
+        _51 = _43;                       // bb33[1]: scope 6 at src/macros.rs:183:32: 183:39
+        _46 = const header::stdlib::convert_octal(move _51) -> bb34; // bb33[2]: scope 6 at src/macros.rs:183:18: 183:40
+                                         // ty::Const
+                                         // + ty: unsafe fn(*const i8) -> core::option::Option<(u64, isize, bool)> {header::stdlib::convert_octal}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:183:18: 183:31
+                                         // + ty: unsafe fn(*const i8) -> core::option::Option<(u64, isize, bool)> {header::stdlib::convert_octal}
+                                         // + literal: Const { ty: unsafe fn(*const i8) -> core::option::Option<(u64, isize, bool)> {header::stdlib::convert_octal}, val: Scalar(<ZST>) }
+    }
+
+    bb34: {
+        StorageDead(_51);                // bb34[0]: scope 6 at src/macros.rs:183:39: 183:40
+        goto -> bb38;                    // bb34[1]: scope 6 at src/macros.rs:180:19: 186:10
+    }
+
+    bb35: {
+        StorageLive(_52);                // bb35[0]: scope 6 at src/macros.rs:184:31: 184:38
+        _52 = _43;                       // bb35[1]: scope 6 at src/macros.rs:184:31: 184:38
+        _46 = const header::stdlib::convert_hex(move _52) -> bb36; // bb35[2]: scope 6 at src/macros.rs:184:19: 184:39
+                                         // ty::Const
+                                         // + ty: unsafe fn(*const i8) -> core::option::Option<(u64, isize, bool)> {header::stdlib::convert_hex}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:184:19: 184:30
+                                         // + ty: unsafe fn(*const i8) -> core::option::Option<(u64, isize, bool)> {header::stdlib::convert_hex}
+                                         // + literal: Const { ty: unsafe fn(*const i8) -> core::option::Option<(u64, isize, bool)> {header::stdlib::convert_hex}, val: Scalar(<ZST>) }
+    }
+
+    bb36: {
+        StorageDead(_52);                // bb36[0]: scope 6 at src/macros.rs:184:38: 184:39
+        goto -> bb38;                    // bb36[1]: scope 6 at src/macros.rs:180:19: 186:10
+    }
+
+    bb37: {
+        StorageDead(_54);                // bb37[0]: scope 6 at src/macros.rs:185:48: 185:49
+        StorageDead(_53);                // bb37[1]: scope 6 at src/macros.rs:185:48: 185:49
+        goto -> bb38;                    // bb37[2]: scope 6 at src/macros.rs:180:19: 186:10
+    }
+
+    bb38: {
+        StorageLive(_58);                // bb38[0]: scope 7 at src/macros.rs:190:34: 196:10
+        _59 = discriminant(_46);         // bb38[1]: scope 7 at src/macros.rs:191:13: 191:22
+        switchInt(move _59) -> [0isize: bb39, 1isize: bb41, otherwise: bb40]; // bb38[2]: scope 7 at src/macros.rs:191:13: 191:22
+    }
+
+    bb39: {
+        StorageLive(_61);                // bb39[0]: scope 7 at src/macros.rs:193:17: 193:32
+        StorageLive(_62);                // bb39[1]: scope 7 at src/macros.rs:193:17: 193:30
+        _62 = &_7;                       // bb39[2]: scope 7 at src/macros.rs:193:17: 193:30
+        StorageLive(_63);                // bb39[3]: scope 7 at src/macros.rs:193:17: 193:32
+        _61 = const <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call(move _62, move _63) -> bb42; // bb39[4]: scope 7 at src/macros.rs:193:17: 193:32
+                                         // ty::Const
+                                         // + ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]], ()) -> <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::FnOnce<()>>::Output {<[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:193:17: 193:30
+                                         // + ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]], ()) -> <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::FnOnce<()>>::Output {<[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call}
+                                         // + literal: Const { ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]], ()) -> <[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::FnOnce<()>>::Output {<[closure@src/macros.rs:148:29: 151:10 set_endptr:&[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8]] as core::ops::Fn<()>>::call}, val: Scalar(<ZST>) }
+    }
+
+    bb40: {
+        unreachable;                     // bb40[0]: scope 7 at src/macros.rs:190:40: 190:43
+    }
+
+    bb41: {
+        StorageLive(_60);                // bb41[0]: scope 7 at src/macros.rs:191:18: 191:21
+        _60 = ((_46 as Some).0: (u64, isize, bool)); // bb41[1]: scope 7 at src/macros.rs:191:18: 191:21
+        _58 = _60;                       // bb41[2]: scope 9 at src/macros.rs:191:26: 191:29
+        StorageDead(_60);                // bb41[3]: scope 7 at src/macros.rs:191:29: 191:30
+        StorageLive(_55);                // bb41[4]: scope 7 at src/macros.rs:190:14: 190:17
+        _55 = (_58.0: u64);              // bb41[5]: scope 7 at src/macros.rs:190:14: 190:17
+        StorageLive(_56);                // bb41[6]: scope 7 at src/macros.rs:190:19: 190:20
+        _56 = (_58.1: isize);            // bb41[7]: scope 7 at src/macros.rs:190:19: 190:20
+        StorageLive(_57);                // bb41[8]: scope 7 at src/macros.rs:190:22: 190:30
+        _57 = (_58.2: bool);             // bb41[9]: scope 7 at src/macros.rs:190:22: 190:30
+        StorageDead(_58);                // bb41[10]: scope 7 at src/macros.rs:196:10: 196:11
+        StorageLive(_64);                // bb41[11]: scope 8 at src/macros.rs:197:16: 197:17
+        _64 = _56;                       // bb41[12]: scope 8 at src/macros.rs:197:16: 197:17
+        _65 = CheckedAdd(_20, move _64); // bb41[13]: scope 8 at src/macros.rs:197:9: 197:17
+        assert(!move (_65.1: bool), "attempt to add with overflow") -> bb43; // bb41[14]: scope 8 at src/macros.rs:197:9: 197:17
+    }
+
+    bb42: {
+        StorageDead(_63);                // bb42[0]: scope 7 at src/macros.rs:193:31: 193:32
+        StorageDead(_62);                // bb42[1]: scope 7 at src/macros.rs:193:31: 193:32
+        StorageDead(_61);                // bb42[2]: scope 7 at src/macros.rs:193:32: 193:33
+        _0 = const 0i64;                 // bb42[3]: scope 7 at src/macros.rs:194:24: 194:25
+                                         // ty::Const
+                                         // + ty: i64
+                                         // + val: Scalar(0x0000000000000000)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:194:24: 194:25
+                                         // + ty: i64
+                                         // + literal: Const { ty: i64, val: Scalar(0x0000000000000000) }
+        StorageDead(_58);                // bb42[4]: scope 7 at src/macros.rs:196:10: 196:11
+        StorageDead(_46);                // bb42[5]: scope 6 at src/macros.rs:229:5: 229:6
+        StorageDead(_43);                // bb42[6]: scope 4 at src/macros.rs:229:5: 229:6
+        goto -> bb27;                    // bb42[7]: scope 3 at src/macros.rs:194:17: 194:25
+    }
+
+    bb43: {
+        _20 = move (_65.0: isize);       // bb43[0]: scope 8 at src/macros.rs:197:9: 197:17
+        StorageDead(_64);                // bb43[1]: scope 8 at src/macros.rs:197:16: 197:17
+        StorageLive(_66);                // bb43[2]: scope 8 at src/macros.rs:199:13: 199:21
+        StorageLive(_67);                // bb43[3]: scope 8 at src/macros.rs:199:27: 199:37
+        _67 = const header::inttypes::strtoimax::CHECK_SIGN; // bb43[4]: scope 8 at src/macros.rs:199:27: 199:37
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Unevaluated(DefId(0:4237 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0]::CHECK_SIGN[0]), [])
+                                         // mir::Constant
+                                         // + span: src/macros.rs:199:27: 199:37
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Unevaluated(DefId(0:4237 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0]::CHECK_SIGN[0]), []) }
+        switchInt(_67) -> [false: bb44, otherwise: bb45]; // bb43[5]: scope 8 at src/macros.rs:199:24: 203:10
+    }
+
+    bb44: {
+        _66 = _57;                       // bb44[0]: scope 8 at src/macros.rs:202:13: 202:21
+        goto -> bb51;                    // bb44[1]: scope 8 at src/macros.rs:199:24: 203:10
+    }
+
+    bb45: {
+        StorageLive(_68);                // bb45[0]: scope 8 at src/macros.rs:200:13: 200:21
+        _68 = _57;                       // bb45[1]: scope 8 at src/macros.rs:200:13: 200:21
+        switchInt(move _68) -> [false: bb48, otherwise: bb46]; // bb45[2]: scope 8 at src/macros.rs:200:13: 200:54
+    }
+
+    bb46: {
+        _66 = const true;                // bb46[0]: scope 8 at src/macros.rs:200:13: 200:54
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x01)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:200:13: 200:54
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x01) }
+        goto -> bb49;                    // bb46[1]: scope 8 at src/macros.rs:200:13: 200:54
+    }
+
+    bb47: {
+        _66 = const false;               // bb47[0]: scope 8 at src/macros.rs:200:13: 200:54
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:200:13: 200:54
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        goto -> bb49;                    // bb47[1]: scope 8 at src/macros.rs:200:13: 200:54
+    }
+
+    bb48: {
+        StorageLive(_69);                // bb48[0]: scope 8 at src/macros.rs:200:25: 200:54
+        StorageLive(_70);                // bb48[1]: scope 8 at src/macros.rs:200:25: 200:40
+        StorageLive(_71);                // bb48[2]: scope 8 at src/macros.rs:200:26: 200:29
+        _71 = _55;                       // bb48[3]: scope 8 at src/macros.rs:200:26: 200:29
+        _70 = move _71 as i64 (Misc);    // bb48[4]: scope 8 at src/macros.rs:200:25: 200:40
+        StorageDead(_71);                // bb48[5]: scope 8 at src/macros.rs:200:39: 200:40
+        _69 = const core::num::<impl i64>::is_negative(move _70) -> bb50; // bb48[6]: scope 8 at src/macros.rs:200:25: 200:54
+                                         // ty::Const
+                                         // + ty: fn(i64) -> bool {core::num::<impl i64>::is_negative}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:200:41: 200:52
+                                         // + ty: fn(i64) -> bool {core::num::<impl i64>::is_negative}
+                                         // + literal: Const { ty: fn(i64) -> bool {core::num::<impl i64>::is_negative}, val: Scalar(<ZST>) }
+    }
+
+    bb49: {
+        StorageDead(_69);                // bb49[0]: scope 8 at src/macros.rs:200:53: 200:54
+        StorageDead(_68);                // bb49[1]: scope 8 at src/macros.rs:200:53: 200:54
+        goto -> bb51;                    // bb49[2]: scope 8 at src/macros.rs:199:24: 203:10
+    }
+
+    bb50: {
+        StorageDead(_70);                // bb50[0]: scope 8 at src/macros.rs:200:53: 200:54
+        switchInt(move _69) -> [false: bb47, otherwise: bb46]; // bb50[1]: scope 8 at src/macros.rs:200:13: 200:54
+    }
+
+    bb51: {
+        StorageDead(_67);                // bb51[0]: scope 8 at src/macros.rs:203:10: 203:11
+        StorageLive(_72);                // bb51[1]: scope 10 at src/macros.rs:205:13: 205:16
+        StorageLive(_73);                // bb51[2]: scope 10 at src/macros.rs:205:19: 205:22
+        _73 = _55;                       // bb51[3]: scope 10 at src/macros.rs:205:19: 205:22
+        _72 = move _73 as i64 (Misc);    // bb51[4]: scope 10 at src/macros.rs:205:19: 205:22
+        StorageDead(_73);                // bb51[5]: scope 10 at src/macros.rs:205:21: 205:22
+        StorageLive(_74);                // bb51[6]: scope 11 at src/macros.rs:206:13: 206:16
+        StorageLive(_75);                // bb51[7]: scope 11 at src/macros.rs:206:22: 206:30
+        _75 = _66;                       // bb51[8]: scope 11 at src/macros.rs:206:22: 206:30
+        switchInt(_75) -> [false: bb52, otherwise: bb53]; // bb51[9]: scope 11 at src/macros.rs:206:19: 224:10
+    }
+
+    bb52: {
+        StorageLive(_78);                // bb52[0]: scope 11 at src/macros.rs:218:16: 218:24
+        _78 = _29;                       // bb52[1]: scope 11 at src/macros.rs:218:16: 218:24
+        switchInt(_78) -> [false: bb60, otherwise: bb61]; // bb52[2]: scope 11 at src/macros.rs:218:13: 223:14
+    }
+
+    bb53: {
+        (platform::errno: i32) = const header::errno::ERANGE; // bb53[0]: scope 11 at src/macros.rs:207:13: 207:37
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Unevaluated(DefId(0:540 ~ relibc[6084]::header[0]::errno[0]::ERANGE[0]), [])
+                                         // mir::Constant
+                                         // + span: src/macros.rs:207:31: 207:37
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Unevaluated(DefId(0:540 ~ relibc[6084]::header[0]::errno[0]::ERANGE[0]), []) }
+        StorageLive(_76);                // bb53[1]: scope 11 at src/macros.rs:208:16: 208:26
+        _76 = const header::inttypes::strtoimax::CHECK_SIGN; // bb53[2]: scope 11 at src/macros.rs:208:16: 208:26
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Unevaluated(DefId(0:4237 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0]::CHECK_SIGN[0]), [])
+                                         // mir::Constant
+                                         // + span: src/macros.rs:208:16: 208:26
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Unevaluated(DefId(0:4237 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0]::CHECK_SIGN[0]), []) }
+        switchInt(_76) -> [false: bb54, otherwise: bb55]; // bb53[3]: scope 11 at src/macros.rs:208:13: 216:14
+    }
+
+    bb54: {
+        _74 = const header::inttypes::strtoimax::MAX_VAL; // bb54[0]: scope 11 at src/macros.rs:215:17: 215:24
+                                         // ty::Const
+                                         // + ty: i64
+                                         // + val: Unevaluated(DefId(0:4238 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0]::MAX_VAL[0]), [])
+                                         // mir::Constant
+                                         // + span: src/macros.rs:215:17: 215:24
+                                         // + ty: i64
+                                         // + literal: Const { ty: i64, val: Unevaluated(DefId(0:4238 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0]::MAX_VAL[0]), []) }
+        goto -> bb59;                    // bb54[1]: scope 11 at src/macros.rs:208:13: 216:14
+    }
+
+    bb55: {
+        StorageLive(_77);                // bb55[0]: scope 11 at src/macros.rs:209:20: 209:28
+        _77 = _29;                       // bb55[1]: scope 11 at src/macros.rs:209:20: 209:28
+        switchInt(_77) -> [false: bb56, otherwise: bb57]; // bb55[2]: scope 11 at src/macros.rs:209:17: 213:18
+    }
+
+    bb56: {
+        _74 = const header::inttypes::strtoimax::MIN_VAL; // bb56[0]: scope 11 at src/macros.rs:212:21: 212:28
+                                         // ty::Const
+                                         // + ty: i64
+                                         // + val: Unevaluated(DefId(0:4239 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0]::MIN_VAL[0]), [])
+                                         // mir::Constant
+                                         // + span: src/macros.rs:212:21: 212:28
+                                         // + ty: i64
+                                         // + literal: Const { ty: i64, val: Unevaluated(DefId(0:4239 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0]::MIN_VAL[0]), []) }
+        goto -> bb58;                    // bb56[1]: scope 11 at src/macros.rs:209:17: 213:18
+    }
+
+    bb57: {
+        _74 = const header::inttypes::strtoimax::MAX_VAL; // bb57[0]: scope 11 at src/macros.rs:210:21: 210:28
+                                         // ty::Const
+                                         // + ty: i64
+                                         // + val: Unevaluated(DefId(0:4238 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0]::MAX_VAL[0]), [])
+                                         // mir::Constant
+                                         // + span: src/macros.rs:210:21: 210:28
+                                         // + ty: i64
+                                         // + literal: Const { ty: i64, val: Unevaluated(DefId(0:4238 ~ relibc[6084]::header[0]::inttypes[0]::strtoimax[0]::MAX_VAL[0]), []) }
+        goto -> bb58;                    // bb57[1]: scope 11 at src/macros.rs:209:17: 213:18
+    }
+
+    bb58: {
+        StorageDead(_77);                // bb58[0]: scope 11 at src/macros.rs:214:13: 214:14
+        goto -> bb59;                    // bb58[1]: scope 11 at src/macros.rs:208:13: 216:14
+    }
+
+    bb59: {
+        StorageDead(_76);                // bb59[0]: scope 11 at src/macros.rs:217:9: 217:10
+        goto -> bb64;                    // bb59[1]: scope 11 at src/macros.rs:206:19: 224:10
+    }
+
+    bb60: {
+        StorageLive(_79);                // bb60[0]: scope 11 at src/macros.rs:222:17: 222:38
+        StorageLive(_80);                // bb60[1]: scope 11 at src/macros.rs:222:17: 222:20
+        _80 = _72;                       // bb60[2]: scope 11 at src/macros.rs:222:17: 222:20
+        _79 = const core::num::<impl i64>::overflowing_neg(move _80) -> bb62; // bb60[3]: scope 11 at src/macros.rs:222:17: 222:38
+                                         // ty::Const
+                                         // + ty: fn(i64) -> (i64, bool) {core::num::<impl i64>::overflowing_neg}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:222:21: 222:36
+                                         // + ty: fn(i64) -> (i64, bool) {core::num::<impl i64>::overflowing_neg}
+                                         // + literal: Const { ty: fn(i64) -> (i64, bool) {core::num::<impl i64>::overflowing_neg}, val: Scalar(<ZST>) }
+    }
+
+    bb61: {
+        _74 = _72;                       // bb61[0]: scope 11 at src/macros.rs:219:17: 219:20
+        goto -> bb63;                    // bb61[1]: scope 11 at src/macros.rs:218:13: 223:14
+    }
+
+    bb62: {
+        StorageDead(_80);                // bb62[0]: scope 11 at src/macros.rs:222:37: 222:38
+        _74 = (_79.0: i64);              // bb62[1]: scope 11 at src/macros.rs:222:17: 222:40
+        StorageDead(_79);                // bb62[2]: scope 11 at src/macros.rs:223:13: 223:14
+        goto -> bb63;                    // bb62[3]: scope 11 at src/macros.rs:218:13: 223:14
+    }
+
+    bb63: {
+        StorageDead(_78);                // bb63[0]: scope 11 at src/macros.rs:224:9: 224:10
+        goto -> bb64;                    // bb63[1]: scope 11 at src/macros.rs:206:19: 224:10
+    }
+
+    bb64: {
+        StorageDead(_75);                // bb64[0]: scope 11 at src/macros.rs:224:10: 224:11
+        StorageLive(_81);                // bb64[1]: scope 12 at src/macros.rs:226:9: 226:24
+        StorageLive(_82);                // bb64[2]: scope 12 at src/macros.rs:226:9: 226:19
+        _82 = &_4;                       // bb64[3]: scope 12 at src/macros.rs:226:9: 226:19
+        StorageLive(_83);                // bb64[4]: scope 12 at src/macros.rs:226:9: 226:24
+        StorageLive(_84);                // bb64[5]: scope 12 at src/macros.rs:226:20: 226:23
+        _84 = _20;                       // bb64[6]: scope 12 at src/macros.rs:226:20: 226:23
+        (_83.0: isize) = move _84;       // bb64[7]: scope 12 at src/macros.rs:226:9: 226:24
+        _81 = const <[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8] as core::ops::Fn<(isize,)>>::call(move _82, move _83) -> bb65; // bb64[8]: scope 12 at src/macros.rs:226:9: 226:24
+                                         // ty::Const
+                                         // + ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8], (isize,)) -> <[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8] as core::ops::FnOnce<(isize,)>>::Output {<[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8] as core::ops::Fn<(isize,)>>::call}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/macros.rs:226:9: 226:19
+                                         // + ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8], (isize,)) -> <[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8] as core::ops::FnOnce<(isize,)>>::Output {<[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8] as core::ops::Fn<(isize,)>>::call}
+                                         // + literal: Const { ty: for<'r> extern "rust-call" fn(&'r [closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8], (isize,)) -> <[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8] as core::ops::FnOnce<(isize,)>>::Output {<[closure@src/macros.rs:138:26: 146:10 endptr:&*mut *mut i8, s:&*const i8] as core::ops::Fn<(isize,)>>::call}, val: Scalar(<ZST>) }
+    }
+
+    bb65: {
+        StorageDead(_84);                // bb65[0]: scope 12 at src/macros.rs:226:23: 226:24
+        StorageDead(_83);                // bb65[1]: scope 12 at src/macros.rs:226:23: 226:24
+        StorageDead(_82);                // bb65[2]: scope 12 at src/macros.rs:226:23: 226:24
+        StorageDead(_81);                // bb65[3]: scope 12 at src/macros.rs:226:24: 226:25
+        _0 = _74;                        // bb65[4]: scope 12 at src/macros.rs:228:9: 228:12
+        StorageDead(_74);                // bb65[5]: scope 11 at src/macros.rs:229:5: 229:6
+        StorageDead(_72);                // bb65[6]: scope 10 at src/macros.rs:229:5: 229:6
+        StorageDead(_66);                // bb65[7]: scope 8 at src/macros.rs:229:5: 229:6
+        StorageDead(_57);                // bb65[8]: scope 7 at src/macros.rs:229:5: 229:6
+        StorageDead(_56);                // bb65[9]: scope 7 at src/macros.rs:229:5: 229:6
+        StorageDead(_55);                // bb65[10]: scope 7 at src/macros.rs:229:5: 229:6
+        StorageDead(_46);                // bb65[11]: scope 6 at src/macros.rs:229:5: 229:6
+        StorageDead(_43);                // bb65[12]: scope 4 at src/macros.rs:229:5: 229:6
+        StorageDead(_29);                // bb65[13]: scope 3 at src/macros.rs:229:5: 229:6
+        StorageDead(_20);                // bb65[14]: scope 2 at src/macros.rs:229:5: 229:6
+        StorageDead(_7);                 // bb65[15]: scope 1 at src/macros.rs:229:5: 229:6
+        StorageDead(_4);                 // bb65[16]: scope 0 at src/macros.rs:229:5: 229:6
+        goto -> bb12;                    // bb65[17]: scope 0 at src/header/inttypes/mod.rs:41:2: 41:2
+    }
+}
