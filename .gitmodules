@@ -1,0 +1,3 @@
+[submodule "section-7-bug-detection/applications/relibc"]
+	path = section-7-bug-detection/applications/relibc
+	url = https://github.com/redox-os/relibc.git

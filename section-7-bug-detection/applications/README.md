@@ -18,6 +18,5 @@ You can dump all MIR files by
 
 ```
 cd relibc
-git submodules sync
 cargo clean && cargo rustc -- -Zdump-mir="PreCodegen"
 ```
