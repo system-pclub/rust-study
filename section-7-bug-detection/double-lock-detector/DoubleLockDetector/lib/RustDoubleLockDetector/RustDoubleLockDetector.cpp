@@ -1,9 +1,5 @@
 #include "RustDoubleLockDetector/RustDoubleLockDetector.h"
 
-#include <set>
-#include <stack>
-#include <unordered_map>
-
 #include "llvm/Pass.h"
 #include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/Analysis/ValueTracking.h"
@@ -14,10 +10,16 @@
 #include "llvm/IR/IntrinsicInst.h"
 #include "llvm/IR/Operator.h"
 
+#include <set>
+#include <stack>
+#include <unordered_map>
+
 #include "Common/CallerFunc.h"
 
 #define DEBUG_TYPE "RustDoubleLockDetector"
-
+#define STDRWLOCK 1
+#define LOCKAPI 1
+#define STDMUTEX 1
 using namespace llvm;
 
 namespace detector {
@@ -336,6 +338,101 @@ namespace detector {
         }
     }
 
+    static bool isGEP01(Instruction *I) {
+        GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(I);
+        if (!GEP) {
+            return false;
+        }
+        if (GEP->getNumOperands() < 3) {
+            return false;
+        }
+        APInt idx0 = dyn_cast<ConstantInt>(GEP->getOperand(1))->getValue();
+        if (idx0 != 0) {
+            return false;
+        }
+        APInt idx1 = dyn_cast<ConstantInt>(GEP->getOperand(2))->getValue();
+        if (idx1 != 1) {
+            return false; 
+        }
+        return true; 
+    }
+
+    static bool isGEP00(Instruction *I) {
+        GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(I);
+        if (!GEP) {
+            return false;
+        }
+        if (GEP->getNumOperands() < 3) {
+            return false;
+        }
+        APInt idx0 = dyn_cast<ConstantInt>(GEP->getOperand(1))->getValue();
+        if (idx0 != 0) {
+            return false;
+        }
+        APInt idx1 = dyn_cast<ConstantInt>(GEP->getOperand(2))->getValue();
+        if (idx1 != 0) {
+            return false; 
+        }
+        return true; 
+    }
+
+    static bool isDropInst(Instruction *I) {
+        if (!isCallOrInvokeInst(I)) {
+            return false;
+        }
+        CallSite CS(I);
+        Function *F = CS.getCalledFunction();
+        if (!F) {
+            return false; 
+        }
+        if (isAutoDropAPI(F->getName())
+            || isManualDropAPI(F->getName())) {
+            return true; 
+        }
+        return false; 
+    }
+
+    static bool isICmpInst0(Instruction *I) {
+        ICmpInst *ICmp = dyn_cast<ICmpInst>(I);
+        if (!ICmp) {
+            return false;
+        }
+        ConstantInt *CI = dyn_cast<ConstantInt>(ICmp->getOperand(1));
+        if (!CI) {
+            return false;
+        }
+        APInt num = CI->getValue();
+        if (num == 0) {
+            return true;
+        }
+        return false; 
+    }
+
+    static bool getICmp0Br0First(Instruction *ICmp, std::set<Instruction *> &setFirst) {
+        for (User *U : ICmp->users()) {
+            if (BranchInst *BI = dyn_cast<BranchInst>(U)) {
+                Value *V = BI->getOperand(1);
+                if (BasicBlock *B = dyn_cast<BasicBlock>(V)) {
+                    setFirst.insert(B->getFirstNonPHIOrDbgOrLifetime());
+                }
+            }    
+        }
+        return !setFirst.empty(); 
+    }
+
+    static void visitUsersOfValue(Value *V, bool (*F)(Instruction *), std::set<Instruction *>& setOut) {
+        for (User *U : V->users()) {
+            if (Instruction *I = dyn_cast<Instruction>(U)) {
+                if (F(I)) {
+                    setOut.insert(I);
+                    //if (F == &isDropInst) {
+                    //    errs() << "DropInst:\n"; I->print(errs()); errs() << "\n"; 
+                    //}
+                }
+            }
+        }
+   }
+
     static void traceResult(LockInfo &MLI, std::set<Instruction *> &setDropInst, const DataLayout &DL) {
         Value *ResultValue = MLI.ResultValue;
         for (User *U : ResultValue->users()) {
@@ -366,6 +463,7 @@ namespace detector {
                     } else {
                         LockGuardValue = I;
                     }
+                    MLI.ResultValue = LockGuardValue;
                     traceDropInst(MLI, setDropInst);
                 }
             } else if (LoadInst *LI = dyn_cast<LoadInst>(I)) {
@@ -413,6 +511,93 @@ namespace detector {
                         traceDropInstForInstruction(LI, setDropInst);
                     }
                 }
+            } else if (BitCastInst *BCI = dyn_cast<BitCastInst>(I)) {
+                //errs() << "BitCastInst" << "\n";
+                //BCI->print(errs());
+                //errs() << "\n";
+                std::set<Instruction *> setCastLoad;
+                visitUsersOfValue(BCI, [](Instruction *I) { return isa<LoadInst>(I); }, setCastLoad);
+                std::set<Instruction *> setICmp0;
+                for (Instruction *CastLoad : setCastLoad) {
+                    visitUsersOfValue(CastLoad, [](Instruction *I) { return isa<ICmpInst>(I); }, setICmp0);
+                }
+                for (Instruction *ICmp0 : setICmp0) {
+                    //errs() << "ICmp0:\n";
+                    //ICmp0->print(errs());
+                    //errs() << "\n";
+                    getICmp0Br0First(ICmp0, setDropInst);
+                }
+                std::set<Instruction *> setGEP01;
+                visitUsersOfValue(BCI, isGEP01, setGEP01);
+                //for (Instruction *GEP01 : setGEP01) {
+                //    errs() << "GEP01\n";
+                //    GEP01->print(errs());
+                //    errs() << "\n";
+                //}
+                for (Instruction *LockGuard: setGEP01) {
+                    visitUsersOfValue(LockGuard, isDropInst, setDropInst);     
+                }
+                std::set<Instruction *> setGEP00;
+                for (Instruction *GEP01 : setGEP01) {
+                    visitUsersOfValue(GEP01, isGEP00, setGEP00);
+                }
+                //for (Instruction *GEP00 : setGEP00) {
+                //    errs() << "GEP00\n";
+                //    GEP00->print(errs());
+                //    errs() << "\n";
+                //}
+                std::set<Instruction *> setLoad;
+                for (Instruction *GEP00: setGEP00) {
+                    visitUsersOfValue(GEP00, [](Instruction *I) { return isa<LoadInst>(I); }, setLoad);
+                }
+                //for (Instruction *Load : setLoad) {
+                //    errs() << "Load\n";
+                //    Load->print(errs());
+                //    errs() << "\n";
+                //}
+                std::set<Instruction *> setStore;
+                for (Instruction *Load: setLoad) {
+                    visitUsersOfValue(Load, [](Instruction *I) { return isa<StoreInst>(I); }, setStore);
+                }
+                //for (Instruction *Store : setStore) {
+                //    errs() << "Store\n";
+                //    Store->print(errs());
+                //    errs() << "\n";
+                //}
+                //errs() << "Store Target\n";
+                std::set<Instruction *> setGEPGuard;
+                for (Instruction *Store: setStore) {
+                    Value *TargetAddr = Store->getOperand(1);
+                    Value *Target = GetUnderlyingObject(TargetAddr, DL);
+                    //Target->print(errs());
+                    //errs() << "\n";
+                    visitUsersOfValue(Target, [](Instruction *I) { return isa<GetElementPtrInst>(I); }, setGEPGuard);
+                }
+                //for (Instruction *GEPGuard : setGEPGuard) {
+                //    errs() << "GEPGuard\n";
+                //    GEPGuard->print(errs());
+                //    errs() << "\n";
+                //}
+                std::set<Instruction *> setLockGuard;
+                for (Instruction *GEPGuard: setGEPGuard) {
+                    if (Instruction *LockGuard = dyn_cast<Instruction>(GEPGuard->getOperand(0))) {
+                        setLockGuard.insert(LockGuard);
+                    }
+                }
+                for (Instruction *LockGuard: setLockGuard) {
+                    //errs() << "LockGuard" << "\n";
+                    //errs() << LockGuard->getParent()->getName() << "\n";
+                    //LockGuard->print(errs());
+                    //errs() << "\n";
+                    visitUsersOfValue(LockGuard, isDropInst, setDropInst);     
+                }
+                std::set<Instruction *> setLoadLockGuard;
+                for (Instruction *LockGuard: setLockGuard) {
+                    visitUsersOfValue(LockGuard, [](Instruction *I) { return isa<LoadInst>(I); }, setLoadLockGuard);
+                }
+                for (Instruction *LoadLockGuard: setLoadLockGuard) {
+                    visitUsersOfValue(LoadLockGuard, isDropInst, setDropInst);     
+                }
             }
         }
     }
@@ -435,7 +620,7 @@ namespace detector {
            // Debug Require
         //    LockInst->print(errs());
         //    errs() << '\n';
-           printDebugInfo(DirectCalleeSite.first);
+           //printDebugInfo(DirectCalleeSite.first);
            errs() << "Second Lock(s):\n";
            for (Instruction *AliasLock : mapAliasFuncLock[DirectCallee]) {
                printDebugInfo(AliasLock);
@@ -556,8 +741,8 @@ namespace detector {
         if (Caller->getName().startswith("_ZN12ethcore_sync10light_sync18LightSync$LT$L$GT$13maintain_sync17h")) {
             return false;
         }
-        // errs() << "Begin:\n";
-        // errs() << LockInst->getFunction()->getName() << "\n";
+        //errs() << "Begin:\n";
+        //errs() << LockInst->getFunction()->getName() << "\n";
         BasicBlock *LockInstBB = LockInst->getParent();
         Visited.insert(LockInstBB);
         Instruction *pTerm = LockInstBB->getTerminator();
@@ -568,7 +753,7 @@ namespace detector {
         }
         while (!WorkList.empty()) {
             BasicBlock *Curr = WorkList.top();
-            // errs() << Curr->getName() << "\n";
+            //errs() << Curr->getName() << "\n";
             WorkList.pop();
             bool StopPropagation = false;
             for (Instruction &II: *Curr) {
@@ -590,6 +775,7 @@ namespace detector {
                     // break;
                 } else if (setDrop.find(I) != setDrop.end()) {
                     // contains same Drop
+                    //errs() << "dropped\n";
                     StopPropagation = true;
                     break;
                 } else {
@@ -621,9 +807,9 @@ namespace detector {
                     // if (Succ->getName() == "_ZN3log9max_level17h461ecf87d921ec18E.exit92") {
                     //     continue;
                     // }
-                    // if (isa<LandingPadInst>(Succ->getFirstNonPHIOrDbgOrLifetime())) {
-                    //     continue;
-                    // }
+                    if (isa<LandingPadInst>(Succ->getFirstNonPHIOrDbgOrLifetime())) {
+                         continue;
+                    }
                     if (Visited.find(Succ) == Visited.end()) {
                         WorkList.push(Succ);
                         Visited.insert(Succ);
@@ -736,9 +922,9 @@ namespace detector {
                     // if (Succ->getName() == "_ZN3log9max_level17h461ecf87d921ec18E.exit92") {
                     //     continue;
                     // }
-                    // if (isa<LandingPadInst>(Succ->getFirstNonPHIOrDbgOrLifetime())) {
-                    //     continue;
-                    // }
+                    if (isa<LandingPadInst>(Succ->getFirstNonPHIOrDbgOrLifetime())) {
+                         continue;
+                    }
                     if (Visited.find(Succ) == Visited.end()) {
                         WorkList.push(Succ);
                         Visited.insert(Succ);
@@ -832,7 +1018,7 @@ namespace detector {
                 }
             }
         }
-// #ifdef INTER
+#ifdef LOCKAPI
 {
         std::map<Function *, std::map<Type *, std::map<Instruction *, LockInfo>>> mapIntraProcLockInfo;
         std::unordered_map<MutexSource, std::map<Instruction *, LockInfo>, MutexSourceHasher> mapInterProcLockInfo;
@@ -954,167 +1140,13 @@ namespace detector {
             }
         }
 }
-// #endif
-// #ifdef INTER
+#endif  // LOCKAPI
+#ifdef STDMUTEX
 {
         std::map<Function *, std::map<Type *, std::map<Instruction *, LockInfo>>> mapIntraProcLockInfo;
         std::unordered_map<MutexSource, std::map<Instruction *, LockInfo>, MutexSourceHasher> mapInterProcLockInfo;
         std::map<Instruction *, std::set<Instruction *>> mapLockDropInst;
         for (auto &CallerCallSites : mapStdLock) {
-            for (auto &CallInstCallee : CallerCallSites.second) {
-                // errs() << "Caller: " << CallerCallSites.first->getName() << "\n";
-                // errs() << "Callee: " << CallInstCallee.second->getName() << "\n";
-                LockInfo LI;
-                parseLockAPIRwLockRead(CallInstCallee.first, LI);
-                MutexSource MS;
-                bool IsField = traceMutexSource(LI.LockValue, MS);
-                if (!IsField) {
-                    Function *F = LI.LockInst->getFunction();
-                    if (mapIntraProcLockInfo.find(F) == mapIntraProcLockInfo.end()) {
-                        mapIntraProcLockInfo[F] = std::map<Type *, std::map<Instruction *, LockInfo>>();
-                    }
-                    Type *LockType = LI.LockValue->getType();
-                    if (mapIntraProcLockInfo[F].find(LockType) == mapIntraProcLockInfo[F].end()) {
-                        mapIntraProcLockInfo[F][LockType] = std::map<Instruction *, LockInfo>();
-                    }
-                    mapIntraProcLockInfo[F][LockType][LI.LockInst] = LI;
-                } else {
-                    if (mapInterProcLockInfo.find(MS) == mapInterProcLockInfo.end()) {
-                        mapInterProcLockInfo[MS] = std::map<Instruction *, LockInfo>();
-                    }
-                    mapInterProcLockInfo[MS][LI.LockInst] = LI;
-                }
-                std::set<Instruction *> setDropInst;
-                traceResult(LI, setDropInst, M.getDataLayout());
-                mapLockDropInst[LI.LockInst] = setDropInst;
-            }
-        }
-
-        // for (auto &FTLIS : mapIntraProcLockInfo) {
-        //     for (auto &TLIS : FTLIS.second) {
-        //         if (TLIS.second.size() > 1) {
-        //             errs() << "Set of Aliased Locks:\n";
-        //             errs() << FTLIS.first->getName() << "\n";
-        //             for (auto &LI : TLIS.second) {
-        //                 printDebugInfo(LI.second.LockInst);
-        //             }
-        //         }
-        //     }
-        // }
-
-        // for (auto &MSLIS : mapInterProcLockInfo) {
-        //     if (MSLIS.second.size() > 1) {
-        //         errs() << "Set of Aliased Locks:\n";
-        //         MSLIS.first.print(errs());
-        //         for (auto &LI : MSLIS.second) {
-        //             printDebugInfo(LI.second.LockInst);
-        //         }
-        //     }
-        // }
-
-        // for (auto &LIDIS : mapLockDropInst) {
-        //     errs() << "DropInsts for LockInst:";
-        //     printDebugInfo(LIDIS.first);
-        //     for (Instruction *DI : LIDIS.second) {
-        //         printDebugInfo(DI);
-        //     }
-        // }
-        // for (auto &FTLIS : mapIntraProcLockInfo) {
-        //     for (auto &TLIS : FTLIS.second) {
-        //         if (TLIS.second.size() > 1) {
-        //             errs() << "Set of Aliased Locks:\n";
-        //             errs() << FTLIS.first->getName() << "\n";
-        //             for (auto &LI : TLIS.second) {
-        //                 printDebugInfo(LI.second.LockInst);
-        //             }
-        //         }
-        //     }
-        // }
-
-        for (auto &FTLIS : mapIntraProcLockInfo) {
-            for (auto &TLIS : FTLIS.second) {
-                if (TLIS.second.size() <= 1) {
-                    continue;
-                }
-                std::set<Instruction *> setMayAliasLock;
-                for (auto &LI : TLIS.second) {
-                    setMayAliasLock.insert(LI.first);
-                }
-                for (auto &LI : TLIS.second) {
-                   trackLockInstLocal(LI.first, setMayAliasLock, mapLockDropInst[LI.first]);
-                }
-            }
-        }
-// #ifdef INTER
-        for (auto &MSLIS : mapInterProcLockInfo) {
-            if (MSLIS.second.size() <= 1) {
-                continue;
-            }
-            // errs() << "Set of Aliased Locks:\n";
-            // MSLIS.first.print(errs());
-            // for (auto &LI : MSLIS.second) {
-            //     printDebugInfo(LI.second.LockInst);
-            // }
-            std::set<Instruction *> setMayAliasLock;
-            for (auto &LI : MSLIS.second) {
-                setMayAliasLock.insert(LI.first);
-            }
-            for (auto &LI : MSLIS.second) {
-                // if (LI.first->getFunction()->getName() != "_ZN12ethcore_sync10light_sync18LightSync$LT$L$GT$13maintain_sync17h404bd375d3a82a04E") {
-                //     continue;
-                // } else {
-                // errs() << "LockInst:";
-                // LI.first->print(errs());
-                // errs() << "\n";
-                // errs() << "DropInst:\n";
-                // for (Instruction *DI : mapLockDropInst[LI.first]) {
-                //     DI->print(errs());
-                //     errs() << "\n";
-                // }
-                trackLockInst(LI.first, setMayAliasLock, mapLockDropInst[LI.first], mapGlobalCallSite);
-                // break;
-                // }
-            }
-        }
-}
-// #endif
-
-// #ifdef INTER
-{
-        std::map<Function *, std::map<Type *, std::map<Instruction *, LockInfo>>> mapIntraProcLockInfo;
-        std::unordered_map<MutexSource, std::map<Instruction *, LockInfo>, MutexSourceHasher> mapInterProcLockInfo;
-        std::map<Instruction *, std::set<Instruction *>> mapLockDropInst;
-        for (auto &CallerCallSites : mapStdRead) {
-            for (auto &CallInstCallee : CallerCallSites.second) {
-                // errs() << "Caller: " << CallerCallSites.first->getName() << "\n";
-                // errs() << "Callee: " << CallInstCallee.second->getName() << "\n";
-                LockInfo LI;
-                parseStdRead(CallInstCallee.first, LI);
-                MutexSource MS;
-                bool IsField = traceMutexSource(LI.LockValue, MS);
-                if (!IsField) {
-                    Function *F = LI.LockInst->getFunction();
-                    if (mapIntraProcLockInfo.find(F) == mapIntraProcLockInfo.end()) {
-                        mapIntraProcLockInfo[F] = std::map<Type *, std::map<Instruction *, LockInfo>>();
-                    }
-                    Type *LockType = LI.LockValue->getType();
-                    if (mapIntraProcLockInfo[F].find(LockType) == mapIntraProcLockInfo[F].end()) {
-                        mapIntraProcLockInfo[F][LockType] = std::map<Instruction *, LockInfo>();
-                    }
-                    mapIntraProcLockInfo[F][LockType][LI.LockInst] = LI;
-                } else {
-                    if (mapInterProcLockInfo.find(MS) == mapInterProcLockInfo.end()) {
-                        mapInterProcLockInfo[MS] = std::map<Instruction *, LockInfo>();
-                    }
-                    mapInterProcLockInfo[MS][LI.LockInst] = LI;
-                }
-                std::set<Instruction *> setDropInst;
-                traceResult(LI, setDropInst, M.getDataLayout());
-                mapLockDropInst[LI.LockInst] = setDropInst;
-            }
-        }
-
-        for (auto &CallerCallSites : mapStdWrite) {
             for (auto &CallInstCallee : CallerCallSites.second) {
                 // errs() << "Caller: " << CallerCallSites.first->getName() << "\n";
                 // errs() << "Callee: " << CallInstCallee.second->getName() << "\n";
@@ -1140,6 +1172,11 @@ namespace detector {
                 }
                 std::set<Instruction *> setDropInst;
                 traceResult(LI, setDropInst, M.getDataLayout());
+                //errs() << "setDropInst\n";
+                //for (Instruction *DI : setDropInst) {
+                //    DI->print(errs());
+                //    errs() << "\n";
+                //}
                 mapLockDropInst[LI.LockInst] = setDropInst;
             }
         }
@@ -1184,7 +1221,187 @@ namespace detector {
         //         }
         //     }
         // }
+//#ifdef INTRA
+        for (auto &FTLIS : mapIntraProcLockInfo) {
+            for (auto &TLIS : FTLIS.second) {
+                if (TLIS.second.size() <= 1) {
+                    continue;
+                }
+                for (auto &LI : TLIS.second) {
+                //errs() << "LockInst:";
+                //LI.first->print(errs());
+                //errs() << "\n";
+                //errs() << "DropInst:\n";
+                //for (Instruction *DI : mapLockDropInst[LI.first]) {
+                //    DI->print(errs());
+                //    errs() << "\n";
+                //}
+                   Function *MyFunc = FTLIS.first;
+                   AliasAnalysis &AA = getAnalysis<AAResultsWrapperPass>(*MyFunc).getAAResults();
+                   std::set<Instruction *> setMayAliasLock;
+                   for (auto &LI2 : TLIS.second) {
+                      if (LI.first == LI2.first) {
+                          continue;
+                      }
+                      if (AA.alias(LI.first, LI2.first) == AliasResult::MustAlias) {
+                          setMayAliasLock.insert(LI2.first);
+                      }
+                   }
+                   trackLockInstLocal(LI.first, setMayAliasLock, mapLockDropInst[LI.first]);
+                }
+            }
+        }
+//#endif // INTRA
+//#ifdef INTER
+        for (auto &MSLIS : mapInterProcLockInfo) {
+            if (MSLIS.second.size() <= 1) {
+                continue;
+            }
+            // errs() << "Set of Aliased Locks:\n";
+            // MSLIS.first.print(errs());
+            // for (auto &LI : MSLIS.second) {
+            //     printDebugInfo(LI.second.LockInst);
+            // }
+            std::set<Instruction *> setMayAliasLock;
+            for (auto &LI : MSLIS.second) {
+                setMayAliasLock.insert(LI.first);
+            }
+            for (auto &LI : MSLIS.second) {
+                // if (LI.first->getFunction()->getName() != "_ZN12ethcore_sync10light_sync18LightSync$LT$L$GT$13maintain_sync17h404bd375d3a82a04E") {
+                //     continue;
+                // } else {
+                //errs() << "LockInst:";
+                //LI.first->print(errs());
+                //errs() << "\n";
+                //errs() << "DropInst:\n";
+                //for (Instruction *DI : mapLockDropInst[LI.first]) {
+                //    DI->print(errs());
+                //    errs() << "\n";
+                //}
+                trackLockInst(LI.first, setMayAliasLock, mapLockDropInst[LI.first], mapGlobalCallSite);
+                // break;
+                // }
+            }
+        }
+//#endif
+}
+#endif // STDMUTEX
 
+#ifdef STDRWLOCK
+{
+        std::map<Function *, std::map<Type *, std::map<Instruction *, LockInfo>>> mapIntraProcLockInfo;
+        std::unordered_map<MutexSource, std::map<Instruction *, LockInfo>, MutexSourceHasher> mapInterProcLockInfo;
+        std::map<Instruction *, std::set<Instruction *>> mapLockDropInst;
+        //for (auto &CallerCallSites : mapStdRead) {
+        //    for (auto &CallInstCallee : CallerCallSites.second) {
+        //        // errs() << "Caller: " << CallerCallSites.first->getName() << "\n";
+        //        // errs() << "Callee: " << CallInstCallee.second->getName() << "\n";
+        //        LockInfo LI;
+        //        parseStdRead(CallInstCallee.first, LI);
+        //        MutexSource MS;
+        //        bool IsField = traceMutexSource(LI.LockValue, MS);
+        //        if (!IsField) {
+        //            Function *F = LI.LockInst->getFunction();
+        //            if (mapIntraProcLockInfo.find(F) == mapIntraProcLockInfo.end()) {
+        //                mapIntraProcLockInfo[F] = std::map<Type *, std::map<Instruction *, LockInfo>>();
+        //            }
+        //            Type *LockType = LI.LockValue->getType();
+        //            if (mapIntraProcLockInfo[F].find(LockType) == mapIntraProcLockInfo[F].end()) {
+        //                mapIntraProcLockInfo[F][LockType] = std::map<Instruction *, LockInfo>();
+        //            }
+        //            mapIntraProcLockInfo[F][LockType][LI.LockInst] = LI;
+        //        } else {
+        //            if (mapInterProcLockInfo.find(MS) == mapInterProcLockInfo.end()) {
+        //                mapInterProcLockInfo[MS] = std::map<Instruction *, LockInfo>();
+        //            }
+        //            mapInterProcLockInfo[MS][LI.LockInst] = LI;
+        //        }
+        //        std::set<Instruction *> setDropInst;
+        //        traceResult(LI, setDropInst, M.getDataLayout());
+        //        mapLockDropInst[LI.LockInst] = setDropInst;
+        //    }
+        //}
+
+        for (auto &CallerCallSites : mapStdWrite) {
+            for (auto &CallInstCallee : CallerCallSites.second) {
+                // errs() << "Caller: " << CallerCallSites.first->getName() << "\n";
+                // errs() << "Callee: " << CallInstCallee.second->getName() << "\n";
+                LockInfo LI;
+                parseStdLockWrite(CallInstCallee.first, LI);
+                MutexSource MS;
+                bool IsField = traceMutexSource(LI.LockValue, MS);
+                if (!IsField) {
+                    Function *F = LI.LockInst->getFunction();
+                    if (mapIntraProcLockInfo.find(F) == mapIntraProcLockInfo.end()) {
+                        mapIntraProcLockInfo[F] = std::map<Type *, std::map<Instruction *, LockInfo>>();
+                    }
+                    Type *LockType = LI.LockValue->getType();
+                    if (mapIntraProcLockInfo[F].find(LockType) == mapIntraProcLockInfo[F].end()) {
+                        mapIntraProcLockInfo[F][LockType] = std::map<Instruction *, LockInfo>();
+                    }
+                    mapIntraProcLockInfo[F][LockType][LI.LockInst] = LI;
+                } else {
+                    if (mapInterProcLockInfo.find(MS) == mapInterProcLockInfo.end()) {
+                        mapInterProcLockInfo[MS] = std::map<Instruction *, LockInfo>();
+                    }
+                    mapInterProcLockInfo[MS][LI.LockInst] = LI;
+                }
+                //errs() << "LockInst:\n";
+                //errs() << LI.LockInst->getParent()->getName() << ": ";
+                //LI.LockInst->print(errs());
+                //errs() << "\n";
+                std::set<Instruction *> setDropInst;
+                traceResult(LI, setDropInst, M.getDataLayout());
+                //for (Instruction *DI : setDropInst) {
+                //    errs() << DI->getParent()->getName() << ": ";
+                //    DI->print(errs());
+                //    errs() << "\n";
+                //}
+                mapLockDropInst[LI.LockInst] = setDropInst;
+            }
+        }
+
+        // for (auto &FTLIS : mapIntraProcLockInfo) {
+        //     for (auto &TLIS : FTLIS.second) {
+        //         if (TLIS.second.size() > 1) {
+        //             errs() << "Set of Aliased Locks:\n";
+        //             errs() << FTLIS.first->getName() << "\n";
+        //             for (auto &LI : TLIS.second) {
+        //                 printDebugInfo(LI.second.LockInst);
+        //             }
+        //         }
+        //     }
+        // }
+
+        // for (auto &MSLIS : mapInterProcLockInfo) {
+        //     if (MSLIS.second.size() > 1) {
+        //         errs() << "Set of Aliased Locks:\n";
+        //         MSLIS.first.print(errs());
+        //         for (auto &LI : MSLIS.second) {
+        //             printDebugInfo(LI.second.LockInst);
+        //         }
+        //     }
+        // }
+
+        // for (auto &LIDIS : mapLockDropInst) {
+        //     errs() << "DropInsts for LockInst:";
+        //     printDebugInfo(LIDIS.first);
+        //     for (Instruction *DI : LIDIS.second) {
+        //         printDebugInfo(DI);
+        //     }
+        // }
+        // for (auto &FTLIS : mapIntraProcLockInfo) {
+        //     for (auto &TLIS : FTLIS.second) {
+        //         if (TLIS.second.size() > 1) {
+        //             errs() << "Set of Aliased Locks:\n";
+        //             errs() << FTLIS.first->getName() << "\n";
+        //             for (auto &LI : TLIS.second) {
+        //                 printDebugInfo(LI.second.LockInst);
+        //             }
+        //         }
+        //     }
+        // }
+#ifdef INTRA
         for (auto &FTLIS : mapIntraProcLockInfo) {
             for (auto &TLIS : FTLIS.second) {
                 if (TLIS.second.size() <= 1) {
@@ -1199,6 +1416,7 @@ namespace detector {
                 }
             }
         }
+#endif
 // #ifdef INTER
         for (auto &MSLIS : mapInterProcLockInfo) {
             if (MSLIS.second.size() <= 1) {
@@ -1214,6 +1432,7 @@ namespace detector {
                 setMayAliasLock.insert(LI.first);
             }
             for (auto &LI : MSLIS.second) {
+                
                 // if (LI.first->getFunction()->getName() != "_ZN12ethcore_sync10light_sync18LightSync$LT$L$GT$13maintain_sync17h404bd375d3a82a04E") {
                 //     continue;
                 // } else {
@@ -1232,7 +1451,7 @@ namespace detector {
         }
 
 }
-// #endif
+#endif // STDRWLOCK
         return false;
     }
 

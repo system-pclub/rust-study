@@ -5,6 +5,7 @@
 ### 1. Install Rust
 
 [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
+Rust version: 1.38.0-nightly
 
 ### 2. Install llvm 9.0.0
 
@@ -73,9 +74,14 @@ opt -mem2reg ethcore-XXX.bc > ethcore-XXX.m2r.bc
 
 Store all the *.m2r.bc in LLVM_MEM_2_REG_BC_DIR.
 
+Current LLVM_MEM_2_REG_BC_DIR is in ```~/Projects/double-lock-bc/PROJECT/m2r/```
+
 ### 3. run
 
 ```./run.sh LLVM_MEM_2_REG_BC_DIR```
+
+e.g.
+```./run.sh ~/Projects/double-lock-bc/ethereum-93fbbb9aaf161f21471050a2a3257f820c029a73/m2r/```
 
 ## Output
 
@@ -93,6 +99,7 @@ followed by a call chain from the second lock to the first one.
 
 ## Reported Bugs
 
+There are 6 double lock bugs reported in Section 7.2:
 https://github.com/paritytech/parity-ethereum/pull/11172 (1 bug)
 https://github.com/paritytech/parity-ethereum/pull/11175 (1 bug)
 https://github.com/paritytech/parity-ethereum/issues/11176 (4 bugs)
