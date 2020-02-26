@@ -1,0 +1,81 @@
+[package]
+
+name = "servo"
+version = "0.0.1"
+authors = ["The Servo Project Developers"]
+license = "MPL-2.0"
+edition = "2018"
+build = "build.rs"
+publish = false
+
+[[bin]]
+name = "servo"
+path = "main.rs"
+test = false
+bench = false
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1"
+
+[target.'cfg(target_os = "macos")'.build-dependencies]
+cc = "1.0"
+
+[package.metadata.winres]
+FileDescription = "Servo"
+LegalCopyright = "© The Servo Project Developers"
+OriginalFilename = "servo.exe"
+ProductName = "Servo"
+
+[features]
+canvas2d-azure = ["libservo/canvas2d-azure"]
+canvas2d-raqote = ["libservo/canvas2d-raqote"]
+default = ["webdriver", "max_log_level"]
+egl = ["libservo/egl"]
+energy-profiling = ["libservo/energy-profiling"]
+debugmozjs = ["libservo/debugmozjs"]
+media-dummy = ["libservo/media-dummy"]
+media-gstreamer = ["libservo/media-gstreamer"]
+js_backtrace = ["libservo/js_backtrace"]
+layout-2013 = ["libservo/layout-2013"]
+layout-2020 = ["libservo/layout-2020"]
+max_log_level = ["log/release_max_level_info"]
+native-bluetooth = ["libservo/native-bluetooth"]
+no-wgl = ["libservo/no-wgl"]
+profilemozjs = ["libservo/profilemozjs"]
+refcell_backtrace = ["libservo/refcell_backtrace"]
+webdriver = ["libservo/webdriver"]
+webgl_backtrace = ["libservo/webgl_backtrace"]
+webrender_debugger = ["libservo/webrender_debugger"]
+vslatestinstalled = ["libservo/vslatestinstalled"]
+
+[target.'cfg(not(target_os = "android"))'.dependencies]
+backtrace = "0.3"
+clipboard = "0.5"
+euclid = "0.20"
+getopts = "0.2.11"
+gleam = "0.6"
+glutin = "0.21.0"
+keyboard-types = "0.4.3"
+lazy_static = "1"
+libservo = {path = "../../components/servo"}
+libc = "0.2"
+log = "0.4"
+rust-webvr = { version = "0.16", features = ["glwindow"] }
+servo-media = {git = "https://github.com/servo/media"}
+shellwords = "1.0.0"
+tinyfiledialogs = "3.0"
+webxr-api = { git = "https://github.com/servo/webxr", features = ["ipc"] }
+webxr = { git = "https://github.com/servo/webxr", features = ["ipc", "glwindow", "headless"] }
+
+[target.'cfg(any(target_os = "linux", target_os = "windows"))'.dependencies]
+image = "0.22"
+
+[target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
+osmesa-sys = "0.1.2"
+sig = "1.0"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winapi = { version = "0.3", features = ["wingdi", "winuser", "winnt", "winbase", "processenv", "namedpipeapi", "ntdef", "minwindef", "handleapi", "debugapi"] }
+
+[target.'cfg(any(target_os = "macos", all(target_arch = "x86_64", target_os = "linux")))'.dependencies]
+osmesa-src = {git = "https://github.com/servo/osmesa-src"}

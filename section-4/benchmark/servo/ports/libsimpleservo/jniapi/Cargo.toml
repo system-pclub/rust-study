@@ -1,0 +1,46 @@
+[package]
+name = "simpleservo_jniapi"
+version = "0.0.1"
+build = "build.rs"
+authors = ["The Servo Project Developers"]
+license = "MPL-2.0"
+edition = "2018"
+publish = false
+
+[lib]
+name = "simpleservo"
+crate-type = ["cdylib"]
+test = false
+bench = false
+
+[dependencies]
+android_injected_glue = "0.2"
+android_logger = "0.7"
+gstreamer = "0.14.5"
+jni = "0.10.2"
+libc = "0.2"
+log = "0.4"
+serde_json = "1.0"
+simpleservo = { path = "../api" }
+
+[build-dependencies]
+cc = "1.0"
+
+[features]
+canvas2d-azure = ["simpleservo/canvas2d-azure"]
+canvas2d-raqote = ["simpleservo/canvas2d-raqote"]
+debugmozjs = ["simpleservo/debugmozjs"]
+default = ["webdriver", "max_log_level"]
+media-dummy = ["simpleservo/media-dummy"]
+media-gstreamer = ["simpleservo/media-gstreamer"]
+egl = ["simpleservo/egl"]
+energy-profiling = ["simpleservo/energy-profiling"]
+googlevr = ["simpleservo/googlevr"]
+js_backtrace = ["simpleservo/js_backtrace"]
+layout-2013 = ["simpleservo/layout-2013"]
+layout-2020 = ["simpleservo/layout-2020"]
+max_log_level = ["simpleservo/max_log_level"]
+native-bluetooth = ["simpleservo/native-bluetooth"]
+oculusvr = ["simpleservo/oculusvr"]
+webdriver = ["simpleservo/webdriver"]
+webgl_backtrace = ["simpleservo/webgl_backtrace"]

@@ -1,0 +1,55 @@
+[package]
+name = "simpleservo"
+version = "0.0.1"
+authors = ["The Servo Project Developers"]
+license = "MPL-2.0"
+edition = "2018"
+publish = false
+
+[dependencies]
+getopts = "0.2.11"
+libservo = { path = "../../../components/servo" }
+log = "0.4"
+servo-media = { git = "https://github.com/servo/media" }
+
+webxr-api = { git = "https://github.com/servo/webxr", features = ["ipc"] }
+webxr = { git = "https://github.com/servo/webxr"}
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+libc = "0.2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.6"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winapi = "0.3.2"
+
+[target.'cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd"))'.dependencies]
+libloading = "0.5"
+
+[build-dependencies]
+gl_generator = "0.11"
+
+[features]
+canvas2d-azure = ["libservo/canvas2d-azure"]
+canvas2d-raqote = ["libservo/canvas2d-raqote"]
+default = ["webdriver", "max_log_level"]
+debugmozjs = ["libservo/debugmozjs"]
+media-dummy = ["libservo/media-dummy"]
+media-gstreamer = ["libservo/media-gstreamer"]
+egl = ["libservo/egl"]
+energy-profiling = ["libservo/energy-profiling"]
+googlevr = ["libservo/googlevr"]
+js_backtrace = ["libservo/js_backtrace"]
+layout-2013 = ["libservo/layout-2013"]
+layout-2020 = ["libservo/layout-2020"]
+max_log_level = ["log/release_max_level_info"]
+native-bluetooth = ["libservo/native-bluetooth"]
+no_static_freetype = ["libservo/no_static_freetype"]
+no-wgl = ["libservo/no-wgl"]
+oculusvr = ["libservo/oculusvr"]
+profilemozjs = ["libservo/profilemozjs"]
+refcell_backtrace = ["libservo/refcell_backtrace"]
+webdriver = ["libservo/webdriver"]
+uwp = ["libservo/uwp", "webxr/openxr-api"]
+webgl_backtrace = ["libservo/webgl_backtrace"]
