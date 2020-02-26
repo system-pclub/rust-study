@@ -1,0 +1,1314 @@
+// MIR for `header::netdb::getprotoent`
+// source = MirSource { instance: Item(DefId(0:1081 ~ relibc[4aa3]::header[0]::netdb[0]::getprotoent[0])), promoted: None }
+// pass_name = PreCodegen
+// disambiguator = after
+
+| User Type Annotations
+| 0: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Ty(General(U0)) }], value: TypeOf(DefId(0:68 ~ relibc[4aa3]::c_str[0]::{{impl}}[1]::new[0]), UserSubsts { substs: [^0], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(0:67 ~ relibc[4aa3]::c_str[0]::{{impl}}[1]), self_ty: c_str::CString }) }) } at src/header/netdb/mod.rs:407:30: 407:42
+| 1: Canonical { max_universe: U0, variables: [], value: Ty(alloc::boxed::Box<str>) } at src/header/netdb/mod.rs:413:16: 413:24
+| 2: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Ty(General(U0)) }], value: TypeOf(DefId(1:2112 ~ core[284c]::default[0]::Default[0]::default[0]), UserSubsts { substs: [alloc::boxed::Box<^0>], user_self_ty: None }) } at src/header/netdb/mod.rs:413:27: 413:39
+| 3: Canonical { max_universe: U0, variables: [], value: Ty(alloc::boxed::Box<str>) } at src/header/netdb/mod.rs:413:16: 413:24
+| 4: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Region(U0) }], value: Ty(core::str::SplitWhitespace<'_>) } at src/header/netdb/mod.rs:428:19: 428:34
+| 5: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Region(U0) }], value: Ty(core::str::SplitWhitespace<'_>) } at src/header/netdb/mod.rs:428:19: 428:34
+| 6: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<u8>) } at src/header/netdb/mod.rs:430:25: 430:32
+| 7: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<u8>) } at src/header/netdb/mod.rs:430:25: 430:32
+| 8: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<alloc::vec::Vec<u8>>) } at src/header/netdb/mod.rs:437:29: 437:41
+| 9: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Ty(General(U0)) }, CanonicalVarInfo { kind: Ty(General(U0)) }], value: TypeOf(DefId(4:3599 ~ alloc[66fa]::vec[0]::{{impl}}[0]::new[0]), UserSubsts { substs: [^0], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(4:3597 ~ alloc[66fa]::vec[0]::{{impl}}[0]), self_ty: alloc::vec::Vec<^1> }) }) } at src/header/netdb/mod.rs:437:44: 437:52
+| 10: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<alloc::vec::Vec<u8>>) } at src/header/netdb/mod.rs:437:29: 437:41
+| 11: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<*mut i8>) } at src/header/netdb/mod.rs:443:28: 443:40
+| 12: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<*mut i8>) } at src/header/netdb/mod.rs:443:28: 443:40
+|
+fn  header::netdb::getprotoent() -> *mut header::netdb::protoent {
+    let mut _0: *mut header::netdb::protoent; // return place in scope 0 at src/header/netdb/mod.rs:405:43: 405:56
+    let mut _1: bool;                    // in scope 0 at src/header/netdb/mod.rs:406:8: 406:20
+    let mut _2: i32;                     // in scope 0 at src/header/netdb/mod.rs:406:8: 406:15
+    let mut _3: i32;                     // in scope 0 at src/header/netdb/mod.rs:407:19: 407:83
+    let mut _4: &c_str::CStr;            // in scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+    let mut _5: &c_str::CStr;            // in scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+    let mut _6: &c_str::CString;         // in scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+    let mut _7: &c_str::CString;         // in scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+    let _8: c_str::CString;              // in scope 0 at src/header/netdb/mod.rs:407:30: 407:69
+    let mut _9: core::result::Result<c_str::CString, c_str::NulError>; // in scope 0 at src/header/netdb/mod.rs:407:30: 407:60
+    let mut _10: platform::rlb::RawLineBuffer; // "rlb" in scope 0 at src/header/netdb/mod.rs:410:9: 410:16
+    let mut _11: i32;                    // in scope 0 at src/header/netdb/mod.rs:410:38: 410:45
+    let _12: i64;                        // in scope 0 at src/header/netdb/mod.rs:411:5: 411:20
+    let mut _13: &mut platform::rlb::RawLineBuffer; // in scope 0 at src/header/netdb/mod.rs:411:5: 411:8
+    let mut _14: usize;                  // in scope 0 at src/header/netdb/mod.rs:411:14: 411:19
+    let mut _16: bool;                   // in scope 0 at src/header/netdb/mod.rs:414:11: 414:84
+    let mut _17: bool;                   // in scope 0 at src/header/netdb/mod.rs:414:11: 414:62
+    let mut _18: bool;                   // in scope 0 at src/header/netdb/mod.rs:414:11: 414:23
+    let mut _19: &str;                   // in scope 0 at src/header/netdb/mod.rs:414:11: 414:12
+    let mut _20: bool;                   // in scope 0 at src/header/netdb/mod.rs:414:27: 414:62
+    let mut _21: &core::option::Option<&str>; // in scope 0 at src/header/netdb/mod.rs:414:27: 414:54
+    let _22: core::option::Option<&str>; // in scope 0 at src/header/netdb/mod.rs:414:27: 414:54
+    let mut _23: &mut core::str::SplitWhitespace; // in scope 0 at src/header/netdb/mod.rs:414:27: 414:47
+    let mut _24: core::str::SplitWhitespace; // in scope 0 at src/header/netdb/mod.rs:414:27: 414:47
+    let mut _25: &str;                   // in scope 0 at src/header/netdb/mod.rs:414:27: 414:28
+    let mut _26: &core::option::Option<&str>; // in scope 0 at src/header/netdb/mod.rs:414:58: 414:62
+    let mut _27: bool;                   // in scope 0 at src/header/netdb/mod.rs:414:66: 414:84
+    let mut _28: &str;                   // in scope 0 at src/header/netdb/mod.rs:414:66: 414:67
+    let mut _29: alloc::boxed::Box<str>; // in scope 0 at src/header/netdb/mod.rs:415:13: 423:10
+    let mut _30: platform::rlb::Line;    // in scope 0 at src/header/netdb/mod.rs:415:19: 415:29
+    let mut _31: &mut platform::rlb::RawLineBuffer; // in scope 0 at src/header/netdb/mod.rs:415:19: 415:22
+    let mut _32: isize;                  // in scope 0 at src/header/netdb/mod.rs:416:13: 416:26
+    let mut _34: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:416:47: 416:48
+    let mut _35: bool;                   // in scope 0 at src/header/netdb/mod.rs:418:20: 418:39
+    let mut _36: i32;                    // in scope 0 at src/header/netdb/mod.rs:418:20: 418:34
+    let _37: ();                         // in scope 0 at src/header/netdb/mod.rs:419:21: 419:34
+    let _38: platform::rlb::Line;        // in scope 0 at src/header/netdb/mod.rs:425:5: 425:15
+    let mut _39: &mut platform::rlb::RawLineBuffer; // in scope 0 at src/header/netdb/mod.rs:425:5: 425:8
+    let mut _40: usize;                  // in scope 0 at src/header/netdb/mod.rs:426:13: 426:27
+    let mut _41: &platform::rlb::RawLineBuffer; // in scope 0 at src/header/netdb/mod.rs:426:13: 426:16
+    let mut _43: &str;                   // in scope 0 at src/header/netdb/mod.rs:428:37: 428:38
+    let mut _45: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:430:35: 430:66
+    let mut _46: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:430:35: 430:66
+    let mut _47: &str;                   // in scope 0 at src/header/netdb/mod.rs:430:35: 430:55
+    let mut _48: &str;                   // in scope 0 at src/header/netdb/mod.rs:430:35: 430:55
+    let mut _49: core::option::Option<&str>; // in scope 0 at src/header/netdb/mod.rs:430:35: 430:46
+    let mut _50: &mut core::str::SplitWhitespace; // in scope 0 at src/header/netdb/mod.rs:430:35: 430:39
+    let _51: ();                         // in scope 0 at src/header/netdb/mod.rs:431:5: 431:27
+    let mut _52: &mut alloc::vec::Vec<u8>; // in scope 0 at src/header/netdb/mod.rs:431:5: 431:15
+    let mut _54: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:433:19: 433:50
+    let mut _55: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:433:19: 433:50
+    let mut _56: &str;                   // in scope 0 at src/header/netdb/mod.rs:433:19: 433:39
+    let mut _57: &str;                   // in scope 0 at src/header/netdb/mod.rs:433:19: 433:39
+    let mut _58: core::option::Option<&str>; // in scope 0 at src/header/netdb/mod.rs:433:19: 433:30
+    let mut _59: &mut core::str::SplitWhitespace; // in scope 0 at src/header/netdb/mod.rs:433:19: 433:23
+    let _60: ();                         // in scope 0 at src/header/netdb/mod.rs:434:5: 434:20
+    let mut _61: &mut alloc::vec::Vec<u8>; // in scope 0 at src/header/netdb/mod.rs:434:5: 434:8
+    let mut _62: i32;                    // in scope 0 at src/header/netdb/mod.rs:435:22: 435:70
+    let mut _63: *const i8;              // in scope 0 at src/header/netdb/mod.rs:435:27: 435:69
+    let mut _64: *mut i8;                // in scope 0 at src/header/netdb/mod.rs:435:27: 435:69
+    let mut _65: *mut u8;                // in scope 0 at src/header/netdb/mod.rs:435:27: 435:58
+    let mut _66: &mut [u8];              // in scope 0 at src/header/netdb/mod.rs:435:27: 435:45
+    let mut _67: &mut [u8];              // in scope 0 at src/header/netdb/mod.rs:435:27: 435:45
+    let mut _68: &mut alloc::vec::Vec<u8>; // in scope 0 at src/header/netdb/mod.rs:435:27: 435:30
+    let mut _70: core::str::SplitWhitespace; // in scope 0 at src/header/netdb/mod.rs:438:14: 438:18
+    let mut _71: core::str::SplitWhitespace; // in scope 0 at src/header/netdb/mod.rs:438:14: 438:18
+    let mut _74: core::option::Option<&str>; // in scope 0 at src/header/netdb/mod.rs:438:14: 438:18
+    let mut _75: &mut core::str::SplitWhitespace; // in scope 0 at src/header/netdb/mod.rs:438:14: 438:18
+    let mut _76: &mut core::str::SplitWhitespace; // in scope 0 at src/header/netdb/mod.rs:438:14: 438:18
+    let mut _77: isize;                  // in scope 0 at src/header/netdb/mod.rs:438:9: 438:10
+    let mut _79: &str;                   // in scope 0 at src/header/netdb/mod.rs:438:9: 438:10
+    let mut _82: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:439:25: 439:37
+    let mut _83: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:439:25: 439:37
+    let mut _84: &str;                   // in scope 0 at src/header/netdb/mod.rs:439:25: 439:26
+    let _85: ();                         // in scope 0 at src/header/netdb/mod.rs:440:9: 440:26
+    let mut _86: &mut alloc::vec::Vec<u8>; // in scope 0 at src/header/netdb/mod.rs:440:9: 440:14
+    let _87: ();                         // in scope 0 at src/header/netdb/mod.rs:441:9: 441:35
+    let mut _88: &mut alloc::vec::Vec<alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:441:9: 441:23
+    let mut _89: alloc::vec::Vec<u8>;    // in scope 0 at src/header/netdb/mod.rs:441:29: 441:34
+    let mut _91: core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]>; // in scope 0 at src/header/netdb/mod.rs:443:43: 445:44
+    let mut _92: core::slice::IterMut<alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:443:43: 444:20
+    let mut _93: &mut [alloc::vec::Vec<u8>]; // in scope 0 at src/header/netdb/mod.rs:443:43: 443:57
+    let mut _94: &mut [alloc::vec::Vec<u8>]; // in scope 0 at src/header/netdb/mod.rs:443:43: 443:57
+    let mut _95: &mut alloc::vec::Vec<alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:443:43: 443:57
+    let mut _96: [closure@src/header/netdb/mod.rs:445:14: 445:43]; // in scope 0 at src/header/netdb/mod.rs:445:14: 445:43
+    let _97: ();                         // in scope 0 at src/header/netdb/mod.rs:447:5: 447:40
+    let mut _98: &mut alloc::vec::Vec<*mut i8>; // in scope 0 at src/header/netdb/mod.rs:447:5: 447:18
+    let mut _99: *mut i8;                // in scope 0 at src/header/netdb/mod.rs:447:24: 447:39
+    let mut _100: core::option::Option<alloc::vec::Vec<alloc::vec::Vec<u8>>>; // in scope 0 at src/header/netdb/mod.rs:449:21: 449:41
+    let mut _101: alloc::vec::Vec<alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:449:26: 449:40
+    let mut _102: core::option::Option<alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:450:18: 450:34
+    let mut _103: alloc::vec::Vec<u8>;   // in scope 0 at src/header/netdb/mod.rs:450:23: 450:33
+    let mut _104: *mut i8;               // in scope 0 at src/header/netdb/mod.rs:453:17: 453:88
+    let mut _105: *mut u8;               // in scope 0 at src/header/netdb/mod.rs:453:17: 453:73
+    let mut _106: &mut [u8];             // in scope 0 at src/header/netdb/mod.rs:453:17: 453:60
+    let mut _107: &mut [u8];             // in scope 0 at src/header/netdb/mod.rs:453:17: 453:60
+    let mut _108: &mut alloc::vec::Vec<u8>; // in scope 0 at src/header/netdb/mod.rs:453:17: 453:45
+    let mut _109: &mut alloc::vec::Vec<u8>; // in scope 0 at src/header/netdb/mod.rs:453:17: 453:45
+    let mut _110: core::option::Option<&mut alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:453:17: 453:36
+    let mut _111: &mut core::option::Option<alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:453:17: 453:27
+    let mut _112: *mut *mut i8;          // in scope 0 at src/header/netdb/mod.rs:454:20: 454:77
+    let mut _113: &mut [*mut i8];        // in scope 0 at src/header/netdb/mod.rs:454:20: 454:48
+    let mut _114: &mut [*mut i8];        // in scope 0 at src/header/netdb/mod.rs:454:20: 454:48
+    let mut _115: &mut alloc::vec::Vec<*mut i8>; // in scope 0 at src/header/netdb/mod.rs:454:20: 454:33
+    let mut _116: i32;                   // in scope 0 at src/header/netdb/mod.rs:455:18: 455:36
+    let mut _117: core::option::Option<i32>; // in scope 0 at src/header/netdb/mod.rs:455:18: 455:27
+    let mut _118: bool;                  // in scope 0 at src/header/netdb/mod.rs:457:8: 457:27
+    let mut _119: i32;                   // in scope 0 at src/header/netdb/mod.rs:457:8: 457:22
+    let _120: ();                        // in scope 0 at src/header/netdb/mod.rs:458:9: 458:22
+    let mut _121: &mut header::netdb::protoent; // in scope 0 at src/header/netdb/mod.rs:460:5: 460:21
+    let mut _122: &mut header::netdb::protoent; // in scope 0 at src/header/netdb/mod.rs:460:5: 460:21
+    scope 1 {
+        let mut _15: alloc::boxed::Box<str> as UserTypeProjection { base: UserType(1), projs: [] }; // "r" in scope 1 at src/header/netdb/mod.rs:413:9: 413:14
+        scope 2 {
+            let _33: &[u8];              // "s" in scope 2 at src/header/netdb/mod.rs:416:24: 416:25
+            let mut _42: core::str::SplitWhitespace as UserTypeProjection { base: UserType(4), projs: [] }; // "iter" in scope 2 at src/header/netdb/mod.rs:428:9: 428:17
+            scope 3 {
+            }
+            scope 4 {
+                let mut _44: alloc::vec::Vec<u8> as UserTypeProjection { base: UserType(6), projs: [] }; // "proto_name" in scope 4 at src/header/netdb/mod.rs:430:9: 430:23
+                scope 5 {
+                    let mut _53: alloc::vec::Vec<u8>; // "num" in scope 5 at src/header/netdb/mod.rs:433:9: 433:16
+                    scope 6 {
+                        let mut _69: alloc::vec::Vec<alloc::vec::Vec<u8>> as UserTypeProjection { base: UserType(8), projs: [] }; // "_proto_aliases" in scope 6 at src/header/netdb/mod.rs:437:9: 437:27
+                        scope 7 {
+                            let mut _72: core::str::SplitWhitespace; // "iter" in scope 7 at src/header/netdb/mod.rs:438:14: 438:18
+                            let mut _90: alloc::vec::Vec<*mut i8> as UserTypeProjection { base: UserType(11), projs: [] }; // "proto_aliases" in scope 7 at src/header/netdb/mod.rs:443:9: 443:26
+                            scope 8 {
+                                let mut _73: &str; // "__next" in scope 8 at src/header/netdb/mod.rs:438:14: 438:18
+                                scope 9 {
+                                    let _78: &str; // "val" in scope 9 at src/header/netdb/mod.rs:438:9: 438:10
+                                    let _80: &str; // "s" in scope 9 at src/header/netdb/mod.rs:438:9: 438:10
+                                    scope 10 {
+                                    }
+                                    scope 11 {
+                                        let mut _81: alloc::vec::Vec<u8>; // "alias" in scope 11 at src/header/netdb/mod.rs:439:13: 439:22
+                                        scope 12 {
+                                        }
+                                    }
+                                }
+                            }
+                            scope 13 {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bb0: {
+        StorageLive(_1);                 // bb0[0]: scope 0 at src/header/netdb/mod.rs:406:8: 406:20
+        StorageLive(_2);                 // bb0[1]: scope 0 at src/header/netdb/mod.rs:406:8: 406:15
+        _2 = (header::netdb::PROTODB: i32); // bb0[2]: scope 0 at src/header/netdb/mod.rs:406:8: 406:15
+        _1 = Eq(move _2, const 0i32);    // bb0[3]: scope 0 at src/header/netdb/mod.rs:406:8: 406:20
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000000)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:406:19: 406:20
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000000) }
+        StorageDead(_2);                 // bb0[4]: scope 0 at src/header/netdb/mod.rs:406:19: 406:20
+        switchInt(_1) -> [false: bb7, otherwise: bb1]; // bb0[5]: scope 0 at src/header/netdb/mod.rs:406:5: 408:6
+    }
+
+    bb1: {
+        StorageLive(_3);                 // bb1[0]: scope 0 at src/header/netdb/mod.rs:407:19: 407:83
+        StorageLive(_4);                 // bb1[1]: scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+        StorageLive(_5);                 // bb1[2]: scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+        StorageLive(_6);                 // bb1[3]: scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+        StorageLive(_7);                 // bb1[4]: scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+        StorageLive(_8);                 // bb1[5]: scope 0 at src/header/netdb/mod.rs:407:30: 407:69
+        StorageLive(_9);                 // bb1[6]: scope 0 at src/header/netdb/mod.rs:407:30: 407:60
+        _9 = const c_str::CString::new::<&str>(const "/etc/protocols") -> bb2; // bb1[7]: scope 0 at src/header/netdb/mod.rs:407:30: 407:60
+                                         // ty::Const
+                                         // + ty: fn(&str) -> core::result::Result<c_str::CString, c_str::NulError> {c_str::CString::new::<&str>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:407:30: 407:42
+                                         // + ty: fn(&str) -> core::result::Result<c_str::CString, c_str::NulError> {c_str::CString::new::<&str>}
+                                         // + user_ty: UserType(0)
+                                         // + literal: Const { ty: fn(&str) -> core::result::Result<c_str::CString, c_str::NulError> {c_str::CString::new::<&str>}, val: Scalar(<ZST>) }
+                                         // ty::Const
+                                         // + ty: &str
+                                         // + val: Slice { data: Allocation { bytes: [47, 101, 116, 99, 47, 112, 114, 111, 116, 111, 99, 111, 108, 115], relocations: Relocations(SortedMap { data: [] }), undef_mask: UndefMask { blocks: [16383], len: Size { raw: 14 } }, align: Align { pow2: 0 }, mutability: Immutable, extra: () }, start: 0, end: 14 }
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:407:43: 407:59
+                                         // + ty: &str
+                                         // + literal: Const { ty: &str, val: Slice { data: Allocation { bytes: [47, 101, 116, 99, 47, 112, 114, 111, 116, 111, 99, 111, 108, 115], relocations: Relocations(SortedMap { data: [] }), undef_mask: UndefMask { blocks: [16383], len: Size { raw: 14 } }, align: Align { pow2: 0 }, mutability: Immutable, extra: () }, start: 0, end: 14 } }
+    }
+
+    bb2: {
+        _8 = const core::result::Result::<c_str::CString, c_str::NulError>::unwrap(move _9) -> bb3; // bb2[0]: scope 0 at src/header/netdb/mod.rs:407:30: 407:69
+                                         // ty::Const
+                                         // + ty: fn(core::result::Result<c_str::CString, c_str::NulError>) -> c_str::CString {core::result::Result::<c_str::CString, c_str::NulError>::unwrap}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:407:61: 407:67
+                                         // + ty: fn(core::result::Result<c_str::CString, c_str::NulError>) -> c_str::CString {core::result::Result::<c_str::CString, c_str::NulError>::unwrap}
+                                         // + literal: Const { ty: fn(core::result::Result<c_str::CString, c_str::NulError>) -> c_str::CString {core::result::Result::<c_str::CString, c_str::NulError>::unwrap}, val: Scalar(<ZST>) }
+    }
+
+    bb3: {
+        StorageDead(_9);                 // bb3[0]: scope 0 at src/header/netdb/mod.rs:407:68: 407:69
+        _7 = &_8;                        // bb3[1]: scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+        _6 = _7;                         // bb3[2]: scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+        _5 = const <c_str::CString as lazy_static::__Deref>::deref(move _6) -> bb4; // bb3[3]: scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r c_str::CString) -> &'r <c_str::CString as lazy_static::__Deref>::Target {<c_str::CString as lazy_static::__Deref>::deref}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:407:29: 407:69
+                                         // + ty: for<'r> fn(&'r c_str::CString) -> &'r <c_str::CString as lazy_static::__Deref>::Target {<c_str::CString as lazy_static::__Deref>::deref}
+                                         // + literal: Const { ty: for<'r> fn(&'r c_str::CString) -> &'r <c_str::CString as lazy_static::__Deref>::Target {<c_str::CString as lazy_static::__Deref>::deref}, val: Scalar(<ZST>) }
+    }
+
+    bb4: {
+        _4 = _5;                         // bb4[0]: scope 0 at src/header/netdb/mod.rs:407:29: 407:69
+        StorageDead(_6);                 // bb4[1]: scope 0 at src/header/netdb/mod.rs:407:68: 407:69
+        _3 = const <platform::sys::Sys as platform::pal::Pal>::open(move _4, const header::fcntl::sys::O_RDONLY, const 0i32) -> bb5; // bb4[2]: scope 0 at src/header/netdb/mod.rs:407:19: 407:83
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r c_str::CStr, i32, i32) -> i32 {<platform::sys::Sys as platform::pal::Pal>::open}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:407:19: 407:28
+                                         // + ty: for<'r> fn(&'r c_str::CStr, i32, i32) -> i32 {<platform::sys::Sys as platform::pal::Pal>::open}
+                                         // + literal: Const { ty: for<'r> fn(&'r c_str::CStr, i32, i32) -> i32 {<platform::sys::Sys as platform::pal::Pal>::open}, val: Scalar(<ZST>) }
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Unevaluated(DefId(0:650 ~ relibc[4aa3]::header[0]::fcntl[0]::sys[0]::O_RDONLY[0]), [])
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:407:71: 407:79
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Unevaluated(DefId(0:650 ~ relibc[4aa3]::header[0]::fcntl[0]::sys[0]::O_RDONLY[0]), []) }
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000000)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:407:81: 407:82
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000000) }
+    }
+
+    bb5: {
+        StorageDead(_4);                 // bb5[0]: scope 0 at src/header/netdb/mod.rs:407:82: 407:83
+        (header::netdb::PROTODB: i32) = move _3; // bb5[1]: scope 0 at src/header/netdb/mod.rs:407:9: 407:83
+        StorageDead(_3);                 // bb5[2]: scope 0 at src/header/netdb/mod.rs:407:82: 407:83
+        drop(_8) -> bb6;                 // bb5[3]: scope 0 at src/header/netdb/mod.rs:407:83: 407:84
+    }
+
+    bb6: {
+        StorageDead(_8);                 // bb6[0]: scope 0 at src/header/netdb/mod.rs:407:83: 407:84
+        StorageDead(_7);                 // bb6[1]: scope 0 at src/header/netdb/mod.rs:407:83: 407:84
+        StorageDead(_5);                 // bb6[2]: scope 0 at src/header/netdb/mod.rs:407:83: 407:84
+        goto -> bb7;                     // bb6[3]: scope 0 at src/header/netdb/mod.rs:406:5: 408:6
+    }
+
+    bb7: {
+        StorageDead(_1);                 // bb7[0]: scope 0 at src/header/netdb/mod.rs:408:5: 408:6
+        StorageLive(_10);                // bb7[1]: scope 0 at src/header/netdb/mod.rs:410:9: 410:16
+        StorageLive(_11);                // bb7[2]: scope 0 at src/header/netdb/mod.rs:410:38: 410:45
+        _11 = (header::netdb::PROTODB: i32); // bb7[3]: scope 0 at src/header/netdb/mod.rs:410:38: 410:45
+        _10 = const platform::rlb::RawLineBuffer::new(move _11) -> bb8; // bb7[4]: scope 0 at src/header/netdb/mod.rs:410:19: 410:46
+                                         // ty::Const
+                                         // + ty: fn(i32) -> platform::rlb::RawLineBuffer {platform::rlb::RawLineBuffer::new}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:410:19: 410:37
+                                         // + ty: fn(i32) -> platform::rlb::RawLineBuffer {platform::rlb::RawLineBuffer::new}
+                                         // + literal: Const { ty: fn(i32) -> platform::rlb::RawLineBuffer {platform::rlb::RawLineBuffer::new}, val: Scalar(<ZST>) }
+    }
+
+    bb8: {
+        StorageDead(_11);                // bb8[0]: scope 0 at src/header/netdb/mod.rs:410:45: 410:46
+        StorageLive(_12);                // bb8[1]: scope 1 at src/header/netdb/mod.rs:411:5: 411:20
+        StorageLive(_13);                // bb8[2]: scope 1 at src/header/netdb/mod.rs:411:5: 411:8
+        _13 = &mut _10;                  // bb8[3]: scope 1 at src/header/netdb/mod.rs:411:5: 411:8
+        StorageLive(_14);                // bb8[4]: scope 1 at src/header/netdb/mod.rs:411:14: 411:19
+        _14 = (header::netdb::P_POS: usize); // bb8[5]: scope 1 at src/header/netdb/mod.rs:411:14: 411:19
+        _12 = const platform::rlb::RawLineBuffer::seek(move _13, move _14) -> bb9; // bb8[6]: scope 1 at src/header/netdb/mod.rs:411:5: 411:20
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut platform::rlb::RawLineBuffer, usize) -> i64 {platform::rlb::RawLineBuffer::seek}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:411:9: 411:13
+                                         // + ty: for<'r> fn(&'r mut platform::rlb::RawLineBuffer, usize) -> i64 {platform::rlb::RawLineBuffer::seek}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut platform::rlb::RawLineBuffer, usize) -> i64 {platform::rlb::RawLineBuffer::seek}, val: Scalar(<ZST>) }
+    }
+
+    bb9: {
+        StorageDead(_14);                // bb9[0]: scope 1 at src/header/netdb/mod.rs:411:19: 411:20
+        StorageDead(_13);                // bb9[1]: scope 1 at src/header/netdb/mod.rs:411:19: 411:20
+        StorageDead(_12);                // bb9[2]: scope 1 at src/header/netdb/mod.rs:411:20: 411:21
+        StorageLive(_15);                // bb9[3]: scope 1 at src/header/netdb/mod.rs:413:9: 413:14
+        _15 = const <alloc::boxed::Box<str> as core::default::Default>::default() -> bb10; // bb9[4]: scope 1 at src/header/netdb/mod.rs:413:27: 413:41
+                                         // ty::Const
+                                         // + ty: fn() -> alloc::boxed::Box<str> {<alloc::boxed::Box<str> as core::default::Default>::default}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:413:27: 413:39
+                                         // + ty: fn() -> alloc::boxed::Box<str> {<alloc::boxed::Box<str> as core::default::Default>::default}
+                                         // + user_ty: UserType(2)
+                                         // + literal: Const { ty: fn() -> alloc::boxed::Box<str> {<alloc::boxed::Box<str> as core::default::Default>::default}, val: Scalar(<ZST>) }
+    }
+
+    bb10: {
+        goto -> bb11;                    // bb10[0]: scope 2 at src/header/netdb/mod.rs:414:5: 424:6
+    }
+
+    bb11: {
+        StorageLive(_16);                // bb11[0]: scope 2 at src/header/netdb/mod.rs:414:11: 414:84
+        StorageLive(_17);                // bb11[1]: scope 2 at src/header/netdb/mod.rs:414:11: 414:62
+        StorageLive(_18);                // bb11[2]: scope 2 at src/header/netdb/mod.rs:414:11: 414:23
+        StorageLive(_19);                // bb11[3]: scope 2 at src/header/netdb/mod.rs:414:11: 414:12
+        _19 = &(*_15);                   // bb11[4]: scope 2 at src/header/netdb/mod.rs:414:11: 414:12
+        _18 = const core::str::<impl str>::is_empty(move _19) -> bb18; // bb11[5]: scope 2 at src/header/netdb/mod.rs:414:11: 414:23
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r str) -> bool {core::str::<impl str>::is_empty}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:414:13: 414:21
+                                         // + ty: for<'r> fn(&'r str) -> bool {core::str::<impl str>::is_empty}
+                                         // + literal: Const { ty: for<'r> fn(&'r str) -> bool {core::str::<impl str>::is_empty}, val: Scalar(<ZST>) }
+    }
+
+    bb12: {
+        _16 = const true;                // bb12[0]: scope 2 at src/header/netdb/mod.rs:414:11: 414:84
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x01)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:414:11: 414:84
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x01) }
+        goto -> bb14;                    // bb12[1]: scope 2 at src/header/netdb/mod.rs:414:11: 414:84
+    }
+
+    bb13: {
+        StorageLive(_27);                // bb13[0]: scope 2 at src/header/netdb/mod.rs:414:66: 414:84
+        StorageLive(_28);                // bb13[1]: scope 2 at src/header/netdb/mod.rs:414:66: 414:67
+        _28 = &(*_15);                   // bb13[2]: scope 2 at src/header/netdb/mod.rs:414:66: 414:67
+        _27 = const core::str::<impl str>::starts_with::<char>(move _28, const '#') -> bb23; // bb13[3]: scope 2 at src/header/netdb/mod.rs:414:66: 414:84
+                                         // ty::Const
+                                         // + ty: fn(&str, char) -> bool {core::str::<impl str>::starts_with::<char>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:414:68: 414:79
+                                         // + ty: fn(&str, char) -> bool {core::str::<impl str>::starts_with::<char>}
+                                         // + literal: Const { ty: fn(&str, char) -> bool {core::str::<impl str>::starts_with::<char>}, val: Scalar(<ZST>) }
+                                         // ty::Const
+                                         // + ty: char
+                                         // + val: Scalar(0x00000023)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:414:80: 414:83
+                                         // + ty: char
+                                         // + literal: Const { ty: char, val: Scalar(0x00000023) }
+    }
+
+    bb14: {
+        StorageDead(_27);                // bb14[0]: scope 2 at src/header/netdb/mod.rs:414:83: 414:84
+        StorageDead(_17);                // bb14[1]: scope 2 at src/header/netdb/mod.rs:414:83: 414:84
+        switchInt(_16) -> [false: bb24, otherwise: bb25]; // bb14[2]: scope 2 at src/header/netdb/mod.rs:414:5: 424:6
+    }
+
+    bb15: {
+        _17 = const true;                // bb15[0]: scope 2 at src/header/netdb/mod.rs:414:11: 414:62
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x01)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:414:11: 414:62
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x01) }
+        goto -> bb17;                    // bb15[1]: scope 2 at src/header/netdb/mod.rs:414:11: 414:62
+    }
+
+    bb16: {
+        StorageLive(_20);                // bb16[0]: scope 2 at src/header/netdb/mod.rs:414:27: 414:62
+        StorageLive(_21);                // bb16[1]: scope 2 at src/header/netdb/mod.rs:414:27: 414:54
+        StorageLive(_22);                // bb16[2]: scope 2 at src/header/netdb/mod.rs:414:27: 414:54
+        StorageLive(_23);                // bb16[3]: scope 2 at src/header/netdb/mod.rs:414:27: 414:47
+        StorageLive(_24);                // bb16[4]: scope 2 at src/header/netdb/mod.rs:414:27: 414:47
+        StorageLive(_25);                // bb16[5]: scope 2 at src/header/netdb/mod.rs:414:27: 414:28
+        _25 = &(*_15);                   // bb16[6]: scope 2 at src/header/netdb/mod.rs:414:27: 414:28
+        _24 = const core::str::<impl str>::split_whitespace(move _25) -> bb19; // bb16[7]: scope 2 at src/header/netdb/mod.rs:414:27: 414:47
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r str) -> core::str::SplitWhitespace<'r> {core::str::<impl str>::split_whitespace}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:414:29: 414:45
+                                         // + ty: for<'r> fn(&'r str) -> core::str::SplitWhitespace<'r> {core::str::<impl str>::split_whitespace}
+                                         // + literal: Const { ty: for<'r> fn(&'r str) -> core::str::SplitWhitespace<'r> {core::str::<impl str>::split_whitespace}, val: Scalar(<ZST>) }
+    }
+
+    bb17: {
+        StorageDead(_20);                // bb17[0]: scope 2 at src/header/netdb/mod.rs:414:61: 414:62
+        StorageDead(_18);                // bb17[1]: scope 2 at src/header/netdb/mod.rs:414:61: 414:62
+        switchInt(move _17) -> [false: bb13, otherwise: bb12]; // bb17[2]: scope 2 at src/header/netdb/mod.rs:414:11: 414:84
+    }
+
+    bb18: {
+        StorageDead(_19);                // bb18[0]: scope 2 at src/header/netdb/mod.rs:414:22: 414:23
+        switchInt(move _18) -> [false: bb16, otherwise: bb15]; // bb18[1]: scope 2 at src/header/netdb/mod.rs:414:11: 414:62
+    }
+
+    bb19: {
+        _23 = &mut _24;                  // bb19[0]: scope 2 at src/header/netdb/mod.rs:414:27: 414:47
+        StorageDead(_25);                // bb19[1]: scope 2 at src/header/netdb/mod.rs:414:46: 414:47
+        _22 = const <core::str::SplitWhitespace as core::iter::Iterator>::next(move _23) -> bb20; // bb19[2]: scope 2 at src/header/netdb/mod.rs:414:27: 414:54
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:414:48: 414:52
+                                         // + ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}, val: Scalar(<ZST>) }
+    }
+
+    bb20: {
+        _21 = &_22;                      // bb20[0]: scope 2 at src/header/netdb/mod.rs:414:27: 414:54
+        StorageDead(_23);                // bb20[1]: scope 2 at src/header/netdb/mod.rs:414:53: 414:54
+        StorageLive(_26);                // bb20[2]: scope 2 at src/header/netdb/mod.rs:414:58: 414:62
+        _26 = &(promoted[0]: core::option::Option<&str>); // bb20[3]: scope 2 at src/header/netdb/mod.rs:414:58: 414:62
+        _20 = const <core::option::Option<&str> as core::cmp::PartialEq>::eq(move _21, move _26) -> bb21; // bb20[4]: scope 2 at src/header/netdb/mod.rs:414:27: 414:62
+                                         // ty::Const
+                                         // + ty: for<'r, 's> fn(&'r core::option::Option<&str>, &'s core::option::Option<&str>) -> bool {<core::option::Option<&str> as core::cmp::PartialEq>::eq}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:414:27: 414:62
+                                         // + ty: for<'r, 's> fn(&'r core::option::Option<&str>, &'s core::option::Option<&str>) -> bool {<core::option::Option<&str> as core::cmp::PartialEq>::eq}
+                                         // + literal: Const { ty: for<'r, 's> fn(&'r core::option::Option<&str>, &'s core::option::Option<&str>) -> bool {<core::option::Option<&str> as core::cmp::PartialEq>::eq}, val: Scalar(<ZST>) }
+    }
+
+    bb21: {
+        StorageDead(_26);                // bb21[0]: scope 2 at src/header/netdb/mod.rs:414:61: 414:62
+        drop(_24) -> bb22;               // bb21[1]: scope 2 at src/header/netdb/mod.rs:414:61: 414:62
+    }
+
+    bb22: {
+        StorageDead(_24);                // bb22[0]: scope 2 at src/header/netdb/mod.rs:414:61: 414:62
+        StorageDead(_22);                // bb22[1]: scope 2 at src/header/netdb/mod.rs:414:61: 414:62
+        StorageDead(_21);                // bb22[2]: scope 2 at src/header/netdb/mod.rs:414:61: 414:62
+        _17 = move _20;                  // bb22[3]: scope 2 at src/header/netdb/mod.rs:414:11: 414:62
+        goto -> bb17;                    // bb22[4]: scope 2 at src/header/netdb/mod.rs:414:11: 414:62
+    }
+
+    bb23: {
+        StorageDead(_28);                // bb23[0]: scope 2 at src/header/netdb/mod.rs:414:83: 414:84
+        _16 = move _27;                  // bb23[1]: scope 2 at src/header/netdb/mod.rs:414:11: 414:84
+        goto -> bb14;                    // bb23[2]: scope 2 at src/header/netdb/mod.rs:414:11: 414:84
+    }
+
+    bb24: {
+        StorageDead(_16);                // bb24[0]: scope 2 at src/header/netdb/mod.rs:414:83: 414:84
+        StorageLive(_38);                // bb24[1]: scope 2 at src/header/netdb/mod.rs:425:5: 425:15
+        StorageLive(_39);                // bb24[2]: scope 2 at src/header/netdb/mod.rs:425:5: 425:8
+        _39 = &mut _10;                  // bb24[3]: scope 2 at src/header/netdb/mod.rs:425:5: 425:8
+        _38 = const platform::rlb::RawLineBuffer::next(move _39) -> bb37; // bb24[4]: scope 2 at src/header/netdb/mod.rs:425:5: 425:15
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut platform::rlb::RawLineBuffer) -> platform::rlb::Line<'r> {platform::rlb::RawLineBuffer::next}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:425:9: 425:13
+                                         // + ty: for<'r> fn(&'r mut platform::rlb::RawLineBuffer) -> platform::rlb::Line<'r> {platform::rlb::RawLineBuffer::next}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut platform::rlb::RawLineBuffer) -> platform::rlb::Line<'r> {platform::rlb::RawLineBuffer::next}, val: Scalar(<ZST>) }
+    }
+
+    bb25: {
+        StorageLive(_29);                // bb25[0]: scope 2 at src/header/netdb/mod.rs:415:13: 423:10
+        StorageLive(_30);                // bb25[1]: scope 2 at src/header/netdb/mod.rs:415:19: 415:29
+        StorageLive(_31);                // bb25[2]: scope 2 at src/header/netdb/mod.rs:415:19: 415:22
+        _31 = &mut _10;                  // bb25[3]: scope 2 at src/header/netdb/mod.rs:415:19: 415:22
+        _30 = const platform::rlb::RawLineBuffer::next(move _31) -> bb26; // bb25[4]: scope 2 at src/header/netdb/mod.rs:415:19: 415:29
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut platform::rlb::RawLineBuffer) -> platform::rlb::Line<'r> {platform::rlb::RawLineBuffer::next}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:415:23: 415:27
+                                         // + ty: for<'r> fn(&'r mut platform::rlb::RawLineBuffer) -> platform::rlb::Line<'r> {platform::rlb::RawLineBuffer::next}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut platform::rlb::RawLineBuffer) -> platform::rlb::Line<'r> {platform::rlb::RawLineBuffer::next}, val: Scalar(<ZST>) }
+    }
+
+    bb26: {
+        StorageDead(_31);                // bb26[0]: scope 2 at src/header/netdb/mod.rs:415:28: 415:29
+        _32 = discriminant(_30);         // bb26[1]: scope 2 at src/header/netdb/mod.rs:416:13: 416:26
+        switchInt(move _32) -> [2isize: bb28, otherwise: bb27]; // bb26[2]: scope 2 at src/header/netdb/mod.rs:416:13: 416:26
+    }
+
+    bb27: {
+        StorageLive(_35);                // bb27[0]: scope 2 at src/header/netdb/mod.rs:418:20: 418:39
+        StorageLive(_36);                // bb27[1]: scope 2 at src/header/netdb/mod.rs:418:20: 418:34
+        _36 = (header::netdb::PROTO_STAYOPEN: i32); // bb27[2]: scope 2 at src/header/netdb/mod.rs:418:20: 418:34
+        _35 = Eq(move _36, const 0i32);  // bb27[3]: scope 2 at src/header/netdb/mod.rs:418:20: 418:39
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000000)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:418:38: 418:39
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000000) }
+        StorageDead(_36);                // bb27[4]: scope 2 at src/header/netdb/mod.rs:418:38: 418:39
+        switchInt(_35) -> [false: bb32, otherwise: bb30]; // bb27[5]: scope 2 at src/header/netdb/mod.rs:418:17: 420:18
+    }
+
+    bb28: {
+        StorageLive(_33);                // bb28[0]: scope 2 at src/header/netdb/mod.rs:416:24: 416:25
+        _33 = ((_30 as Some).0: &[u8]);  // bb28[1]: scope 2 at src/header/netdb/mod.rs:416:24: 416:25
+        StorageLive(_34);                // bb28[2]: scope 3 at src/header/netdb/mod.rs:416:47: 416:48
+        _34 = _33;                       // bb28[3]: scope 3 at src/header/netdb/mod.rs:416:47: 416:48
+        _29 = const header::netdb::bytes_to_box_str(move _34) -> bb29; // bb28[4]: scope 3 at src/header/netdb/mod.rs:416:30: 416:49
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r [u8]) -> alloc::boxed::Box<str> {header::netdb::bytes_to_box_str}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:416:30: 416:46
+                                         // + ty: for<'r> fn(&'r [u8]) -> alloc::boxed::Box<str> {header::netdb::bytes_to_box_str}
+                                         // + literal: Const { ty: for<'r> fn(&'r [u8]) -> alloc::boxed::Box<str> {header::netdb::bytes_to_box_str}, val: Scalar(<ZST>) }
+    }
+
+    bb29: {
+        StorageDead(_34);                // bb29[0]: scope 3 at src/header/netdb/mod.rs:416:48: 416:49
+        StorageDead(_33);                // bb29[1]: scope 2 at src/header/netdb/mod.rs:416:49: 416:50
+        drop(_15) -> bb85;               // bb29[2]: scope 2 at src/header/netdb/mod.rs:415:9: 415:10
+    }
+
+    bb30: {
+        StorageLive(_37);                // bb30[0]: scope 2 at src/header/netdb/mod.rs:419:21: 419:34
+        _37 = const header::netdb::endprotoent() -> bb31; // bb30[1]: scope 2 at src/header/netdb/mod.rs:419:21: 419:34
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn() {header::netdb::endprotoent}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:419:21: 419:32
+                                         // + ty: unsafe extern "C" fn() {header::netdb::endprotoent}
+                                         // + literal: Const { ty: unsafe extern "C" fn() {header::netdb::endprotoent}, val: Scalar(<ZST>) }
+    }
+
+    bb31: {
+        StorageDead(_37);                // bb31[0]: scope 2 at src/header/netdb/mod.rs:419:34: 419:35
+        goto -> bb32;                    // bb31[1]: scope 2 at src/header/netdb/mod.rs:418:17: 420:18
+    }
+
+    bb32: {
+        StorageDead(_35);                // bb32[0]: scope 2 at src/header/netdb/mod.rs:420:17: 420:18
+        _0 = const core::ptr::null_mut::<header::netdb::protoent>() -> bb34; // bb32[1]: scope 2 at src/header/netdb/mod.rs:421:24: 421:39
+                                         // ty::Const
+                                         // + ty: fn() -> *mut header::netdb::protoent {core::ptr::null_mut::<header::netdb::protoent>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:421:24: 421:37
+                                         // + ty: fn() -> *mut header::netdb::protoent {core::ptr::null_mut::<header::netdb::protoent>}
+                                         // + literal: Const { ty: fn() -> *mut header::netdb::protoent {core::ptr::null_mut::<header::netdb::protoent>}, val: Scalar(<ZST>) }
+    }
+
+    bb33: {
+        return;                          // bb33[0]: scope 0 at src/header/netdb/mod.rs:461:2: 461:2
+    }
+
+    bb34: {
+        StorageDead(_29);                // bb34[0]: scope 2 at src/header/netdb/mod.rs:423:9: 423:10
+        StorageDead(_30);                // bb34[1]: scope 2 at src/header/netdb/mod.rs:423:10: 423:11
+        StorageDead(_16);                // bb34[2]: scope 2 at src/header/netdb/mod.rs:414:83: 414:84
+        drop(_15) -> bb35;               // bb34[3]: scope 1 at src/header/netdb/mod.rs:461:1: 461:2
+    }
+
+    bb35: {
+        StorageDead(_15);                // bb35[0]: scope 1 at src/header/netdb/mod.rs:461:1: 461:2
+        drop(_10) -> bb36;               // bb35[1]: scope 0 at src/header/netdb/mod.rs:461:1: 461:2
+    }
+
+    bb36: {
+        StorageDead(_10);                // bb36[0]: scope 0 at src/header/netdb/mod.rs:461:1: 461:2
+        goto -> bb33;                    // bb36[1]: scope 0 at src/header/netdb/mod.rs:421:17: 421:39
+    }
+
+    bb37: {
+        StorageDead(_39);                // bb37[0]: scope 2 at src/header/netdb/mod.rs:425:14: 425:15
+        StorageDead(_38);                // bb37[1]: scope 2 at src/header/netdb/mod.rs:425:15: 425:16
+        StorageLive(_40);                // bb37[2]: scope 2 at src/header/netdb/mod.rs:426:13: 426:27
+        StorageLive(_41);                // bb37[3]: scope 2 at src/header/netdb/mod.rs:426:13: 426:16
+        _41 = &_10;                      // bb37[4]: scope 2 at src/header/netdb/mod.rs:426:13: 426:16
+        _40 = const platform::rlb::RawLineBuffer::line_pos(move _41) -> bb38; // bb37[5]: scope 2 at src/header/netdb/mod.rs:426:13: 426:27
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r platform::rlb::RawLineBuffer) -> usize {platform::rlb::RawLineBuffer::line_pos}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:426:17: 426:25
+                                         // + ty: for<'r> fn(&'r platform::rlb::RawLineBuffer) -> usize {platform::rlb::RawLineBuffer::line_pos}
+                                         // + literal: Const { ty: for<'r> fn(&'r platform::rlb::RawLineBuffer) -> usize {platform::rlb::RawLineBuffer::line_pos}, val: Scalar(<ZST>) }
+    }
+
+    bb38: {
+        StorageDead(_41);                // bb38[0]: scope 2 at src/header/netdb/mod.rs:426:26: 426:27
+        (header::netdb::P_POS: usize) = move _40; // bb38[1]: scope 2 at src/header/netdb/mod.rs:426:5: 426:27
+        StorageDead(_40);                // bb38[2]: scope 2 at src/header/netdb/mod.rs:426:26: 426:27
+        StorageLive(_42);                // bb38[3]: scope 2 at src/header/netdb/mod.rs:428:9: 428:17
+        StorageLive(_43);                // bb38[4]: scope 2 at src/header/netdb/mod.rs:428:37: 428:38
+        _43 = &(*_15);                   // bb38[5]: scope 2 at src/header/netdb/mod.rs:428:37: 428:38
+        _42 = const core::str::<impl str>::split_whitespace(move _43) -> bb39; // bb38[6]: scope 2 at src/header/netdb/mod.rs:428:37: 428:57
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r str) -> core::str::SplitWhitespace<'r> {core::str::<impl str>::split_whitespace}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:428:39: 428:55
+                                         // + ty: for<'r> fn(&'r str) -> core::str::SplitWhitespace<'r> {core::str::<impl str>::split_whitespace}
+                                         // + literal: Const { ty: for<'r> fn(&'r str) -> core::str::SplitWhitespace<'r> {core::str::<impl str>::split_whitespace}, val: Scalar(<ZST>) }
+    }
+
+    bb39: {
+        StorageDead(_43);                // bb39[0]: scope 2 at src/header/netdb/mod.rs:428:56: 428:57
+        StorageLive(_44);                // bb39[1]: scope 4 at src/header/netdb/mod.rs:430:9: 430:23
+        StorageLive(_45);                // bb39[2]: scope 4 at src/header/netdb/mod.rs:430:35: 430:66
+        StorageLive(_46);                // bb39[3]: scope 4 at src/header/netdb/mod.rs:430:35: 430:66
+        StorageLive(_47);                // bb39[4]: scope 4 at src/header/netdb/mod.rs:430:35: 430:55
+        StorageLive(_48);                // bb39[5]: scope 4 at src/header/netdb/mod.rs:430:35: 430:55
+        StorageLive(_49);                // bb39[6]: scope 4 at src/header/netdb/mod.rs:430:35: 430:46
+        StorageLive(_50);                // bb39[7]: scope 4 at src/header/netdb/mod.rs:430:35: 430:39
+        _50 = &mut _42;                  // bb39[8]: scope 4 at src/header/netdb/mod.rs:430:35: 430:39
+        _49 = const <core::str::SplitWhitespace as core::iter::Iterator>::next(move _50) -> bb40; // bb39[9]: scope 4 at src/header/netdb/mod.rs:430:35: 430:46
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:430:40: 430:44
+                                         // + ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}, val: Scalar(<ZST>) }
+    }
+
+    bb40: {
+        StorageDead(_50);                // bb40[0]: scope 4 at src/header/netdb/mod.rs:430:45: 430:46
+        _48 = const core::option::Option::<&str>::unwrap(move _49) -> bb41; // bb40[1]: scope 4 at src/header/netdb/mod.rs:430:35: 430:55
+                                         // ty::Const
+                                         // + ty: fn(core::option::Option<&str>) -> &str {core::option::Option::<&str>::unwrap}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:430:47: 430:53
+                                         // + ty: fn(core::option::Option<&str>) -> &str {core::option::Option::<&str>::unwrap}
+                                         // + literal: Const { ty: fn(core::option::Option<&str>) -> &str {core::option::Option::<&str>::unwrap}, val: Scalar(<ZST>) }
+    }
+
+    bb41: {
+        _47 = _48;                       // bb41[0]: scope 4 at src/header/netdb/mod.rs:430:35: 430:55
+        StorageDead(_49);                // bb41[1]: scope 4 at src/header/netdb/mod.rs:430:54: 430:55
+        _46 = const core::str::<impl str>::as_bytes(move _47) -> bb42; // bb41[2]: scope 4 at src/header/netdb/mod.rs:430:35: 430:66
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r str) -> &'r [u8] {core::str::<impl str>::as_bytes}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:430:56: 430:64
+                                         // + ty: for<'r> fn(&'r str) -> &'r [u8] {core::str::<impl str>::as_bytes}
+                                         // + literal: Const { ty: for<'r> fn(&'r str) -> &'r [u8] {core::str::<impl str>::as_bytes}, val: Scalar(<ZST>) }
+    }
+
+    bb42: {
+        _45 = _46;                       // bb42[0]: scope 4 at src/header/netdb/mod.rs:430:35: 430:66
+        StorageDead(_47);                // bb42[1]: scope 4 at src/header/netdb/mod.rs:430:65: 430:66
+        _44 = const alloc::slice::<impl [u8]>::to_vec(move _45) -> bb43; // bb42[2]: scope 4 at src/header/netdb/mod.rs:430:35: 430:75
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:430:67: 430:73
+                                         // + ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}
+                                         // + literal: Const { ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}, val: Scalar(<ZST>) }
+    }
+
+    bb43: {
+        StorageDead(_45);                // bb43[0]: scope 4 at src/header/netdb/mod.rs:430:74: 430:75
+        StorageDead(_48);                // bb43[1]: scope 4 at src/header/netdb/mod.rs:430:75: 430:76
+        StorageDead(_46);                // bb43[2]: scope 4 at src/header/netdb/mod.rs:430:75: 430:76
+        StorageLive(_51);                // bb43[3]: scope 5 at src/header/netdb/mod.rs:431:5: 431:27
+        StorageLive(_52);                // bb43[4]: scope 5 at src/header/netdb/mod.rs:431:5: 431:15
+        _52 = &mut _44;                  // bb43[5]: scope 5 at src/header/netdb/mod.rs:431:5: 431:15
+        _51 = const alloc::vec::Vec::<u8>::push(move _52, const 0u8) -> bb44; // bb43[6]: scope 5 at src/header/netdb/mod.rs:431:5: 431:27
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>, u8) {alloc::vec::Vec::<u8>::push}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:431:16: 431:20
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>, u8) {alloc::vec::Vec::<u8>::push}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>, u8) {alloc::vec::Vec::<u8>::push}, val: Scalar(<ZST>) }
+                                         // ty::Const
+                                         // + ty: u8
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:431:21: 431:26
+                                         // + ty: u8
+                                         // + literal: Const { ty: u8, val: Scalar(0x00) }
+    }
+
+    bb44: {
+        StorageDead(_52);                // bb44[0]: scope 5 at src/header/netdb/mod.rs:431:26: 431:27
+        StorageDead(_51);                // bb44[1]: scope 5 at src/header/netdb/mod.rs:431:27: 431:28
+        StorageLive(_53);                // bb44[2]: scope 5 at src/header/netdb/mod.rs:433:9: 433:16
+        StorageLive(_54);                // bb44[3]: scope 5 at src/header/netdb/mod.rs:433:19: 433:50
+        StorageLive(_55);                // bb44[4]: scope 5 at src/header/netdb/mod.rs:433:19: 433:50
+        StorageLive(_56);                // bb44[5]: scope 5 at src/header/netdb/mod.rs:433:19: 433:39
+        StorageLive(_57);                // bb44[6]: scope 5 at src/header/netdb/mod.rs:433:19: 433:39
+        StorageLive(_58);                // bb44[7]: scope 5 at src/header/netdb/mod.rs:433:19: 433:30
+        StorageLive(_59);                // bb44[8]: scope 5 at src/header/netdb/mod.rs:433:19: 433:23
+        _59 = &mut _42;                  // bb44[9]: scope 5 at src/header/netdb/mod.rs:433:19: 433:23
+        _58 = const <core::str::SplitWhitespace as core::iter::Iterator>::next(move _59) -> bb45; // bb44[10]: scope 5 at src/header/netdb/mod.rs:433:19: 433:30
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:433:24: 433:28
+                                         // + ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}, val: Scalar(<ZST>) }
+    }
+
+    bb45: {
+        StorageDead(_59);                // bb45[0]: scope 5 at src/header/netdb/mod.rs:433:29: 433:30
+        _57 = const core::option::Option::<&str>::unwrap(move _58) -> bb46; // bb45[1]: scope 5 at src/header/netdb/mod.rs:433:19: 433:39
+                                         // ty::Const
+                                         // + ty: fn(core::option::Option<&str>) -> &str {core::option::Option::<&str>::unwrap}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:433:31: 433:37
+                                         // + ty: fn(core::option::Option<&str>) -> &str {core::option::Option::<&str>::unwrap}
+                                         // + literal: Const { ty: fn(core::option::Option<&str>) -> &str {core::option::Option::<&str>::unwrap}, val: Scalar(<ZST>) }
+    }
+
+    bb46: {
+        _56 = _57;                       // bb46[0]: scope 5 at src/header/netdb/mod.rs:433:19: 433:39
+        StorageDead(_58);                // bb46[1]: scope 5 at src/header/netdb/mod.rs:433:38: 433:39
+        _55 = const core::str::<impl str>::as_bytes(move _56) -> bb47; // bb46[2]: scope 5 at src/header/netdb/mod.rs:433:19: 433:50
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r str) -> &'r [u8] {core::str::<impl str>::as_bytes}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:433:40: 433:48
+                                         // + ty: for<'r> fn(&'r str) -> &'r [u8] {core::str::<impl str>::as_bytes}
+                                         // + literal: Const { ty: for<'r> fn(&'r str) -> &'r [u8] {core::str::<impl str>::as_bytes}, val: Scalar(<ZST>) }
+    }
+
+    bb47: {
+        _54 = _55;                       // bb47[0]: scope 5 at src/header/netdb/mod.rs:433:19: 433:50
+        StorageDead(_56);                // bb47[1]: scope 5 at src/header/netdb/mod.rs:433:49: 433:50
+        _53 = const alloc::slice::<impl [u8]>::to_vec(move _54) -> bb48; // bb47[2]: scope 5 at src/header/netdb/mod.rs:433:19: 433:59
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:433:51: 433:57
+                                         // + ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}
+                                         // + literal: Const { ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}, val: Scalar(<ZST>) }
+    }
+
+    bb48: {
+        StorageDead(_54);                // bb48[0]: scope 5 at src/header/netdb/mod.rs:433:58: 433:59
+        StorageDead(_57);                // bb48[1]: scope 5 at src/header/netdb/mod.rs:433:59: 433:60
+        StorageDead(_55);                // bb48[2]: scope 5 at src/header/netdb/mod.rs:433:59: 433:60
+        StorageLive(_60);                // bb48[3]: scope 6 at src/header/netdb/mod.rs:434:5: 434:20
+        StorageLive(_61);                // bb48[4]: scope 6 at src/header/netdb/mod.rs:434:5: 434:8
+        _61 = &mut _53;                  // bb48[5]: scope 6 at src/header/netdb/mod.rs:434:5: 434:8
+        _60 = const alloc::vec::Vec::<u8>::push(move _61, const 0u8) -> bb49; // bb48[6]: scope 6 at src/header/netdb/mod.rs:434:5: 434:20
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>, u8) {alloc::vec::Vec::<u8>::push}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:434:9: 434:13
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>, u8) {alloc::vec::Vec::<u8>::push}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>, u8) {alloc::vec::Vec::<u8>::push}, val: Scalar(<ZST>) }
+                                         // ty::Const
+                                         // + ty: u8
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:434:14: 434:19
+                                         // + ty: u8
+                                         // + literal: Const { ty: u8, val: Scalar(0x00) }
+    }
+
+    bb49: {
+        StorageDead(_61);                // bb49[0]: scope 6 at src/header/netdb/mod.rs:434:19: 434:20
+        StorageDead(_60);                // bb49[1]: scope 6 at src/header/netdb/mod.rs:434:20: 434:21
+        StorageLive(_62);                // bb49[2]: scope 6 at src/header/netdb/mod.rs:435:22: 435:70
+        StorageLive(_63);                // bb49[3]: scope 6 at src/header/netdb/mod.rs:435:27: 435:69
+        StorageLive(_64);                // bb49[4]: scope 6 at src/header/netdb/mod.rs:435:27: 435:69
+        StorageLive(_65);                // bb49[5]: scope 6 at src/header/netdb/mod.rs:435:27: 435:58
+        StorageLive(_66);                // bb49[6]: scope 6 at src/header/netdb/mod.rs:435:27: 435:45
+        StorageLive(_67);                // bb49[7]: scope 6 at src/header/netdb/mod.rs:435:27: 435:45
+        StorageLive(_68);                // bb49[8]: scope 6 at src/header/netdb/mod.rs:435:27: 435:30
+        _68 = &mut _53;                  // bb49[9]: scope 6 at src/header/netdb/mod.rs:435:27: 435:30
+        _67 = const alloc::vec::Vec::<u8>::as_mut_slice(move _68) -> bb50; // bb49[10]: scope 6 at src/header/netdb/mod.rs:435:27: 435:45
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>) -> &'r mut [u8] {alloc::vec::Vec::<u8>::as_mut_slice}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:435:31: 435:43
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>) -> &'r mut [u8] {alloc::vec::Vec::<u8>::as_mut_slice}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>) -> &'r mut [u8] {alloc::vec::Vec::<u8>::as_mut_slice}, val: Scalar(<ZST>) }
+    }
+
+    bb50: {
+        _66 = _67;                       // bb50[0]: scope 6 at src/header/netdb/mod.rs:435:27: 435:45
+        StorageDead(_68);                // bb50[1]: scope 6 at src/header/netdb/mod.rs:435:44: 435:45
+        _65 = const core::slice::<impl [u8]>::as_mut_ptr(move _66) -> bb51; // bb50[2]: scope 6 at src/header/netdb/mod.rs:435:27: 435:58
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut [u8]) -> *mut u8 {core::slice::<impl [u8]>::as_mut_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:435:46: 435:56
+                                         // + ty: for<'r> fn(&'r mut [u8]) -> *mut u8 {core::slice::<impl [u8]>::as_mut_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut [u8]) -> *mut u8 {core::slice::<impl [u8]>::as_mut_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb51: {
+        StorageDead(_66);                // bb51[0]: scope 6 at src/header/netdb/mod.rs:435:57: 435:58
+        _64 = move _65 as *mut i8 (Misc); // bb51[1]: scope 6 at src/header/netdb/mod.rs:435:27: 435:69
+        _63 = move _64 as *const i8 (Pointer(MutToConstPointer)); // bb51[2]: scope 6 at src/header/netdb/mod.rs:435:27: 435:69
+        StorageDead(_65);                // bb51[3]: scope 6 at src/header/netdb/mod.rs:435:68: 435:69
+        StorageDead(_64);                // bb51[4]: scope 6 at src/header/netdb/mod.rs:435:68: 435:69
+        _62 = const header::stdlib::atoi(move _63) -> bb52; // bb51[5]: scope 6 at src/header/netdb/mod.rs:435:22: 435:70
+                                         // ty::Const
+                                         // + ty: extern "C" fn(*const i8) -> i32 {header::stdlib::atoi}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:435:22: 435:26
+                                         // + ty: extern "C" fn(*const i8) -> i32 {header::stdlib::atoi}
+                                         // + literal: Const { ty: extern "C" fn(*const i8) -> i32 {header::stdlib::atoi}, val: Scalar(<ZST>) }
+    }
+
+    bb52: {
+        StorageDead(_63);                // bb52[0]: scope 6 at src/header/netdb/mod.rs:435:69: 435:70
+        (((header::netdb::PROTO_NUM: core::option::Option<i32>) as Some).0: i32) = move _62; // bb52[1]: scope 6 at src/header/netdb/mod.rs:435:5: 435:71
+        discriminant((header::netdb::PROTO_NUM: core::option::Option<i32>)) = 1; // bb52[2]: scope 6 at src/header/netdb/mod.rs:435:5: 435:71
+        StorageDead(_62);                // bb52[3]: scope 6 at src/header/netdb/mod.rs:435:70: 435:71
+        StorageDead(_67);                // bb52[4]: scope 6 at src/header/netdb/mod.rs:435:71: 435:72
+        StorageLive(_69);                // bb52[5]: scope 6 at src/header/netdb/mod.rs:437:9: 437:27
+        _69 = const alloc::vec::Vec::<alloc::vec::Vec<u8>>::new() -> bb53; // bb52[6]: scope 6 at src/header/netdb/mod.rs:437:44: 437:54
+                                         // ty::Const
+                                         // + ty: fn() -> alloc::vec::Vec<alloc::vec::Vec<u8>> {alloc::vec::Vec::<alloc::vec::Vec<u8>>::new}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:437:44: 437:52
+                                         // + ty: fn() -> alloc::vec::Vec<alloc::vec::Vec<u8>> {alloc::vec::Vec::<alloc::vec::Vec<u8>>::new}
+                                         // + user_ty: UserType(9)
+                                         // + literal: Const { ty: fn() -> alloc::vec::Vec<alloc::vec::Vec<u8>> {alloc::vec::Vec::<alloc::vec::Vec<u8>>::new}, val: Scalar(<ZST>) }
+    }
+
+    bb53: {
+        StorageLive(_70);                // bb53[0]: scope 7 at src/header/netdb/mod.rs:438:14: 438:18
+        StorageLive(_71);                // bb53[1]: scope 7 at src/header/netdb/mod.rs:438:14: 438:18
+        _71 = move _42;                  // bb53[2]: scope 7 at src/header/netdb/mod.rs:438:14: 438:18
+        _70 = const <core::str::SplitWhitespace as core::iter::IntoIterator>::into_iter(move _71) -> bb54; // bb53[3]: scope 7 at src/header/netdb/mod.rs:438:14: 438:18
+                                         // ty::Const
+                                         // + ty: fn(core::str::SplitWhitespace) -> <core::str::SplitWhitespace as core::iter::IntoIterator>::IntoIter {<core::str::SplitWhitespace as core::iter::IntoIterator>::into_iter}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:438:14: 438:18
+                                         // + ty: fn(core::str::SplitWhitespace) -> <core::str::SplitWhitespace as core::iter::IntoIterator>::IntoIter {<core::str::SplitWhitespace as core::iter::IntoIterator>::into_iter}
+                                         // + literal: Const { ty: fn(core::str::SplitWhitespace) -> <core::str::SplitWhitespace as core::iter::IntoIterator>::IntoIter {<core::str::SplitWhitespace as core::iter::IntoIterator>::into_iter}, val: Scalar(<ZST>) }
+    }
+
+    bb54: {
+        StorageDead(_71);                // bb54[0]: scope 7 at src/header/netdb/mod.rs:438:17: 438:18
+        StorageLive(_72);                // bb54[1]: scope 7 at src/header/netdb/mod.rs:438:14: 438:18
+        _72 = move _70;                  // bb54[2]: scope 7 at src/header/netdb/mod.rs:438:14: 438:18
+        goto -> bb55;                    // bb54[3]: scope 8 at src/header/netdb/mod.rs:438:5: 442:6
+    }
+
+    bb55: {
+        StorageLive(_73);                // bb55[0]: scope 8 at src/header/netdb/mod.rs:438:14: 438:18
+        StorageLive(_74);                // bb55[1]: scope 9 at src/header/netdb/mod.rs:438:14: 438:18
+        StorageLive(_75);                // bb55[2]: scope 9 at src/header/netdb/mod.rs:438:14: 438:18
+        StorageLive(_76);                // bb55[3]: scope 9 at src/header/netdb/mod.rs:438:14: 438:18
+        _76 = &mut _72;                  // bb55[4]: scope 9 at src/header/netdb/mod.rs:438:14: 438:18
+        _75 = _76;                       // bb55[5]: scope 9 at src/header/netdb/mod.rs:438:14: 438:18
+        _74 = const <core::str::SplitWhitespace as core::iter::Iterator>::next(move _75) -> bb56; // bb55[6]: scope 9 at src/header/netdb/mod.rs:438:14: 438:18
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:438:14: 438:18
+                                         // + ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut core::str::SplitWhitespace) -> core::option::Option<<core::str::SplitWhitespace as core::iter::Iterator>::Item> {<core::str::SplitWhitespace as core::iter::Iterator>::next}, val: Scalar(<ZST>) }
+    }
+
+    bb56: {
+        StorageDead(_75);                // bb56[0]: scope 9 at src/header/netdb/mod.rs:438:17: 438:18
+        _77 = discriminant(_74);         // bb56[1]: scope 9 at src/header/netdb/mod.rs:438:9: 438:10
+        switchInt(move _77) -> [0isize: bb57, 1isize: bb59, otherwise: bb58]; // bb56[2]: scope 9 at src/header/netdb/mod.rs:438:9: 438:10
+    }
+
+    bb57: {
+        StorageDead(_76);                // bb57[0]: scope 9 at src/header/netdb/mod.rs:438:17: 438:18
+        StorageDead(_74);                // bb57[1]: scope 9 at src/header/netdb/mod.rs:438:17: 438:18
+        StorageDead(_73);                // bb57[2]: scope 8 at src/header/netdb/mod.rs:442:5: 442:6
+        drop(_72) -> bb64;               // bb57[3]: scope 7 at src/header/netdb/mod.rs:442:5: 442:6
+    }
+
+    bb58: {
+        unreachable;                     // bb58[0]: scope 9 at src/header/netdb/mod.rs:438:14: 438:18
+    }
+
+    bb59: {
+        StorageLive(_78);                // bb59[0]: scope 9 at src/header/netdb/mod.rs:438:9: 438:10
+        _78 = ((_74 as Some).0: &str);   // bb59[1]: scope 9 at src/header/netdb/mod.rs:438:9: 438:10
+        StorageLive(_79);                // bb59[2]: scope 10 at src/header/netdb/mod.rs:438:9: 438:10
+        _79 = _78;                       // bb59[3]: scope 10 at src/header/netdb/mod.rs:438:9: 438:10
+        _73 = move _79;                  // bb59[4]: scope 10 at src/header/netdb/mod.rs:438:9: 438:10
+        StorageDead(_79);                // bb59[5]: scope 10 at src/header/netdb/mod.rs:438:9: 438:10
+        StorageDead(_78);                // bb59[6]: scope 9 at src/header/netdb/mod.rs:438:9: 438:10
+        StorageDead(_76);                // bb59[7]: scope 9 at src/header/netdb/mod.rs:438:17: 438:18
+        StorageDead(_74);                // bb59[8]: scope 9 at src/header/netdb/mod.rs:438:17: 438:18
+        StorageLive(_80);                // bb59[9]: scope 9 at src/header/netdb/mod.rs:438:9: 438:10
+        _80 = _73;                       // bb59[10]: scope 9 at src/header/netdb/mod.rs:438:14: 438:18
+        StorageLive(_81);                // bb59[11]: scope 11 at src/header/netdb/mod.rs:439:13: 439:22
+        StorageLive(_82);                // bb59[12]: scope 11 at src/header/netdb/mod.rs:439:25: 439:37
+        StorageLive(_83);                // bb59[13]: scope 11 at src/header/netdb/mod.rs:439:25: 439:37
+        StorageLive(_84);                // bb59[14]: scope 11 at src/header/netdb/mod.rs:439:25: 439:26
+        _84 = _80;                       // bb59[15]: scope 11 at src/header/netdb/mod.rs:439:25: 439:26
+        _83 = const core::str::<impl str>::as_bytes(move _84) -> bb60; // bb59[16]: scope 11 at src/header/netdb/mod.rs:439:25: 439:37
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r str) -> &'r [u8] {core::str::<impl str>::as_bytes}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:439:27: 439:35
+                                         // + ty: for<'r> fn(&'r str) -> &'r [u8] {core::str::<impl str>::as_bytes}
+                                         // + literal: Const { ty: for<'r> fn(&'r str) -> &'r [u8] {core::str::<impl str>::as_bytes}, val: Scalar(<ZST>) }
+    }
+
+    bb60: {
+        _82 = _83;                       // bb60[0]: scope 11 at src/header/netdb/mod.rs:439:25: 439:37
+        StorageDead(_84);                // bb60[1]: scope 11 at src/header/netdb/mod.rs:439:36: 439:37
+        _81 = const alloc::slice::<impl [u8]>::to_vec(move _82) -> bb61; // bb60[2]: scope 11 at src/header/netdb/mod.rs:439:25: 439:46
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:439:38: 439:44
+                                         // + ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}
+                                         // + literal: Const { ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}, val: Scalar(<ZST>) }
+    }
+
+    bb61: {
+        StorageDead(_82);                // bb61[0]: scope 11 at src/header/netdb/mod.rs:439:45: 439:46
+        StorageDead(_83);                // bb61[1]: scope 11 at src/header/netdb/mod.rs:439:46: 439:47
+        StorageLive(_85);                // bb61[2]: scope 12 at src/header/netdb/mod.rs:440:9: 440:26
+        StorageLive(_86);                // bb61[3]: scope 12 at src/header/netdb/mod.rs:440:9: 440:14
+        _86 = &mut _81;                  // bb61[4]: scope 12 at src/header/netdb/mod.rs:440:9: 440:14
+        _85 = const alloc::vec::Vec::<u8>::push(move _86, const 0u8) -> bb62; // bb61[5]: scope 12 at src/header/netdb/mod.rs:440:9: 440:26
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>, u8) {alloc::vec::Vec::<u8>::push}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:440:15: 440:19
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>, u8) {alloc::vec::Vec::<u8>::push}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>, u8) {alloc::vec::Vec::<u8>::push}, val: Scalar(<ZST>) }
+                                         // ty::Const
+                                         // + ty: u8
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:440:20: 440:25
+                                         // + ty: u8
+                                         // + literal: Const { ty: u8, val: Scalar(0x00) }
+    }
+
+    bb62: {
+        StorageDead(_86);                // bb62[0]: scope 12 at src/header/netdb/mod.rs:440:25: 440:26
+        StorageDead(_85);                // bb62[1]: scope 12 at src/header/netdb/mod.rs:440:26: 440:27
+        StorageLive(_87);                // bb62[2]: scope 12 at src/header/netdb/mod.rs:441:9: 441:35
+        StorageLive(_88);                // bb62[3]: scope 12 at src/header/netdb/mod.rs:441:9: 441:23
+        _88 = &mut _69;                  // bb62[4]: scope 12 at src/header/netdb/mod.rs:441:9: 441:23
+        StorageLive(_89);                // bb62[5]: scope 12 at src/header/netdb/mod.rs:441:29: 441:34
+        _89 = move _81;                  // bb62[6]: scope 12 at src/header/netdb/mod.rs:441:29: 441:34
+        _87 = const alloc::vec::Vec::<alloc::vec::Vec<u8>>::push(move _88, move _89) -> bb63; // bb62[7]: scope 12 at src/header/netdb/mod.rs:441:9: 441:35
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<alloc::vec::Vec<u8>>, alloc::vec::Vec<u8>) {alloc::vec::Vec::<alloc::vec::Vec<u8>>::push}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:441:24: 441:28
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<alloc::vec::Vec<u8>>, alloc::vec::Vec<u8>) {alloc::vec::Vec::<alloc::vec::Vec<u8>>::push}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<alloc::vec::Vec<u8>>, alloc::vec::Vec<u8>) {alloc::vec::Vec::<alloc::vec::Vec<u8>>::push}, val: Scalar(<ZST>) }
+    }
+
+    bb63: {
+        StorageDead(_89);                // bb63[0]: scope 12 at src/header/netdb/mod.rs:441:34: 441:35
+        StorageDead(_88);                // bb63[1]: scope 12 at src/header/netdb/mod.rs:441:34: 441:35
+        StorageDead(_87);                // bb63[2]: scope 12 at src/header/netdb/mod.rs:441:35: 441:36
+        StorageDead(_81);                // bb63[3]: scope 11 at src/header/netdb/mod.rs:442:5: 442:6
+        StorageDead(_80);                // bb63[4]: scope 9 at src/header/netdb/mod.rs:442:5: 442:6
+        StorageDead(_73);                // bb63[5]: scope 8 at src/header/netdb/mod.rs:442:5: 442:6
+        goto -> bb55;                    // bb63[6]: scope 8 at src/header/netdb/mod.rs:438:5: 442:6
+    }
+
+    bb64: {
+        StorageDead(_72);                // bb64[0]: scope 7 at src/header/netdb/mod.rs:442:5: 442:6
+        StorageDead(_70);                // bb64[1]: scope 7 at src/header/netdb/mod.rs:438:17: 438:18
+        StorageLive(_90);                // bb64[2]: scope 7 at src/header/netdb/mod.rs:443:9: 443:26
+        StorageLive(_91);                // bb64[3]: scope 7 at src/header/netdb/mod.rs:443:43: 445:44
+        StorageLive(_92);                // bb64[4]: scope 7 at src/header/netdb/mod.rs:443:43: 444:20
+        StorageLive(_93);                // bb64[5]: scope 7 at src/header/netdb/mod.rs:443:43: 443:57
+        StorageLive(_94);                // bb64[6]: scope 7 at src/header/netdb/mod.rs:443:43: 443:57
+        StorageLive(_95);                // bb64[7]: scope 7 at src/header/netdb/mod.rs:443:43: 443:57
+        _95 = &mut _69;                  // bb64[8]: scope 7 at src/header/netdb/mod.rs:443:43: 443:57
+        _94 = const <alloc::vec::Vec<alloc::vec::Vec<u8>> as core::ops::DerefMut>::deref_mut(move _95) -> bb65; // bb64[9]: scope 7 at src/header/netdb/mod.rs:443:43: 443:57
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<alloc::vec::Vec<u8>>) -> &'r mut <alloc::vec::Vec<alloc::vec::Vec<u8>> as lazy_static::__Deref>::Target {<alloc::vec::Vec<alloc::vec::Vec<u8>> as core::ops::DerefMut>::deref_mut}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:443:43: 443:57
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<alloc::vec::Vec<u8>>) -> &'r mut <alloc::vec::Vec<alloc::vec::Vec<u8>> as lazy_static::__Deref>::Target {<alloc::vec::Vec<alloc::vec::Vec<u8>> as core::ops::DerefMut>::deref_mut}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<alloc::vec::Vec<u8>>) -> &'r mut <alloc::vec::Vec<alloc::vec::Vec<u8>> as lazy_static::__Deref>::Target {<alloc::vec::Vec<alloc::vec::Vec<u8>> as core::ops::DerefMut>::deref_mut}, val: Scalar(<ZST>) }
+    }
+
+    bb65: {
+        _93 = _94;                       // bb65[0]: scope 7 at src/header/netdb/mod.rs:443:43: 443:57
+        StorageDead(_95);                // bb65[1]: scope 7 at src/header/netdb/mod.rs:443:56: 443:57
+        _92 = const core::slice::<impl [alloc::vec::Vec<u8>]>::iter_mut(move _93) -> bb66; // bb65[2]: scope 7 at src/header/netdb/mod.rs:443:43: 444:20
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut [alloc::vec::Vec<u8>]) -> core::slice::IterMut<'r, alloc::vec::Vec<u8>> {core::slice::<impl [alloc::vec::Vec<u8>]>::iter_mut}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:444:10: 444:18
+                                         // + ty: for<'r> fn(&'r mut [alloc::vec::Vec<u8>]) -> core::slice::IterMut<'r, alloc::vec::Vec<u8>> {core::slice::<impl [alloc::vec::Vec<u8>]>::iter_mut}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut [alloc::vec::Vec<u8>]) -> core::slice::IterMut<'r, alloc::vec::Vec<u8>> {core::slice::<impl [alloc::vec::Vec<u8>]>::iter_mut}, val: Scalar(<ZST>) }
+    }
+
+    bb66: {
+        StorageDead(_93);                // bb66[0]: scope 7 at src/header/netdb/mod.rs:444:19: 444:20
+        StorageLive(_96);                // bb66[1]: scope 7 at src/header/netdb/mod.rs:445:14: 445:43
+        _91 = const <core::slice::IterMut<alloc::vec::Vec<u8>> as core::iter::Iterator>::map::<*mut i8, [closure@src/header/netdb/mod.rs:445:14: 445:43]>(move _92, move _96) -> bb67; // bb66[2]: scope 7 at src/header/netdb/mod.rs:443:43: 445:44
+                                         // ty::Const
+                                         // + ty: fn(core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]) -> core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]> {<core::slice::IterMut<alloc::vec::Vec<u8>> as core::iter::Iterator>::map::<*mut i8, [closure@src/header/netdb/mod.rs:445:14: 445:43]>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:445:10: 445:13
+                                         // + ty: fn(core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]) -> core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]> {<core::slice::IterMut<alloc::vec::Vec<u8>> as core::iter::Iterator>::map::<*mut i8, [closure@src/header/netdb/mod.rs:445:14: 445:43]>}
+                                         // + literal: Const { ty: fn(core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]) -> core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]> {<core::slice::IterMut<alloc::vec::Vec<u8>> as core::iter::Iterator>::map::<*mut i8, [closure@src/header/netdb/mod.rs:445:14: 445:43]>}, val: Scalar(<ZST>) }
+    }
+
+    bb67: {
+        StorageDead(_96);                // bb67[0]: scope 7 at src/header/netdb/mod.rs:445:43: 445:44
+        StorageDead(_92);                // bb67[1]: scope 7 at src/header/netdb/mod.rs:445:43: 445:44
+        _90 = const <core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]> as core::iter::Iterator>::collect::<alloc::vec::Vec<*mut i8>>(move _91) -> bb68; // bb67[2]: scope 7 at src/header/netdb/mod.rs:443:43: 446:19
+                                         // ty::Const
+                                         // + ty: fn(core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]>) -> alloc::vec::Vec<*mut i8> {<core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]> as core::iter::Iterator>::collect::<alloc::vec::Vec<*mut i8>>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:446:10: 446:17
+                                         // + ty: fn(core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]>) -> alloc::vec::Vec<*mut i8> {<core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]> as core::iter::Iterator>::collect::<alloc::vec::Vec<*mut i8>>}
+                                         // + literal: Const { ty: fn(core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]>) -> alloc::vec::Vec<*mut i8> {<core::iter::Map<core::slice::IterMut<alloc::vec::Vec<u8>>, [closure@src/header/netdb/mod.rs:445:14: 445:43]> as core::iter::Iterator>::collect::<alloc::vec::Vec<*mut i8>>}, val: Scalar(<ZST>) }
+    }
+
+    bb68: {
+        StorageDead(_91);                // bb68[0]: scope 7 at src/header/netdb/mod.rs:446:18: 446:19
+        StorageDead(_94);                // bb68[1]: scope 7 at src/header/netdb/mod.rs:446:19: 446:20
+        StorageLive(_97);                // bb68[2]: scope 13 at src/header/netdb/mod.rs:447:5: 447:40
+        StorageLive(_98);                // bb68[3]: scope 13 at src/header/netdb/mod.rs:447:5: 447:18
+        _98 = &mut _90;                  // bb68[4]: scope 13 at src/header/netdb/mod.rs:447:5: 447:18
+        StorageLive(_99);                // bb68[5]: scope 13 at src/header/netdb/mod.rs:447:24: 447:39
+        _99 = const core::ptr::null_mut::<i8>() -> bb69; // bb68[6]: scope 13 at src/header/netdb/mod.rs:447:24: 447:39
+                                         // ty::Const
+                                         // + ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:447:24: 447:37
+                                         // + ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}
+                                         // + literal: Const { ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}, val: Scalar(<ZST>) }
+    }
+
+    bb69: {
+        _97 = const alloc::vec::Vec::<*mut i8>::push(move _98, move _99) -> bb70; // bb69[0]: scope 13 at src/header/netdb/mod.rs:447:5: 447:40
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>, *mut i8) {alloc::vec::Vec::<*mut i8>::push}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:447:19: 447:23
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>, *mut i8) {alloc::vec::Vec::<*mut i8>::push}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>, *mut i8) {alloc::vec::Vec::<*mut i8>::push}, val: Scalar(<ZST>) }
+    }
+
+    bb70: {
+        StorageDead(_99);                // bb70[0]: scope 13 at src/header/netdb/mod.rs:447:39: 447:40
+        StorageDead(_98);                // bb70[1]: scope 13 at src/header/netdb/mod.rs:447:39: 447:40
+        StorageDead(_97);                // bb70[2]: scope 13 at src/header/netdb/mod.rs:447:40: 447:41
+        StorageLive(_100);               // bb70[3]: scope 13 at src/header/netdb/mod.rs:449:21: 449:41
+        StorageLive(_101);               // bb70[4]: scope 13 at src/header/netdb/mod.rs:449:26: 449:40
+        _101 = move _69;                 // bb70[5]: scope 13 at src/header/netdb/mod.rs:449:26: 449:40
+        ((_100 as Some).0: alloc::vec::Vec<alloc::vec::Vec<u8>>) = move _101; // bb70[6]: scope 13 at src/header/netdb/mod.rs:449:21: 449:41
+        discriminant(_100) = 1;          // bb70[7]: scope 13 at src/header/netdb/mod.rs:449:21: 449:41
+        StorageDead(_101);               // bb70[8]: scope 13 at src/header/netdb/mod.rs:449:40: 449:41
+        drop((header::netdb::PROTO_ALIASES: core::option::Option<alloc::vec::Vec<alloc::vec::Vec<u8>>>)) -> bb86; // bb70[9]: scope 13 at src/header/netdb/mod.rs:449:5: 449:18
+    }
+
+    bb71: {
+        StorageDead(_111);               // bb71[0]: scope 13 at src/header/netdb/mod.rs:453:35: 453:36
+        _109 = const core::option::Option::<&mut alloc::vec::Vec<u8>>::unwrap(move _110) -> bb72; // bb71[1]: scope 13 at src/header/netdb/mod.rs:453:17: 453:45
+                                         // ty::Const
+                                         // + ty: fn(core::option::Option<&mut alloc::vec::Vec<u8>>) -> &mut alloc::vec::Vec<u8> {core::option::Option::<&mut alloc::vec::Vec<u8>>::unwrap}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:453:37: 453:43
+                                         // + ty: fn(core::option::Option<&mut alloc::vec::Vec<u8>>) -> &mut alloc::vec::Vec<u8> {core::option::Option::<&mut alloc::vec::Vec<u8>>::unwrap}
+                                         // + literal: Const { ty: fn(core::option::Option<&mut alloc::vec::Vec<u8>>) -> &mut alloc::vec::Vec<u8> {core::option::Option::<&mut alloc::vec::Vec<u8>>::unwrap}, val: Scalar(<ZST>) }
+    }
+
+    bb72: {
+        _108 = _109;                     // bb72[0]: scope 13 at src/header/netdb/mod.rs:453:17: 453:45
+        StorageDead(_110);               // bb72[1]: scope 13 at src/header/netdb/mod.rs:453:44: 453:45
+        _107 = const alloc::vec::Vec::<u8>::as_mut_slice(move _108) -> bb73; // bb72[2]: scope 13 at src/header/netdb/mod.rs:453:17: 453:60
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>) -> &'r mut [u8] {alloc::vec::Vec::<u8>::as_mut_slice}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:453:46: 453:58
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>) -> &'r mut [u8] {alloc::vec::Vec::<u8>::as_mut_slice}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>) -> &'r mut [u8] {alloc::vec::Vec::<u8>::as_mut_slice}, val: Scalar(<ZST>) }
+    }
+
+    bb73: {
+        _106 = _107;                     // bb73[0]: scope 13 at src/header/netdb/mod.rs:453:17: 453:60
+        StorageDead(_108);               // bb73[1]: scope 13 at src/header/netdb/mod.rs:453:59: 453:60
+        _105 = const core::slice::<impl [u8]>::as_mut_ptr(move _106) -> bb74; // bb73[2]: scope 13 at src/header/netdb/mod.rs:453:17: 453:73
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut [u8]) -> *mut u8 {core::slice::<impl [u8]>::as_mut_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:453:61: 453:71
+                                         // + ty: for<'r> fn(&'r mut [u8]) -> *mut u8 {core::slice::<impl [u8]>::as_mut_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut [u8]) -> *mut u8 {core::slice::<impl [u8]>::as_mut_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb74: {
+        StorageDead(_106);               // bb74[0]: scope 13 at src/header/netdb/mod.rs:453:72: 453:73
+        _104 = move _105 as *mut i8 (Misc); // bb74[1]: scope 13 at src/header/netdb/mod.rs:453:17: 453:88
+        StorageDead(_105);               // bb74[2]: scope 13 at src/header/netdb/mod.rs:453:87: 453:88
+        StorageLive(_112);               // bb74[3]: scope 13 at src/header/netdb/mod.rs:454:20: 454:77
+        StorageLive(_113);               // bb74[4]: scope 13 at src/header/netdb/mod.rs:454:20: 454:48
+        StorageLive(_114);               // bb74[5]: scope 13 at src/header/netdb/mod.rs:454:20: 454:48
+        StorageLive(_115);               // bb74[6]: scope 13 at src/header/netdb/mod.rs:454:20: 454:33
+        _115 = &mut _90;                 // bb74[7]: scope 13 at src/header/netdb/mod.rs:454:20: 454:33
+        _114 = const alloc::vec::Vec::<*mut i8>::as_mut_slice(move _115) -> bb75; // bb74[8]: scope 13 at src/header/netdb/mod.rs:454:20: 454:48
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>) -> &'r mut [*mut i8] {alloc::vec::Vec::<*mut i8>::as_mut_slice}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:454:34: 454:46
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>) -> &'r mut [*mut i8] {alloc::vec::Vec::<*mut i8>::as_mut_slice}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>) -> &'r mut [*mut i8] {alloc::vec::Vec::<*mut i8>::as_mut_slice}, val: Scalar(<ZST>) }
+    }
+
+    bb75: {
+        _113 = _114;                     // bb75[0]: scope 13 at src/header/netdb/mod.rs:454:20: 454:48
+        StorageDead(_115);               // bb75[1]: scope 13 at src/header/netdb/mod.rs:454:47: 454:48
+        _112 = const core::slice::<impl [*mut i8]>::as_mut_ptr(move _113) -> bb76; // bb75[2]: scope 13 at src/header/netdb/mod.rs:454:20: 454:61
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut [*mut i8]) -> *mut *mut i8 {core::slice::<impl [*mut i8]>::as_mut_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:454:49: 454:59
+                                         // + ty: for<'r> fn(&'r mut [*mut i8]) -> *mut *mut i8 {core::slice::<impl [*mut i8]>::as_mut_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut [*mut i8]) -> *mut *mut i8 {core::slice::<impl [*mut i8]>::as_mut_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb76: {
+        StorageDead(_113);               // bb76[0]: scope 13 at src/header/netdb/mod.rs:454:60: 454:61
+        StorageLive(_116);               // bb76[1]: scope 13 at src/header/netdb/mod.rs:455:18: 455:36
+        StorageLive(_117);               // bb76[2]: scope 13 at src/header/netdb/mod.rs:455:18: 455:27
+        _117 = (header::netdb::PROTO_NUM: core::option::Option<i32>); // bb76[3]: scope 13 at src/header/netdb/mod.rs:455:18: 455:27
+        _116 = const core::option::Option::<i32>::unwrap(move _117) -> bb77; // bb76[4]: scope 13 at src/header/netdb/mod.rs:455:18: 455:36
+                                         // ty::Const
+                                         // + ty: fn(core::option::Option<i32>) -> i32 {core::option::Option::<i32>::unwrap}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:455:28: 455:34
+                                         // + ty: fn(core::option::Option<i32>) -> i32 {core::option::Option::<i32>::unwrap}
+                                         // + literal: Const { ty: fn(core::option::Option<i32>) -> i32 {core::option::Option::<i32>::unwrap}, val: Scalar(<ZST>) }
+    }
+
+    bb77: {
+        StorageDead(_117);               // bb77[0]: scope 13 at src/header/netdb/mod.rs:455:35: 455:36
+        ((header::netdb::PROTO_ENTRY: header::netdb::protoent).0: *mut i8) = move _104; // bb77[1]: scope 13 at src/header/netdb/mod.rs:452:5: 456:6
+        ((header::netdb::PROTO_ENTRY: header::netdb::protoent).1: *mut *mut i8) = move _112; // bb77[2]: scope 13 at src/header/netdb/mod.rs:452:5: 456:6
+        ((header::netdb::PROTO_ENTRY: header::netdb::protoent).2: i32) = move _116; // bb77[3]: scope 13 at src/header/netdb/mod.rs:452:5: 456:6
+        StorageDead(_116);               // bb77[4]: scope 13 at src/header/netdb/mod.rs:456:5: 456:6
+        StorageDead(_112);               // bb77[5]: scope 13 at src/header/netdb/mod.rs:456:5: 456:6
+        StorageDead(_104);               // bb77[6]: scope 13 at src/header/netdb/mod.rs:456:5: 456:6
+        StorageDead(_114);               // bb77[7]: scope 13 at src/header/netdb/mod.rs:456:6: 456:7
+        StorageDead(_109);               // bb77[8]: scope 13 at src/header/netdb/mod.rs:456:6: 456:7
+        StorageDead(_107);               // bb77[9]: scope 13 at src/header/netdb/mod.rs:456:6: 456:7
+        StorageLive(_118);               // bb77[10]: scope 13 at src/header/netdb/mod.rs:457:8: 457:27
+        StorageLive(_119);               // bb77[11]: scope 13 at src/header/netdb/mod.rs:457:8: 457:22
+        _119 = (header::netdb::PROTO_STAYOPEN: i32); // bb77[12]: scope 13 at src/header/netdb/mod.rs:457:8: 457:22
+        _118 = Eq(move _119, const 0i32); // bb77[13]: scope 13 at src/header/netdb/mod.rs:457:8: 457:27
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000000)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:457:26: 457:27
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000000) }
+        StorageDead(_119);               // bb77[14]: scope 13 at src/header/netdb/mod.rs:457:26: 457:27
+        switchInt(_118) -> [false: bb80, otherwise: bb78]; // bb77[15]: scope 13 at src/header/netdb/mod.rs:457:5: 459:6
+    }
+
+    bb78: {
+        StorageLive(_120);               // bb78[0]: scope 13 at src/header/netdb/mod.rs:458:9: 458:22
+        _120 = const header::netdb::endprotoent() -> bb79; // bb78[1]: scope 13 at src/header/netdb/mod.rs:458:9: 458:22
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn() {header::netdb::endprotoent}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:458:9: 458:20
+                                         // + ty: unsafe extern "C" fn() {header::netdb::endprotoent}
+                                         // + literal: Const { ty: unsafe extern "C" fn() {header::netdb::endprotoent}, val: Scalar(<ZST>) }
+    }
+
+    bb79: {
+        StorageDead(_120);               // bb79[0]: scope 13 at src/header/netdb/mod.rs:458:22: 458:23
+        goto -> bb80;                    // bb79[1]: scope 13 at src/header/netdb/mod.rs:457:5: 459:6
+    }
+
+    bb80: {
+        StorageDead(_118);               // bb80[0]: scope 13 at src/header/netdb/mod.rs:459:5: 459:6
+        StorageLive(_121);               // bb80[1]: scope 13 at src/header/netdb/mod.rs:460:5: 460:21
+        StorageLive(_122);               // bb80[2]: scope 13 at src/header/netdb/mod.rs:460:5: 460:21
+        _122 = &mut (header::netdb::PROTO_ENTRY: header::netdb::protoent); // bb80[3]: scope 13 at src/header/netdb/mod.rs:460:5: 460:21
+        _121 = _122;                     // bb80[4]: scope 13 at src/header/netdb/mod.rs:460:5: 460:21
+        _0 = move _121 as *mut header::netdb::protoent (Misc); // bb80[5]: scope 13 at src/header/netdb/mod.rs:460:5: 460:21
+        StorageDead(_121);               // bb80[6]: scope 13 at src/header/netdb/mod.rs:460:20: 460:21
+        drop(_90) -> bb81;               // bb80[7]: scope 7 at src/header/netdb/mod.rs:461:1: 461:2
+    }
+
+    bb81: {
+        StorageDead(_90);                // bb81[0]: scope 7 at src/header/netdb/mod.rs:461:1: 461:2
+        StorageDead(_69);                // bb81[1]: scope 6 at src/header/netdb/mod.rs:461:1: 461:2
+        drop(_53) -> bb82;               // bb81[2]: scope 5 at src/header/netdb/mod.rs:461:1: 461:2
+    }
+
+    bb82: {
+        StorageDead(_53);                // bb82[0]: scope 5 at src/header/netdb/mod.rs:461:1: 461:2
+        StorageDead(_44);                // bb82[1]: scope 4 at src/header/netdb/mod.rs:461:1: 461:2
+        StorageDead(_42);                // bb82[2]: scope 2 at src/header/netdb/mod.rs:461:1: 461:2
+        drop(_15) -> bb83;               // bb82[3]: scope 1 at src/header/netdb/mod.rs:461:1: 461:2
+    }
+
+    bb83: {
+        StorageDead(_15);                // bb83[0]: scope 1 at src/header/netdb/mod.rs:461:1: 461:2
+        drop(_10) -> bb84;               // bb83[1]: scope 0 at src/header/netdb/mod.rs:461:1: 461:2
+    }
+
+    bb84: {
+        StorageDead(_10);                // bb84[0]: scope 0 at src/header/netdb/mod.rs:461:1: 461:2
+        StorageDead(_122);               // bb84[1]: scope 0 at src/header/netdb/mod.rs:461:1: 461:2
+        goto -> bb33;                    // bb84[2]: scope 0 at src/header/netdb/mod.rs:461:2: 461:2
+    }
+
+    bb85: {
+        _15 = move _29;                  // bb85[0]: scope 2 at src/header/netdb/mod.rs:415:9: 415:10
+        StorageDead(_29);                // bb85[1]: scope 2 at src/header/netdb/mod.rs:423:9: 423:10
+        StorageDead(_30);                // bb85[2]: scope 2 at src/header/netdb/mod.rs:423:10: 423:11
+        StorageDead(_16);                // bb85[3]: scope 2 at src/header/netdb/mod.rs:414:83: 414:84
+        goto -> bb11;                    // bb85[4]: scope 2 at src/header/netdb/mod.rs:414:5: 424:6
+    }
+
+    bb86: {
+        (header::netdb::PROTO_ALIASES: core::option::Option<alloc::vec::Vec<alloc::vec::Vec<u8>>>) = move _100; // bb86[0]: scope 13 at src/header/netdb/mod.rs:449:5: 449:18
+        StorageDead(_100);               // bb86[1]: scope 13 at src/header/netdb/mod.rs:449:40: 449:41
+        StorageLive(_102);               // bb86[2]: scope 13 at src/header/netdb/mod.rs:450:18: 450:34
+        StorageLive(_103);               // bb86[3]: scope 13 at src/header/netdb/mod.rs:450:23: 450:33
+        _103 = move _44;                 // bb86[4]: scope 13 at src/header/netdb/mod.rs:450:23: 450:33
+        ((_102 as Some).0: alloc::vec::Vec<u8>) = move _103; // bb86[5]: scope 13 at src/header/netdb/mod.rs:450:18: 450:34
+        discriminant(_102) = 1;          // bb86[6]: scope 13 at src/header/netdb/mod.rs:450:18: 450:34
+        StorageDead(_103);               // bb86[7]: scope 13 at src/header/netdb/mod.rs:450:33: 450:34
+        drop((header::netdb::PROTO_NAME: core::option::Option<alloc::vec::Vec<u8>>)) -> bb87; // bb86[8]: scope 13 at src/header/netdb/mod.rs:450:5: 450:15
+    }
+
+    bb87: {
+        (header::netdb::PROTO_NAME: core::option::Option<alloc::vec::Vec<u8>>) = move _102; // bb87[0]: scope 13 at src/header/netdb/mod.rs:450:5: 450:15
+        StorageDead(_102);               // bb87[1]: scope 13 at src/header/netdb/mod.rs:450:33: 450:34
+        StorageLive(_104);               // bb87[2]: scope 13 at src/header/netdb/mod.rs:453:17: 453:88
+        StorageLive(_105);               // bb87[3]: scope 13 at src/header/netdb/mod.rs:453:17: 453:73
+        StorageLive(_106);               // bb87[4]: scope 13 at src/header/netdb/mod.rs:453:17: 453:60
+        StorageLive(_107);               // bb87[5]: scope 13 at src/header/netdb/mod.rs:453:17: 453:60
+        StorageLive(_108);               // bb87[6]: scope 13 at src/header/netdb/mod.rs:453:17: 453:45
+        StorageLive(_109);               // bb87[7]: scope 13 at src/header/netdb/mod.rs:453:17: 453:45
+        StorageLive(_110);               // bb87[8]: scope 13 at src/header/netdb/mod.rs:453:17: 453:36
+        StorageLive(_111);               // bb87[9]: scope 13 at src/header/netdb/mod.rs:453:17: 453:27
+        _111 = &mut (header::netdb::PROTO_NAME: core::option::Option<alloc::vec::Vec<u8>>); // bb87[10]: scope 13 at src/header/netdb/mod.rs:453:17: 453:27
+        _110 = const core::option::Option::<alloc::vec::Vec<u8>>::as_mut(move _111) -> bb71; // bb87[11]: scope 13 at src/header/netdb/mod.rs:453:17: 453:36
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut core::option::Option<alloc::vec::Vec<u8>>) -> core::option::Option<&'r mut alloc::vec::Vec<u8>> {core::option::Option::<alloc::vec::Vec<u8>>::as_mut}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:453:28: 453:34
+                                         // + ty: for<'r> fn(&'r mut core::option::Option<alloc::vec::Vec<u8>>) -> core::option::Option<&'r mut alloc::vec::Vec<u8>> {core::option::Option::<alloc::vec::Vec<u8>>::as_mut}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut core::option::Option<alloc::vec::Vec<u8>>) -> core::option::Option<&'r mut alloc::vec::Vec<u8>> {core::option::Option::<alloc::vec::Vec<u8>>::as_mut}, val: Scalar(<ZST>) }
+    }
+}
