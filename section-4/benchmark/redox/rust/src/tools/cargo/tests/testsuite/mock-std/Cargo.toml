@@ -1,0 +1,8 @@
+[workspace]
+members = [
+  "src/liballoc",
+  "src/libcore",
+  "src/libproc_macro",
+  "src/libstd",
+  "src/libtest",
+]

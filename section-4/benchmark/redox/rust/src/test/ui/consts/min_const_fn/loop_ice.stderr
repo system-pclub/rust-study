@@ -1,0 +1,9 @@
+error[E0744]: `loop` is not allowed in a `const fn`
+  --> $DIR/loop_ice.rs:2:5
+   |
+LL |     loop {}
+   |     ^^^^^^^
+
+error: aborting due to previous error
+
+For more information about this error, try `rustc --explain E0744`.

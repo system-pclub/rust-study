@@ -1,0 +1,20 @@
+[book]
+title = "Guide to Rustc Development"
+author = "Rustc developers"
+description = "A guide to developing rustc"
+
+[build]
+create-missing = false
+
+[output.html]
+git-repository-url = "https://github.com/rust-lang/rustc-guide"
+
+[output.html.fold]
+enable = true
+level = 1
+
+[output.linkcheck]
+follow-web-links = true
+exclude = [ "crates\\.io", "gcc\\.godbolt\\.org", "youtube\\.com", "dl\\.acm\\.org" ]
+cache-timeout = 172800
+warning-policy = "error"

@@ -1,0 +1,47 @@
+utils.loadPlatform("ti.platforms.dsk6416");
+
+/* The following DSP/BIOS Features are enabled.  */
+bios.enableMemoryHeaps(prog);
+bios.enableRealTimeAnalysis(prog);
+bios.enableRtdx(prog);
+bios.enableTskManager(prog);
+
+bios.MEM.NOMEMORYHEAPS = 0;
+bios.MEM.instance("SDRAM").createHeap = 1;
+bios.MEM.BIOSOBJSEG = prog.get("SDRAM");
+bios.MEM.MALLOCSEG = prog.get("SDRAM");
+bios.MEM.instance("IRAM").createHeap = 1;
+bios.MEM.BIOSOBJSEG = prog.get("IRAM");
+bios.MEM.MALLOCSEG = prog.get("IRAM");
+bios.TSK.STACKSEG = prog.get("IRAM");
+bios.CLK.CONFIGURETIMER = 1;
+bios.CLK.CONFIGURETIMER = 1;
+bios.CLK.HIRESTIME = 1;
+bios.CLK.HIRESTIME = 1;
+bios.CLK.CONFIGURETIMER = 0;
+bios.CLK.TIMERSELECT = "Timer 1";
+bios.CLK.CONFIGURETIMER = 1;
+bios.CLK.TIMERSELECT = "Timer 0";
+bios.CLK.CONFIGURETIMER = 0;
+bios.CLK.HIRESTIME = 0;
+bios.CLK.TIMERSELECT = "Timer 1";
+bios.CLK.HIRESTIME = 1;
+bios.CLK.TIMERSELECT = "Timer 0";
+bios.RTDX.MODE = "Simulator";
+bios.CLK.HIRESTIME = 0;
+bios.CLK.MICROSECONDS = 1.0000;
+bios.CLK.MICROSECONDS = 10.0000;
+bios.MEM.instance("IRAM").heapSize = 0x00080000;
+bios.CLK.MICROSECONDS = 1.0000;
+bios.CLK.MICROSECONDS = 10.0000;
+bios.CLK.TIMERSELECT = "Timer 0";
+bios.CLK.HIRESTIME = 1;
+bios.CLK.MICROSECONDS = 100.0000;
+bios.CLK.MICROSECONDS = 10.0000;
+bios.GBL.SPECIFYRTSLIB = 1;
+bios.GBL.RTSLIB = "rts6400_eh";
+bios.GBL.RTSLIB = "rts6400_eh.lib";
+// !GRAPHICAL_CONFIG_TOOL_SCRIPT_INSERT_POINT!
+
+prog.gen();
+

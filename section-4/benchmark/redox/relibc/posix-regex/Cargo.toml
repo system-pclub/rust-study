@@ -1,0 +1,16 @@
+[package]
+authors = ["jD91mZM2 <me@krake.one>"]
+categories = ["no-std", "parsing"]
+description = "A library for parsing POSIX regular expressions"
+keywords = ["no_std", "regex"]
+license = "MIT"
+name = "posix-regex"
+readme = "README.md"
+repository = "https://gitlab.redox-os.org/redox-os/posix-regex"
+version = "0.1.0"
+
+[dependencies]
+
+[features]
+bench = []
+no_std = []

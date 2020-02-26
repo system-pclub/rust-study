@@ -1,0 +1,14 @@
+error: a macro named `foo` has already been exported
+  --> $DIR/issue-38715.rs:5:1
+   |
+LL | macro_rules! foo { () => {} }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `foo` already exported
+   |
+note: previous macro export is now shadowed
+  --> $DIR/issue-38715.rs:2:1
+   |
+LL | macro_rules! foo { ($i:ident) => {} }
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to previous error
+

@@ -1,0 +1,83 @@
+[package]
+name = "rls"
+version = "1.40.0"
+edition = "2018"
+authors = ["Nick Cameron <ncameron@mozilla.com>", "The RLS developers"]
+description = "Rust Language Server - provides information about Rust programs to IDEs and other tools"
+license = "Apache-2.0/MIT"
+repository = "https://github.com/rust-lang/rls"
+categories = ["development-tools"]
+
+build = "build.rs"
+
+[lib]
+name = "rls"
+doctest = false
+path = "rls/src/lib.rs"
+
+[[bin]]
+name = "rls"
+test = false
+path = "rls/src/main.rs"
+
+[dependencies]
+rls-analysis = "0.18.0"
+rls-data = "0.19"
+# FIXME: Release rls-rustc 0.6.0 to crates.io
+rls-rustc = { version = "0.6.0", path = "rls-rustc" }
+rls-span = "0.5"
+rls-vfs = "0.8"
+rls-ipc = { version = "0.1.0", path = "rls-ipc", optional = true }
+
+cargo = { git = "https://github.com/rust-lang/cargo", rev = "8b0561d68f12eeb1d72e07ceef464ebf6032a1bc" }
+cargo_metadata = "0.8"
+clippy_lints = { git = "https://github.com/rust-lang/rust-clippy", rev = "000c3ff278852788bc88ce6a911050d02d39af93", optional = true }
+env_logger = "0.7"
+failure = "0.1.1"
+futures = { version = "0.1", optional = true }
+home = "0.5.1"
+itertools = "0.8"
+jsonrpc-core = "13.2"
+lsp-types = { version = "0.60", features = ["proposed"] }
+lazy_static = "1"
+log = "0.4"
+num_cpus = "1"
+racer = { version = "2.1.28", default-features = false }
+rand = "0.7"
+rayon = "1"
+rustc_tools_util = "0.2"
+rustfmt-nightly = "1.4.8"
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
+serde_ignored = "0.1"
+tokio = { version = "0.1", optional = true }
+url = "2"
+walkdir = "2"
+regex = "1"
+ordslice = "0.3"
+crossbeam-channel = "0.3"
+toml = "0.5"
+heck = "0.3"
+
+# A noop dependency that changes in the Rust repository, it's a bit of a hack.
+# See the `src/tools/rustc-workspace-hack/README.md` file in `rust-lang/rust`
+# for more information.
+rustc-workspace-hack = "1.0.0"
+
+[dev-dependencies]
+difference = "2"
+tempfile = "3"
+lsp-codec = "0.1.2"
+tokio = "0.1"
+futures = "0.1"
+tokio-process = "0.2"
+tokio-timer = "0.2"
+
+[build-dependencies]
+rustc_tools_util = "0.2"
+
+[features]
+clippy = ["clippy_lints", "rls-rustc/clippy"]
+ipc = ["tokio", "futures", "rls-rustc/ipc", "rls-ipc/server"]
+default = []

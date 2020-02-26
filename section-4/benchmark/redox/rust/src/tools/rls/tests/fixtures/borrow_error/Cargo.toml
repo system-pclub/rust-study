@@ -1,0 +1,7 @@
+[package]
+name = "borrow_error"
+version = "0.1.0"
+authors = ["Jonathan Turner <jturner@mozilla.com>"]
+edition = "2018"
+
+[dependencies]

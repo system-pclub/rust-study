@@ -1,0 +1,188 @@
+; Code Composer Project File, Version 2.0 (do not modify or remove this line)
+
+[Project Settings]
+ProjectDir="Z:\pthread\platform\dspbios\pte_test\"
+ProjectType=Executable
+CPUFamily=TMS320C64XX
+Tool="Compiler"
+Tool="CustomBuilder"
+Tool="DspBiosBuilder"
+Tool="Linker"
+Config="C"
+Config="CPP"
+
+[Source Files]
+Source="..\..\..\tests\barrier1.c"
+Source="..\..\..\tests\barrier2.c"
+Source="..\..\..\tests\barrier3.c"
+Source="..\..\..\tests\barrier4.c"
+Source="..\..\..\tests\barrier5.c"
+Source="..\..\..\tests\benchlib.c"
+Source="..\..\..\tests\benchtest1.c"
+Source="..\..\..\tests\benchtest2.c"
+Source="..\..\..\tests\benchtest3.c"
+Source="..\..\..\tests\benchtest4.c"
+Source="..\..\..\tests\cancel1.c"
+Source="..\..\..\tests\cancel2.c"
+Source="..\..\..\tests\cancel3.c"
+Source="..\..\..\tests\cancel4.c"
+Source="..\..\..\tests\cancel5.c"
+Source="..\..\..\tests\cancel6a.c"
+Source="..\..\..\tests\cancel6d.c"
+Source="..\..\..\tests\cleanup0.c"
+Source="..\..\..\tests\cleanup1.c"
+Source="..\..\..\tests\cleanup2.c"
+Source="..\..\..\tests\cleanup3.c"
+Source="..\..\..\tests\condvar1.c"
+Source="..\..\..\tests\condvar1_1.c"
+Source="..\..\..\tests\condvar1_2.c"
+Source="..\..\..\tests\condvar2.c"
+Source="..\..\..\tests\condvar2_1.c"
+Source="..\..\..\tests\condvar3.c"
+Source="..\..\..\tests\condvar3_1.c"
+Source="..\..\..\tests\condvar3_2.c"
+Source="..\..\..\tests\condvar3_3.c"
+Source="..\..\..\tests\condvar4.c"
+Source="..\..\..\tests\condvar5.c"
+Source="..\..\..\tests\condvar6.c"
+Source="..\..\..\tests\condvar7.c"
+Source="..\..\..\tests\condvar8.c"
+Source="..\..\..\tests\condvar9.c"
+Source="..\..\..\tests\count1.c"
+Source="..\..\..\tests\create1.c"
+Source="..\..\..\tests\create2.c"
+Source="..\..\..\tests\create3.c"
+Source="..\..\..\tests\delay1.c"
+Source="..\..\..\tests\delay2.c"
+Source="..\..\..\tests\detach1.c"
+Source="..\..\..\tests\equal1.c"
+Source="..\..\..\tests\errno1.c"
+Source="..\..\..\tests\exception1.c"
+Source="..\..\..\tests\exception2.c"
+Source="..\..\..\tests\exception3.c"
+Source="..\..\..\tests\exit1.c"
+Source="..\..\..\tests\exit2.c"
+Source="..\..\..\tests\exit3.c"
+Source="..\..\..\tests\exit4.c"
+Source="..\..\..\tests\exit5.c"
+Source="..\..\..\tests\inherit1.c"
+Source="..\..\..\tests\join0.c"
+Source="..\..\..\tests\join1.c"
+Source="..\..\..\tests\join2.c"
+Source="..\..\..\tests\join3.c"
+Source="..\..\..\tests\join4.c"
+Source="..\..\..\tests\kill1.c"
+Source="..\..\..\tests\mutex1.c"
+Source="..\..\..\tests\mutex1e.c"
+Source="..\..\..\tests\mutex1n.c"
+Source="..\..\..\tests\mutex1r.c"
+Source="..\..\..\tests\mutex2.c"
+Source="..\..\..\tests\mutex2e.c"
+Source="..\..\..\tests\mutex2r.c"
+Source="..\..\..\tests\mutex3.c"
+Source="..\..\..\tests\mutex3e.c"
+Source="..\..\..\tests\mutex3r.c"
+Source="..\..\..\tests\mutex4.c"
+Source="..\..\..\tests\mutex5.c"
+Source="..\..\..\tests\mutex6.c"
+Source="..\..\..\tests\mutex6e.c"
+Source="..\..\..\tests\mutex6es.c"
+Source="..\..\..\tests\mutex6n.c"
+Source="..\..\..\tests\mutex6r.c"
+Source="..\..\..\tests\mutex6rs.c"
+Source="..\..\..\tests\mutex6s.c"
+Source="..\..\..\tests\mutex7.c"
+Source="..\..\..\tests\mutex7e.c"
+Source="..\..\..\tests\mutex7n.c"
+Source="..\..\..\tests\mutex7r.c"
+Source="..\..\..\tests\mutex8.c"
+Source="..\..\..\tests\mutex8e.c"
+Source="..\..\..\tests\mutex8n.c"
+Source="..\..\..\tests\mutex8r.c"
+Source="..\..\..\tests\once1.c"
+Source="..\..\..\tests\once2.c"
+Source="..\..\..\tests\once3.c"
+Source="..\..\..\tests\once4.c"
+Source="..\..\..\tests\priority1.c"
+Source="..\..\..\tests\priority2.c"
+Source="..\..\..\tests\reuse1.c"
+Source="..\..\..\tests\reuse2.c"
+Source="..\..\..\tests\rwlock1.c"
+Source="..\..\..\tests\rwlock2.c"
+Source="..\..\..\tests\rwlock2_t.c"
+Source="..\..\..\tests\rwlock3.c"
+Source="..\..\..\tests\rwlock3_t.c"
+Source="..\..\..\tests\rwlock4.c"
+Source="..\..\..\tests\rwlock4_t.c"
+Source="..\..\..\tests\rwlock5.c"
+Source="..\..\..\tests\rwlock5_t.c"
+Source="..\..\..\tests\rwlock6.c"
+Source="..\..\..\tests\rwlock6_t.c"
+Source="..\..\..\tests\rwlock6_t2.c"
+Source="..\..\..\tests\rwlock7.c"
+Source="..\..\..\tests\rwlock8.c"
+Source="..\..\..\tests\self1.c"
+Source="..\..\..\tests\self2.c"
+Source="..\..\..\tests\semaphore1.c"
+Source="..\..\..\tests\semaphore2.c"
+Source="..\..\..\tests\semaphore3.c"
+Source="..\..\..\tests\semaphore4.c"
+Source="..\..\..\tests\semaphore4t.c"
+Source="..\..\..\tests\semaphore5.c"
+Source="..\..\..\tests\semaphore6.c"
+Source="..\..\..\tests\spin1.c"
+Source="..\..\..\tests\spin2.c"
+Source="..\..\..\tests\spin3.c"
+Source="..\..\..\tests\spin4.c"
+Source="..\..\..\tests\stress1.c"
+Source="..\..\..\tests\test_main.c"
+Source="..\..\..\tests\tsd1.c"
+Source="..\..\..\tests\tsd2.c"
+Source="..\..\..\tests\valid1.c"
+Source="..\..\..\tests\valid2.c"
+Source="..\..\helper\tls-helper.c"
+Source="..\dspbios-osal.c"
+Source="..\main.c"
+Source="Configuration1.tcf"
+Source="Configuration1cfg.cmd"
+
+[Generated Files]
+Source="Configuration1cfg.s62"
+Source="Configuration1cfg_c.c"
+
+["Compiler" Settings: "C"]
+Options=-g -fr"$(Proj_dir)\C" -i"..\platform\dspbios" -i".." -i"..\.." -i"." -i"..\dspbios" -i"..\helper" -d"_DEBUG" -mv6400
+
+["Compiler" Settings: "CPP"]
+Options=-g -fg -fr"$(Proj_dir)\CPP" -i"..\platform\dspbios" -i".." -i"..\.." -i"." -i"..\dspbios" -i"..\helper" -d"_DEBUG" -mv6400 --exceptions
+
+["DspBiosBuilder" Settings: "C"]
+Options=-Dconfig.importPath="$(Install_dir)/bios_5_31_02/packages;"
+
+["DspBiosBuilder" Settings: "CPP"]
+Options=-Dconfig.importPath="$(Install_dir)/bios_5_31_02/packages;"
+
+["Linker" Settings: "C"]
+Options=-c -m".\C\pte_test.map" -o".\C\pte_test.out" -w -x -i"..\pte_lib\C" -l"pte_lib.lib"
+
+["Linker" Settings: "CPP"]
+Options=-c -m".\CPP\pte_test.map" -o".\CPP\pte_test.out" -w -x -i"..\pte_lib\CPP" -l"pte_lib.lib"
+
+["..\..\..\tests\exception2.c" Settings: "CPP"]
+Options="Compiler" +{-fg --exceptions}
+
+["..\..\..\tests\exception3.c" Settings: "CPP"]
+Options="Compiler" +{-fg --exceptions}
+
+["..\..\..\tests\test_main.c" Settings: "CPP"]
+Options="Compiler" +{-fg}
+
+["..\main.c" Settings: "CPP"]
+Options="Compiler" +{-fg}
+
+["Configuration1cfg.cmd" Settings: "C"]
+LinkOrder=1
+
+["Configuration1cfg.cmd" Settings: "CPP"]
+LinkOrder=1
+

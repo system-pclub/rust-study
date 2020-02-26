@@ -1,0 +1,1 @@
+fn main() { rustdoc::main() }

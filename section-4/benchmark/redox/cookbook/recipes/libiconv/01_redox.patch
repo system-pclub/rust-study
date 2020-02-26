@@ -1,0 +1,36 @@
+diff -ruw source/srclib/getprogname.c source-new/srclib/getprogname.c
+--- source/srclib/getprogname.c	2017-01-01 16:02:21.000000000 -0700
++++ source-new/srclib/getprogname.c	2018-12-29 08:08:09.138286508 -0700
+@@ -43,6 +43,14 @@
+ # include <string.h>
+ #endif
+ 
++#if defined(__redox__)
++# include <string.h>
++# include <unistd.h>
++# include <stdio.h>
++# include <fcntl.h>
++# include <limits.h>
++#endif
++
+ #include "dirname.h"
+ 
+ #ifndef HAVE_GETPROGNAME             /* not Mac OS X, FreeBSD, NetBSD, OpenBSD >= 5.4, Cygwin */
+@@ -143,6 +151,17 @@
+       free (buf.ps_pathptr);
+     }
+   return p;
++# elif defined(__redox__)
++  char filename[PATH_MAX];
++  int fd = open ("sys:exe", O_RDONLY);
++  if (fd > 0) {
++    int len = read(fd, filename, PATH_MAX-1);
++    if (len > 0) {
++       filename[len] = '\0';
++       return strdup(filename);
++    }
++  }
++  return NULL;
+ # else
+ #  error "getprogname module not ported to this OS"
+ # endif

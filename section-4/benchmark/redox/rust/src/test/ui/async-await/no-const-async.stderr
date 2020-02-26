@@ -1,0 +1,14 @@
+error: expected identifier, found keyword `async`
+  --> $DIR/no-const-async.rs:5:11
+   |
+LL | pub const async fn x() {}
+   |           ^^^^^ expected identifier, found keyword
+
+error: expected `:`, found keyword `fn`
+  --> $DIR/no-const-async.rs:5:17
+   |
+LL | pub const async fn x() {}
+   |                 ^^ expected `:`
+
+error: aborting due to 2 previous errors
+

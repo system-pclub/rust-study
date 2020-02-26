@@ -1,0 +1,58 @@
+[package]
+name        = "nix"
+description = "Rust friendly bindings to *nix APIs"
+version     = "0.16.1"
+authors     = ["The nix-rust Project Developers"]
+repository  = "https://github.com/nix-rust/nix"
+license     = "MIT"
+categories  = ["os::unix-apis"]
+exclude     = [
+  "/.gitignore",
+  "/.travis.yml",
+  "/ci/*",
+  "/Cross.toml",
+  "/RELEASE_PROCEDURE.md",
+  "/bors.toml"
+]
+
+[dependencies]
+libc = { version = "0.2.66", features = [ "extra_traits" ] }
+bitflags = "1.1"
+cfg-if = "0.1.2"
+void = "1.0.2"
+
+[target.'cfg(target_os = "dragonfly")'.build-dependencies]
+cc = "1"
+
+[dev-dependencies]
+bytes = "0.4.8"
+lazy_static = "1.2"
+rand = "0.6"
+tempfile = "3.0.5"
+
+[target.'cfg(any(target_os = "android", target_os = "linux"))'.dev-dependencies]
+caps = "0.3.1"
+
+[target.'cfg(target_os = "freebsd")'.dev-dependencies]
+sysctl = "0.1"
+
+[[test]]
+name = "test"
+path = "test/test.rs"
+
+[[test]]
+name = "test-aio-drop"
+path = "test/sys/test_aio_drop.rs"
+
+[[test]]
+name = "test-lio-listio-resubmit"
+path = "test/sys/test_lio_listio_resubmit.rs"
+
+[[test]]
+name = "test-mount"
+path = "test/test_mount.rs"
+harness = false
+
+[[target.'cfg(not(target_os = "redox"))'.test]]
+name = "test-ptymaster-drop"
+path = "test/test_ptymaster_drop.rs"

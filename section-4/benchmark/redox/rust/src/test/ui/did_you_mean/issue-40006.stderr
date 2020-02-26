@@ -1,0 +1,70 @@
+error: missing `fn`, `type`, or `const` for impl-item declaration
+  --> $DIR/issue-40006.rs:1:13
+   |
+LL |   impl dyn A {
+   |  _____________^
+LL | |     Y
+   | |____^ missing `fn`, `type`, or `const`
+
+error: missing `fn`, `type`, or `const` for trait-item declaration
+  --> $DIR/issue-40006.rs:7:10
+   |
+LL |   trait X {
+   |  __________^
+LL | |     X() {}
+   | |____^ missing `fn`, `type`, or `const`
+
+error: missing `fn`, `type`, or `const` for trait-item declaration
+  --> $DIR/issue-40006.rs:15:10
+   |
+LL |   trait A {
+   |  __________^
+LL | |     X() {}
+   | |____^ missing `fn`, `type`, or `const`
+
+error: expected `[`, found `#`
+  --> $DIR/issue-40006.rs:19:17
+   |
+LL |     fn xxx() { ### }
+   |                 ^ expected `[`
+
+error: missing `fn`, `type`, or `const` for trait-item declaration
+  --> $DIR/issue-40006.rs:21:10
+   |
+LL |   trait C {
+   |  __________^
+LL | |     L = M;
+   | |____^ missing `fn`, `type`, or `const`
+
+error: missing `fn`, `type`, or `const` for trait-item declaration
+  --> $DIR/issue-40006.rs:24:10
+   |
+LL |   trait D {
+   |  __________^
+LL | |     Z = { 2 + 3 };
+   | |____^ missing `fn`, `type`, or `const`
+
+error: expected one of `!` or `::`, found `(`
+  --> $DIR/issue-40006.rs:28:9
+   |
+LL |     ::Y ();
+   |         ^ expected one of `!` or `::`
+
+error: missing `fn`, `type`, or `const` for impl-item declaration
+  --> $DIR/issue-40006.rs:32:8
+   |
+LL |     pub hello_method(&self) {
+   |        ^ missing `fn`, `type`, or `const`
+
+error[E0599]: no method named `hello_method` found for type `S` in the current scope
+  --> $DIR/issue-40006.rs:38:7
+   |
+LL | struct S;
+   | --------- method `hello_method` not found for this
+...
+LL |     S.hello_method();
+   |       ^^^^^^^^^^^^ method not found in `S`
+
+error: aborting due to 9 previous errors
+
+For more information about this error, try `rustc --explain E0599`.

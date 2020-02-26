@@ -1,0 +1,24 @@
+# This is the default configuration file
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+
+# Package settings
+[packages]
+binutils = {}
+coreutils = {}
+extrautils = {}
+ion = {}
+netutils = {}
+pkgutils = {}
+userutils = {}
+
+# User settings
+[users.root]
+password = "password"
+uid = 0
+gid = 0
+name = "root"
+home = "/root"

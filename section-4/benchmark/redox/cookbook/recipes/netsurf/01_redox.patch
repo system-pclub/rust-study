@@ -1,0 +1,105 @@
+diff -ruwN source/libnsfb/Makefile source-new/libnsfb/Makefile
+--- source/libnsfb/Makefile	2017-10-16 04:09:35.000000000 -0600
++++ source-new/libnsfb/Makefile	2018-12-29 08:29:56.855249826 -0700
+@@ -43,10 +43,10 @@
+ NSFB_XCB_PKG_NAMES := xcb xcb-icccm xcb-image xcb-keysyms xcb-atom
+ 
+ # determine which surface handlers can be compiled based upon avalable library
+-$(eval $(call pkg_config_package_available,NSFB_VNC_AVAILABLE,libvncserver))
++#$(eval $(call pkg_config_package_available,NSFB_VNC_AVAILABLE,libvncserver))
+ $(eval $(call pkg_config_package_available,NSFB_SDL_AVAILABLE,sdl))
+-$(eval $(call pkg_config_package_available,NSFB_XCB_AVAILABLE,$(NSFB_XCB_PKG_NAMES)))
+-$(eval $(call pkg_config_package_available,NSFB_WLD_AVAILABLE,wayland-client))
++#$(eval $(call pkg_config_package_available,NSFB_XCB_AVAILABLE,$(NSFB_XCB_PKG_NAMES)))
++#$(eval $(call pkg_config_package_available,NSFB_WLD_AVAILABLE,wayland-client))
+ 
+ # surfaces not detectable via pkg-config 
+ NSFB_ABLE_AVAILABLE := no
+diff -ruwN source/libnsfb/src/plot.h source-new/libnsfb/src/plot.h
+--- source/libnsfb/src/plot.h	2017-10-16 04:09:35.000000000 -0600
++++ source-new/libnsfb/src/plot.h	2018-12-29 08:29:56.855249826 -0700
+@@ -36,7 +36,7 @@
+         #define NSFB_BE_BYTE_ORDER
+     #endif
+ #else
+-    #include <endian.h>
++    #include <machine/endian.h>
+     #if defined(__BYTE_ORDER__)
+         #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+             #define NSFB_BE_BYTE_ORDER
+diff -ruwN source/netsurf/frontends/framebuffer/Makefile source-new/netsurf/frontends/framebuffer/Makefile
+--- source/netsurf/frontends/framebuffer/Makefile	2017-10-16 04:09:36.000000000 -0600
++++ source-new/netsurf/frontends/framebuffer/Makefile	2018-12-29 08:29:56.855249826 -0700
+@@ -35,8 +35,8 @@
+ 
+ # freetype is optional but does not use pkg-config
+ ifeq ($(NETSURF_FB_FONTLIB),freetype)
+-  CFLAGS += -DFB_USE_FREETYPE $(shell freetype-config --cflags)
+-  LDFLAGS += $(shell freetype-config --libs)
++  CFLAGS += -DFB_USE_FREETYPE $(shell $(PKG_CONFIG) --cflags freetype2)
++  LDFLAGS += $(shell $(PKG_CONFIG) --libs freetype2)
+ endif
+ 
+ 
+diff -ruwN source/netsurf/Makefile.config source-new/netsurf/Makefile.config
+--- source/netsurf/Makefile.config	1969-12-31 17:00:00.000000000 -0700
++++ source-new/netsurf/Makefile.config	2018-12-29 08:29:56.855249826 -0700
+@@ -0,0 +1,28 @@
++override NETSURF_HOMEPAGE := "https://www.redox-os.org/"
++override NETSURF_FB_FRONTEND := sdl
++
++override NETSURF_USE_JPEG := YES
++override NETSURF_USE_BMP := YES
++override NETSURF_USE_OPENSSL := YES
++override NETSURF_USE_CURL := YES
++override NETSURF_USE_PNG := YES
++
++override NETSURF_USE_LIBICONV_PLUG := NO
++override NETSURF_USE_NSSVG := NO
++override NETSURF_USE_RSVG := NO
++override NETSURF_USE_DUKTAPE := NO
++override NETSURF_USE_HARU_PDF := NO
++override NETSURF_USE_VIDEO := NO
++
++override NETSURF_FB_FONTLIB := freetype
++override NETSURF_FB_FONTPATH := /ui/fonts/
++override NETSURF_FB_FONT_SANS_SERIF := Sans/Fira/Regular.ttf
++override NETSURF_FB_FONT_SANS_SERIF_BOLD := Sans/Fira/Bold.ttf
++override NETSURF_FB_FONT_SANS_SERIF_ITALIC := Sans/Fira/Regular.ttf
++override NETSURF_FB_FONT_SANS_SERIF_ITALIC_BOLD := Sans/Fira/Bold.ttf
++override NETSURF_FB_FONT_SERIF := Sans/Fira/Regular.ttf
++override NETSURF_FB_FONT_SERIF_BOLD := Sans/Fira/Bold.ttf
++override NETSURF_FB_FONT_MONOSPACE := Mono/Fira/Regular.ttf
++override NETSURF_FB_FONT_MONOSPACE_BOLD := Mono/Fira/Bold.ttf
++override NETSURF_FB_FONT_CURSIVE := Sans/Fira/Regular.ttf
++override NETSURF_FB_FONT_FANTASY := Sans/Fira/Regular.ttf
+diff -ruwN source/netsurf/render/form.c source-new/netsurf/render/form.c
+--- source/netsurf/render/form.c	2017-10-16 04:09:36.000000000 -0600
++++ source-new/netsurf/render/form.c	2018-12-29 08:29:56.855249826 -0700
+@@ -1080,7 +1080,7 @@
+ 	if (!item || !charset)
+ 		return NULL;
+ 
+-	snprintf(cset, sizeof cset, "%s//TRANSLIT", charset);
++	snprintf(cset, sizeof cset, "%s", charset);
+ 
+ 	err = utf8_to_enc(item, cset, 0, &ret);
+ 	if (err == NSERROR_BAD_ENCODING) {
+@@ -1092,7 +1092,7 @@
+ 			/* nope, try fallback charset (if any) */
+ 			if (fallback) {
+ 				snprintf(cset, sizeof cset, 
+-						"%s//TRANSLIT", fallback);
++						"%s", fallback);
+ 				err = utf8_to_enc(item, cset, 0, &ret);
+ 
+ 				if (err == NSERROR_BAD_ENCODING) {
+@@ -1105,7 +1105,7 @@
+ 
+ 			if (err == NSERROR_BAD_ENCODING) {
+ 				/* that also failed, use 8859-1 */
+-				err = utf8_to_enc(item, "ISO-8859-1//TRANSLIT",
++				err = utf8_to_enc(item, "ISO-8859-1",
+ 						0, &ret);
+ 				if (err == NSERROR_BAD_ENCODING) {
+ 					/* and without transliteration */

@@ -1,0 +1,157 @@
+name: installer
+settings:
+  - ArgRequiredElseHelp
+subcommands:
+  - generate:
+      about: Generate a complete installer tarball
+      args:
+        - product-name:
+            help: The name of the product, for display
+            long: product-name
+            takes_value: true
+            value_name: NAME
+        - component-name:
+            help: The name of the component, distinct from other installed components
+            long: component-name
+            takes_value: true
+            value_name: NAME
+        - package-name:
+            help: The name of the package, tarball
+            long: package-name
+            takes_value: true
+            value_name: NAME
+        - rel-manifest-dir:
+            help: The directory under lib/ where the manifest lives
+            long: rel-manifest-dir
+            takes_value: true
+            value_name: DIR
+        - success-message:
+            help: The string to print after successful installation
+            long: success-message
+            takes_value: true
+            value_name: MESSAGE
+        - legacy-manifest-dirs:
+            help: Places to look for legacy manifests to uninstall
+            long: legacy-manifest-dirs
+            takes_value: true
+            value_name: DIRS
+        - non-installed-overlay:
+            help: Directory containing files that should not be installed
+            long: non-installed-overlay
+            takes_value: true
+            value_name: DIR
+        - bulk-dirs:
+            help: Path prefixes of directories that should be installed/uninstalled in bulk
+            long: bulk-dirs
+            takes_value: true
+            value_name: DIRS
+        - image-dir:
+            help: The directory containing the installation medium
+            long: image-dir
+            takes_value: true
+            value_name: DIR
+        - work-dir:
+            help: The directory to do temporary work
+            long: work-dir
+            takes_value: true
+            value_name: DIR
+        - output-dir:
+            help: The location to put the final image and tarball
+            long: output-dir
+            takes_value: true
+            value_name: DIR
+  - combine:
+      about: Combine installer tarballs
+      args:
+        - product-name:
+            help: The name of the product, for display
+            long: product-name
+            takes_value: true
+            value_name: NAME
+        - package-name:
+            help: The name of the package, tarball
+            long: package-name
+            takes_value: true
+            value_name: NAME
+        - rel-manifest-dir:
+            help: The directory under lib/ where the manifest lives
+            long: rel-manifest-dir
+            takes_value: true
+            value_name: DIR
+        - success-message:
+            help: The string to print after successful installation
+            long: success-message
+            takes_value: true
+            value_name: MESSAGE
+        - legacy-manifest-dirs:
+            help: Places to look for legacy manifests to uninstall
+            long: legacy-manifest-dirs
+            takes_value: true
+            value_name: DIRS
+        - input-tarballs:
+            help: Installers to combine
+            long: input-tarballs
+            takes_value: true
+            value_name: FILE,FILE
+        - non-installed-overlay:
+            help: Directory containing files that should not be installed
+            long: non-installed-overlay
+            takes_value: true
+            value_name: DIR
+        - work-dir:
+            help: The directory to do temporary work
+            long: work-dir
+            takes_value: true
+            value_name: DIR
+        - output-dir:
+            help: The location to put the final image and tarball
+            long: output-dir
+            takes_value: true
+            value_name: DIR
+  - script:
+      about: Generate an installation script
+      args:
+        - product-name:
+            help: The name of the product, for display
+            long: product-name
+            takes_value: true
+            value_name: NAME
+        - rel-manifest-dir:
+            help: The directory under lib/ where the manifest lives
+            long: rel-manifest-dir
+            takes_value: true
+            value_name: DIR
+        - success-message:
+            help: The string to print after successful installation
+            long: success-message
+            takes_value: true
+            value_name: MESSAGE
+        - legacy-manifest-dirs:
+            help: Places to look for legacy manifests to uninstall
+            long: legacy-manifest-dirs
+            takes_value: true
+            value_name: DIRS
+        - output-script:
+            help: The name of the output script
+            long: output-script
+            takes_value: true
+            value_name: FILE
+  - tarball:
+      about: Generate package tarballs
+      args:
+        - input:
+            help: The input folder to be compressed
+            long: input
+            takes_value: true
+            value_name: NAME
+        - output:
+            help: The prefix of the tarballs
+            long: output
+            takes_value: true
+            value_name: PATH
+        - work-dir:
+            help: The folder in which the input is to be found
+            long: work-dir
+            takes_value: true
+            value_name: DIR
+

@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>PTE User's Guide</title></head><body><br><big style="font-weight: bold;"><big>PTE Users Guide</big></big><br><br>Since
+PTE is designed to be cross platform, and embedded OS's vary widely in
+their build methodology, there is no "high level" build structure
+included. &nbsp;Rather, each port is responsible for providing this.
+&nbsp;The sections below describe using PTE for a specific platform.<br><br>While
+pthreads is strictly speaking a C API, PTE does include limited support
+for C++ specific features, specifically exceptions. &nbsp;This
+functionality was primarily inherited from the original code base
+(Pthreads-win32) and has been only preliminarily tested.<br><br>An
+important component of PTE is the test library that is included.
+&nbsp;Each platform contains build files as described below to build
+the test suite.<br><big style="font-weight: bold; font-style: italic;"><br>DSP/BIOS</big><br>Texas
+Instruments provides DSP/BIOS as a RTOS to be used on their series of
+digital signal processors. &nbsp;Two project files are included: one
+for the library itself and one for the test suite. &nbsp;These projects
+(and CDB/TCF files) were targeted towards the C6000 simulator, as this
+is where I did all of the development. &nbsp;When building applications
+that use the PTE library, you will need to include pthreads.h and will
+also need to provide a path to pte-types.h (originally located in
+platforms/dspbios/pte-types.h). &nbsp;This file contains definitions of
+structures and types (e.g. pid_t) that are required by pthreads but not
+supplied by DSP/BIOS<br><big style="font-weight: bold; font-style: italic;"><br>PSP OS</big><br>This
+is the operating system used by the Sony PSP. &nbsp;The PSP toolchain
+is gcc based and thus shares many similarities with a "typical" UNIX
+system, including the build system. &nbsp;PTE includes Makefiles for
+the library itself as well as the test suite. &nbsp;Note that these
+Makefiles are pretty rudimentary as I am not anywhere close to being a
+Makefile expert. &nbsp;Thus, once the library is built it will be
+necessary to copy the library itself, pthread.h and pte-types.h to the
+appropriate places in your projects build structure. &nbsp;The PSP
+toolchain includes a pthread.h header in the base distribution (why,
+I'm not sure) - it is important that you use the pthread.hsupplied with PTE rather than the one in the toolchain. <br><br></body></html>

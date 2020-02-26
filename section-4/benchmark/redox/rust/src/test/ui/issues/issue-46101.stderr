@@ -1,0 +1,9 @@
+error[E0433]: failed to resolve: partially resolved path in a derive macro
+  --> $DIR/issue-46101.rs:3:10
+   |
+LL | #[derive(Foo::Anything)]
+   |          ^^^^^^^^^^^^^ partially resolved path in a derive macro
+
+error: aborting due to previous error
+
+For more information about this error, try `rustc --explain E0433`.

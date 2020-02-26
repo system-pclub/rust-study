@@ -1,0 +1,17 @@
+error[E0277]: the trait bound `for<'ccx> B: Bar<'ccx>` is not satisfied
+  --> $DIR/hrtb-higher-ranker-supertraits-transitive.rs:47:26
+   |
+LL | fn want_bar_for_any_ccx<B>(b: &B)
+   |    --------------------
+LL |     where B : for<'ccx> Bar<'ccx>
+   |               ------------------- required by this bound in `want_bar_for_any_ccx`
+...
+LL |     where B : Qux
+   |                  - help: consider further restricting type parameter `B`: `, for<'ccx> B: Bar<'ccx>`
+...
+LL |     want_bar_for_any_ccx(b);
+   |                          ^ the trait `for<'ccx> Bar<'ccx>` is not implemented for `B`
+
+error: aborting due to previous error
+
+For more information about this error, try `rustc --explain E0277`.

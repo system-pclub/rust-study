@@ -1,0 +1,28 @@
+error: handle written amount returned or use `Write::write_all` instead
+  --> $DIR/unused_io_amount.rs:7:5
+   |
+LL |     s.write(b"test")?;
+   |     ^^^^^^^^^^^^^^^^^
+   |
+   = note: `-D clippy::unused-io-amount` implied by `-D warnings`
+
+error: handle read amount returned or use `Read::read_exact` instead
+  --> $DIR/unused_io_amount.rs:9:5
+   |
+LL |     s.read(&mut buf)?;
+   |     ^^^^^^^^^^^^^^^^^
+
+error: handle written amount returned or use `Write::write_all` instead
+  --> $DIR/unused_io_amount.rs:14:5
+   |
+LL |     s.write(b"test").unwrap();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: handle read amount returned or use `Read::read_exact` instead
+  --> $DIR/unused_io_amount.rs:16:5
+   |
+LL |     s.read(&mut buf).unwrap();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 4 previous errors
+

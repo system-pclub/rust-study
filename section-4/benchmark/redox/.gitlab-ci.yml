@@ -1,0 +1,45 @@
+variables:
+  GIT_STRATEGY: "pull"
+  GIT_SUBMODULE_STRATEGY: "recursive"
+  GIT_CHECKOUT: "true"
+
+before_script:
+ - |
+    apt-get update -qq &&
+    apt-get install -qq \
+        bison \
+        build-essential \
+        curl \
+        dosfstools \
+        flex \
+        fuse \
+        genisoimage \
+        git \
+        gnupg \
+        libfuse-dev \
+        nasm \
+        pkg-config \
+        software-properties-common \
+        syslinux \
+        syslinux-utils \
+        texinfo \
+        wget &&
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+
+img:
+    script:
+     - |
+        source "$HOME/.cargo/env" &&
+        rustup update &&
+        rustup component add rust-src &&
+        cargo install cargo-config xargo &&
+        pushd bootloader-efi &&
+        rustup update &&
+        rustup component add rust-src &&
+        mkdir -p "$HOME/.rustup/toolchains/nightly-2017-11-29-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin" &&
+        popd &&
+        make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
+    artifacts:
+        paths:
+         - build/img/
+        expire_in: 1 week

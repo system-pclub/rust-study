@@ -1,0 +1,21 @@
+sudo: required
+language: rust
+rust:
+  - nightly
+os:
+  - linux
+  - osx
+dist: trusty
+before_install:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+      sudo apt-get install -qq pkg-config fuse libfuse-dev;
+      sudo modprobe fuse;
+      sudo chmod 666 /dev/fuse;
+      sudo chown root:$USER /etc/fuse.conf;
+    fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+        brew update;
+        brew install Caskroom/cask/osxfuse;
+    fi
+notifications:
+  email: false

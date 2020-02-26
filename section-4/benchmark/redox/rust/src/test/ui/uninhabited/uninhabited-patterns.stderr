@@ -1,0 +1,38 @@
+error: unreachable pattern
+  --> $DIR/uninhabited-patterns.rs:26:9
+   |
+LL |         &[..] => (),
+   |         ^^^^^
+   |
+note: lint level defined here
+  --> $DIR/uninhabited-patterns.rs:5:9
+   |
+LL | #![deny(unreachable_patterns)]
+   |         ^^^^^^^^^^^^^^^^^^^^
+
+error: unreachable pattern
+  --> $DIR/uninhabited-patterns.rs:31:9
+   |
+LL |         Ok(box _) => (),
+   |         ^^^^^^^^^
+
+error: unreachable pattern
+  --> $DIR/uninhabited-patterns.rs:33:9
+   |
+LL |         Err(&[..]) => (),
+   |         ^^^^^^^^^^
+
+error: unreachable pattern
+  --> $DIR/uninhabited-patterns.rs:40:9
+   |
+LL |         Err(Ok(_y)) => (),
+   |         ^^^^^^^^^^^
+
+error: unreachable pattern
+  --> $DIR/uninhabited-patterns.rs:43:15
+   |
+LL |     while let Some(_y) = foo() {
+   |               ^^^^^^^^
+
+error: aborting due to 5 previous errors
+

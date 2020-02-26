@@ -1,0 +1,64 @@
+language: generic
+cache:
+  # Cache the global cargo directory, but NOT the local `target` directory which
+  # we cannot reuse anyway when the nightly changes (and it grows quite large
+  # over time).
+  directories:
+    - $HOME/.cargo
+    - $HOME/.rustup
+
+os:
+- linux
+- osx
+dist: xenial
+
+# Run in PRs and for bors, but not on master.
+if: branch = auto OR branch = try OR type = pull_request OR type = cron
+
+env:
+  global:
+  - RUST_TEST_NOCAPTURE=1
+  - RUST_BACKTRACE=1
+
+before_script:
+# Linux: install extra stuff for cross-compilation
+- if [[ "$TRAVIS_OS_NAME" == linux ]]; then sudo apt update && sudo apt install gcc-multilib; fi
+# Compute the rust version we use. We do not use "language: rust" to have more control here.
+- |
+  if [[ "$TRAVIS_EVENT_TYPE" == cron ]]; then
+    RUSTC_HASH=$(git ls-remote https://github.com/rust-lang/rust.git master | awk '{print $1}')
+  else
+    RUSTC_HASH=$(cat rust-version)
+  fi
+# Install Rust ("stable" toolchain for better caching, it is just used to build rustup-toolchain-install-master)
+- curl https://build.travis-ci.org/files/rustup-init.sh -sSf | sh -s -- -y --default-toolchain stable --profile minimal
+- export PATH=$HOME/.cargo/bin:$PATH
+- rustup default stable
+- rustup uninstall beta
+- rustup update
+# Install "master" toolchain
+- cargo install rustup-toolchain-install-master || echo "rustup-toolchain-install-master already installed"
+- travis_retry rustup-toolchain-install-master -f -n master $RUSTC_HASH -c rust-src -c rustc-dev
+- rustup default master
+- rustc --version
+- cargo --version
+
+script:
+- ./travis.sh
+
+before_cache:
+# Don't cache "master" toolchain, it's a waste
+- rustup default stable
+- rustup toolchain uninstall master
+
+notifications:
+  email:
+    on_success: never
+    recipients:
+      - post+travis@ralfj.de
+      - travis-miri@oli-obk.de
+branches:
+  only:
+  - master
+  - auto
+  - try

@@ -1,0 +1,16 @@
+error[E0277]: the trait bound `T: std::marker::Copy` is not satisfied
+  --> $DIR/wf-trait-superbound.rs:9:1
+   |
+LL |   trait ExtraCopy<T:Copy> { }
+   |   ----------------------- required by `ExtraCopy`
+LL | 
+LL |   trait SomeTrait<T>: ExtraCopy<T> {
+   |   ^               - help: consider restricting this bound: `T: std::marker::Copy`
+   |  _|
+   | |
+LL | | }
+   | |_^ the trait `std::marker::Copy` is not implemented for `T`
+
+error: aborting due to previous error
+
+For more information about this error, try `rustc --explain E0277`.

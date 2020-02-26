@@ -1,0 +1,11 @@
+error: expected one of `crate`, `fn`, `pub`, `static`, or `type`, found keyword `let`
+  --> $DIR/issue-54441.rs:3:9
+   |
+LL |         let
+   |         ^^^ expected one of `crate`, `fn`, `pub`, `static`, or `type`
+...
+LL |     m!();
+   |     ----- in this macro invocation
+
+error: aborting due to previous error
+

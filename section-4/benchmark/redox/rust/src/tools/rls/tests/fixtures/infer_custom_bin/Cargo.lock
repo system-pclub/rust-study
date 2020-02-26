@@ -1,0 +1,4 @@
+[[package]]
+name = "infer_custom_bin"
+version = "0.1.0"
+

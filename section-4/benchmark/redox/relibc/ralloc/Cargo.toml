@@ -1,0 +1,42 @@
+[package]
+name = "ralloc"
+version = "1.0.0"
+authors = ["ticki <ticki@users.noreply.github.com>"]
+
+# URLs and paths
+description = "An efficient alternative platform-agnostic allocator."
+repository = "https://github.com/redox-os/ralloc"
+readme = "README.md"
+
+# Metadata
+keywords = ["alloc", "malloc", "allocator", "ralloc", "redox"]
+license = "MIT"
+
+[dependencies]
+unborrow = "0.3.0"
+
+[dependencies.ralloc_shim]
+path = "shim"
+version = "0.1"
+
+[profile.release]
+panic = "abort"
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+
+[features]
+default = ["tls"]
+# ---
+alloc_id = []
+debugger = []
+log = ["write", "alloc_id"]
+no_log_lock = ["log"]
+security = []
+testing = ["log", "debugger"]
+tls = []
+unsafe_no_mutex_lock = []
+write = []

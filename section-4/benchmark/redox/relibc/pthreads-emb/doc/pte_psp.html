@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>PTE on PSP OS</title></head><body>
+
+
+	<meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8"><title></title><meta name="GENERATOR" content="OpenOffice.org 2.3  (Linux)">
+	
+	
+	<style type="text/css">
+	<!--
+		@page { size: 8.5in 11in; margin: 0.79in }
+		P { margin-bottom: 0.08in }
+		H1 { margin-bottom: 0.08in }
+		H1.western { font-family: "Helvetica"; font-size: 16pt }
+		H1.cjk { font-family: "AR PL ShanHeiSun Uni"; font-size: 16pt }
+		H1.ctl { font-family: "Tahoma"; font-size: 16pt }
+	-->
+	</style>
+
+<p style="margin-bottom: 0in;"><big><big><big><span style="font-weight: bold;">PTE on PSP OS</span></big></big></big></p><p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;">All PSP OS objects that are created
+require a name to be associated with them.  The name must be unique
+among objects that currently exist.  To accomplish this, any routines
+that allocate OS objects (e.g. <font face="Courier New, monospace">OsMutexCreate</font>)
+keep a static local variable that acts as a counter and is
+incremented every time an object is created.  This value is appended
+to the name of the resource.  For instance &#8220;mutex04&#8221; would be the
+name of the fourth mutex created.</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h1 class="western">Thread creation</h1>
+<p><font face="Courier New, monospace">OsThreadCreate</font>
+allocates a <font face="Courier New, monospace">pspThreadData</font>
+structure that contains a semaphore used for cancelling a thread, the
+thread's entry point and parameters to the thread's entry point.  A
+pointer to this structure is stored as a TLS value.</p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace">OsThreadCreate</font>
+calls <font face="Courier New, monospace">sceKernelCreateThread</font>
+with a entry point of <font face="Courier New, monospace">pspStubThreadEntry</font>.
+ The stub entry point retrieves the per thread control structure
+(allocated during <font face="Courier New, monospace">OsThreadCreate</font>)
+and gets the thread's real entry point and parameters and then calls
+the real entry point.</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h1 class="western">Thread Local Storage</h1>
+<p style="margin-bottom: 0in;">Unfortunately, PSP OS does not include
+<b>any</b> kind of thread local storage functionality.  To emulate
+TLS, when a new POSIX thread is created, a structure is allocated to
+contain TLS keys and values.  A pointer to this structure is appended
+to the thread name.  For instance, a new threads name might be 
+&#8220;pthread10_80001234&#8221;, where 0x80001234 is the address of the TLS
+structure.  When a thread wants to access TLS information, it
+retrieves the thread's name from the OS, parses the name to extract
+the pointer and then utilizes the TLS helper library to set or get
+TLS values. 
+</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;">Unfortunately, this mechanism only
+works for threads that are created through pthread_create; it does
+not work for OS threads that are using pthread calls.  To emulate
+this (at this for one thread) we allocate a single TLS structure
+(like the ones associated with each POSIX thread).  This &#8220;global&#8221;
+TLS structure is used when pthread is called from a non-POSIX OS
+thread.  This introduces the important limitation that pthread calls
+can be made from ONLY ONE non-POSIX OS thread.  Behavior when calling
+from multiple different non-POSIX OS threads is undefined.</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h1 class="western">Mutexes</h1>
+<p style="margin-bottom: 0in;">PSP OS does not supply routines for
+mutexes.  A counting semaphore initialized to 0 is used.</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h1 class="western">Thread Cancellation</h1>
+<p style="margin-bottom: 0in;">Since PSP OS does not natively provide
+a way to break out of blocked operations, this functionality is
+emulated using a cancellation semaphore that is stored in the per
+thread control data.  When the user requests that a thread be
+cancelled (i.e. <font face="Courier New, monospace">OsThreadCancel</font>
+is called) this semaphore is posted to.  In
+<font face="Courier New, monospace">OsSemaphoreCancellablePend</font>,
+the cancellation semaphore as well as the user semaphore are polled
+(rather than blocking) and the routine returns if the cancellation
+semaphore is posted to.  A similar technique is used for
+<font face="Courier New, monospace">OsThreadWaitForEnd</font>.</p>
+</body></html>

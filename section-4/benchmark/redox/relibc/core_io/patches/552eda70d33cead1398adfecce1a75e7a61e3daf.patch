@@ -1,0 +1,1555 @@
+diff --git a/buffered.rs b/buffered.rs
+index 632ef3d..dd63ebe 100644
+--- a/buffered.rs
++++ b/buffered.rs
+@@ -10,15 +10,13 @@
+ 
+ //! Buffering wrappers for I/O traits
+ 
+-use prelude::v1::*;
++use core::prelude::v1::*;
+ use io::prelude::*;
+ 
+-use marker::Reflect;
+-use cmp;
+-use error;
+-use fmt;
++use core::cmp;
++use core::fmt;
+ use io::{self, DEFAULT_BUF_SIZE, Error, ErrorKind, SeekFrom};
+-use memchr;
++use io::memchr;
+ 
+ /// The `BufReader` struct adds buffering to any reader.
+ ///
+@@ -44,7 +42,6 @@ use memchr;
+ /// # Ok(())
+ /// # }
+ /// ```
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct BufReader<R> {
+     inner: R,
+     buf: Box<[u8]>,
+@@ -67,7 +64,6 @@ impl<R: Read> BufReader<R> {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn new(inner: R) -> BufReader<R> {
+         BufReader::with_capacity(DEFAULT_BUF_SIZE, inner)
+     }
+@@ -88,7 +84,6 @@ impl<R: Read> BufReader<R> {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn with_capacity(cap: usize, inner: R) -> BufReader<R> {
+         BufReader {
+             inner: inner,
+@@ -116,7 +111,6 @@ impl<R: Read> BufReader<R> {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn get_ref(&self) -> &R { &self.inner }
+ 
+     /// Gets a mutable reference to the underlying reader.
+@@ -137,7 +131,6 @@ impl<R: Read> BufReader<R> {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn get_mut(&mut self) -> &mut R { &mut self.inner }
+ 
+     /// Unwraps this `BufReader`, returning the underlying reader.
+@@ -158,11 +151,9 @@ impl<R: Read> BufReader<R> {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn into_inner(self) -> R { self.inner }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<R: Read> Read for BufReader<R> {
+     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+         // If we don't have any buffered data and we're doing a massive read
+@@ -180,7 +171,6 @@ impl<R: Read> Read for BufReader<R> {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<R: Read> BufRead for BufReader<R> {
+     fn fill_buf(&mut self) -> io::Result<&[u8]> {
+         // If we've reached the end of our internal buffer then we need to fetch
+@@ -197,7 +187,6 @@ impl<R: Read> BufRead for BufReader<R> {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<R> fmt::Debug for BufReader<R> where R: fmt::Debug {
+     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+         fmt.debug_struct("BufReader")
+@@ -207,7 +196,6 @@ impl<R> fmt::Debug for BufReader<R> where R: fmt::Debug {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<R: Seek> Seek for BufReader<R> {
+     /// Seek to an offset, in bytes, in the underlying reader.
+     ///
+@@ -296,7 +284,6 @@ impl<R: Seek> Seek for BufReader<R> {
+ /// By wrapping the stream with a `BufWriter`, these ten writes are all grouped
+ /// together by the buffer, and will all be written out in one system call when
+ /// the `stream` is dropped.
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct BufWriter<W: Write> {
+     inner: Option<W>,
+     buf: Vec<u8>,
+@@ -331,7 +318,6 @@ pub struct BufWriter<W: Write> {
+ /// };
+ /// ```
+ #[derive(Debug)]
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct IntoInnerError<W>(W, Error);
+ 
+ impl<W: Write> BufWriter<W> {
+@@ -345,7 +331,6 @@ impl<W: Write> BufWriter<W> {
+     ///
+     /// let mut buffer = BufWriter::new(TcpStream::connect("127.0.0.1:34254").unwrap());
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn new(inner: W) -> BufWriter<W> {
+         BufWriter::with_capacity(DEFAULT_BUF_SIZE, inner)
+     }
+@@ -363,7 +348,6 @@ impl<W: Write> BufWriter<W> {
+     /// let stream = TcpStream::connect("127.0.0.1:34254").unwrap();
+     /// let mut buffer = BufWriter::with_capacity(100, stream);
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn with_capacity(cap: usize, inner: W) -> BufWriter<W> {
+         BufWriter {
+             inner: Some(inner),
+@@ -412,7 +396,6 @@ impl<W: Write> BufWriter<W> {
+     /// // we can use reference just like buffer
+     /// let reference = buffer.get_ref();
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn get_ref(&self) -> &W { self.inner.as_ref().unwrap() }
+ 
+     /// Gets a mutable reference to the underlying writer.
+@@ -430,7 +413,6 @@ impl<W: Write> BufWriter<W> {
+     /// // we can use reference just like buffer
+     /// let reference = buffer.get_mut();
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn get_mut(&mut self) -> &mut W { self.inner.as_mut().unwrap() }
+ 
+     /// Unwraps this `BufWriter`, returning the underlying writer.
+@@ -448,7 +430,6 @@ impl<W: Write> BufWriter<W> {
+     /// // unwrap the TcpStream and flush the buffer
+     /// let stream = buffer.into_inner().unwrap();
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn into_inner(mut self) -> Result<W, IntoInnerError<BufWriter<W>>> {
+         match self.flush_buf() {
+             Err(e) => Err(IntoInnerError(self, e)),
+@@ -457,7 +438,6 @@ impl<W: Write> BufWriter<W> {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<W: Write> Write for BufWriter<W> {
+     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+         if self.buf.len() + buf.len() > self.buf.capacity() {
+@@ -478,7 +458,6 @@ impl<W: Write> Write for BufWriter<W> {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<W: Write> fmt::Debug for BufWriter<W> where W: fmt::Debug {
+     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+         fmt.debug_struct("BufWriter")
+@@ -488,7 +467,6 @@ impl<W: Write> fmt::Debug for BufWriter<W> where W: fmt::Debug {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<W: Write + Seek> Seek for BufWriter<W> {
+     /// Seek to the offset, in bytes, in the underlying writer.
+     ///
+@@ -498,7 +476,6 @@ impl<W: Write + Seek> Seek for BufWriter<W> {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<W: Write> Drop for BufWriter<W> {
+     fn drop(&mut self) {
+         if self.inner.is_some() && !self.panicked {
+@@ -537,7 +514,6 @@ impl<W> IntoInnerError<W> {
+     ///     }
+     /// };
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn error(&self) -> &Error { &self.1 }
+ 
+     /// Returns the buffered writer instance which generated the error.
+@@ -570,23 +546,13 @@ impl<W> IntoInnerError<W> {
+     ///     }
+     /// };
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn into_inner(self) -> W { self.0 }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<W> From<IntoInnerError<W>> for Error {
+     fn from(iie: IntoInnerError<W>) -> Error { iie.1 }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+-impl<W: Reflect + Send + fmt::Debug> error::Error for IntoInnerError<W> {
+-    fn description(&self) -> &str {
+-        error::Error::description(self.error())
+-    }
+-}
+-
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<W> fmt::Display for IntoInnerError<W> {
+     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+         self.error().fmt(f)
+@@ -641,7 +607,6 @@ impl<W> fmt::Display for IntoInnerError<W> {
+ /// # Ok(())
+ /// # }
+ /// ```
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct LineWriter<W: Write> {
+     inner: BufWriter<W>,
+ }
+@@ -661,7 +626,6 @@ impl<W: Write> LineWriter<W> {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn new(inner: W) -> LineWriter<W> {
+         // Lines typically aren't that long, don't use a giant buffer
+         LineWriter::with_capacity(1024, inner)
+@@ -682,7 +646,6 @@ impl<W: Write> LineWriter<W> {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn with_capacity(cap: usize, inner: W) -> LineWriter<W> {
+         LineWriter { inner: BufWriter::with_capacity(cap, inner) }
+     }
+@@ -703,7 +666,6 @@ impl<W: Write> LineWriter<W> {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn get_ref(&self) -> &W { self.inner.get_ref() }
+ 
+     /// Gets a mutable reference to the underlying writer.
+@@ -726,7 +688,6 @@ impl<W: Write> LineWriter<W> {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn get_mut(&mut self) -> &mut W { self.inner.get_mut() }
+ 
+     /// Unwraps this `LineWriter`, returning the underlying writer.
+@@ -748,7 +709,6 @@ impl<W: Write> LineWriter<W> {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn into_inner(self) -> Result<W, IntoInnerError<LineWriter<W>>> {
+         self.inner.into_inner().map_err(|IntoInnerError(buf, e)| {
+             IntoInnerError(LineWriter { inner: buf }, e)
+@@ -756,7 +716,6 @@ impl<W: Write> LineWriter<W> {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<W: Write> Write for LineWriter<W> {
+     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+         match memchr::memrchr(b'\n', buf) {
+@@ -775,7 +734,6 @@ impl<W: Write> Write for LineWriter<W> {
+     fn flush(&mut self) -> io::Result<()> { self.inner.flush() }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<W: Write> fmt::Debug for LineWriter<W> where W: fmt::Debug {
+     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+         fmt.debug_struct("LineWriter")
+diff --git a/cursor.rs b/cursor.rs
+index a1002fd..292afd0 100644
+--- a/cursor.rs
++++ b/cursor.rs
+@@ -8,10 +8,10 @@
+ // option. This file may not be copied, modified, or distributed
+ // except according to those terms.
+ 
+-use prelude::v1::*;
++use core::prelude::v1::*;
+ use io::prelude::*;
+ 
+-use cmp;
++use core::cmp;
+ use io::{self, SeekFrom, Error, ErrorKind};
+ 
+ /// A `Cursor` wraps another type and provides it with a
+@@ -73,7 +73,6 @@ use io::{self, SeekFrom, Error, ErrorKind};
+ ///     assert_eq!(&buff.get_ref()[5..15], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+ /// }
+ /// ```
+-#[stable(feature = "rust1", since = "1.0.0")]
+ #[derive(Clone, Debug)]
+ pub struct Cursor<T> {
+     inner: T,
+@@ -92,7 +91,6 @@ impl<T> Cursor<T> {
+     /// # fn force_inference(_: &Cursor<Vec<u8>>) {}
+     /// # force_inference(&buff);
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn new(inner: T) -> Cursor<T> {
+         Cursor { pos: 0, inner: inner }
+     }
+@@ -110,7 +108,6 @@ impl<T> Cursor<T> {
+     ///
+     /// let vec = buff.into_inner();
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn into_inner(self) -> T { self.inner }
+ 
+     /// Gets a reference to the underlying value in this cursor.
+@@ -126,7 +123,6 @@ impl<T> Cursor<T> {
+     ///
+     /// let reference = buff.get_ref();
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn get_ref(&self) -> &T { &self.inner }
+ 
+     /// Gets a mutable reference to the underlying value in this cursor.
+@@ -145,7 +141,6 @@ impl<T> Cursor<T> {
+     ///
+     /// let reference = buff.get_mut();
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn get_mut(&mut self) -> &mut T { &mut self.inner }
+ 
+     /// Returns the current position of this cursor.
+@@ -167,7 +162,6 @@ impl<T> Cursor<T> {
+     /// buff.seek(SeekFrom::Current(-1)).unwrap();
+     /// assert_eq!(buff.position(), 1);
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn position(&self) -> u64 { self.pos }
+ 
+     /// Sets the position of this cursor.
+@@ -187,11 +181,9 @@ impl<T> Cursor<T> {
+     /// buff.set_position(4);
+     /// assert_eq!(buff.position(), 4);
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn set_position(&mut self, pos: u64) { self.pos = pos; }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
+     fn seek(&mut self, style: SeekFrom) -> io::Result<u64> {
+         let pos = match style {
+@@ -210,25 +202,27 @@ impl<T> io::Seek for Cursor<T> where T: AsRef<[u8]> {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<T> Read for Cursor<T> where T: AsRef<[u8]> {
+     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+-        let n = Read::read(&mut self.fill_buf()?, buf)?;
++        let n = Read::read(&mut self.get_buf()?, buf)?;
+         self.pos += n as u64;
+         Ok(n)
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+-impl<T> BufRead for Cursor<T> where T: AsRef<[u8]> {
+-    fn fill_buf(&mut self) -> io::Result<&[u8]> {
++impl<T> Cursor<T> where T: AsRef<[u8]> {
++    fn get_buf(&mut self) -> io::Result<&[u8]> {
+         let amt = cmp::min(self.pos, self.inner.as_ref().len() as u64);
+         Ok(&self.inner.as_ref()[(amt as usize)..])
+     }
++}
++
++#[cfg(feature = "collections")]
++impl<T> BufRead for Cursor<T> where T: AsRef<[u8]> {
++    fn fill_buf(&mut self) -> io::Result<&[u8]> { self.get_buf() }
+     fn consume(&mut self, amt: usize) { self.pos += amt as u64; }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<'a> Write for Cursor<&'a mut [u8]> {
+     fn write(&mut self, data: &[u8]) -> io::Result<usize> {
+         let pos = cmp::min(self.pos, self.inner.len() as u64);
+@@ -239,7 +233,7 @@ impl<'a> Write for Cursor<&'a mut [u8]> {
+     fn flush(&mut self) -> io::Result<()> { Ok(()) }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature = "collections")]
+ impl Write for Cursor<Vec<u8>> {
+     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+         // Make sure the internal buffer is as least as big as where we
+@@ -267,8 +261,8 @@ impl Write for Cursor<Vec<u8>> {
+     fn flush(&mut self) -> io::Result<()> { Ok(()) }
+ }
+ 
+-#[stable(feature = "cursor_box_slice", since = "1.5.0")]
+-impl Write for Cursor<Box<[u8]>> {
++#[cfg(feature = "alloc")]
++impl Write for Cursor<::alloc::boxed::Box<[u8]>> {
+     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+         let pos = cmp::min(self.pos, self.inner.len() as u64);
+         let amt = (&mut self.inner[(pos as usize)..]).write(buf)?;
+diff --git a/error.rs b/error.rs
+index 9a605fc..d3d0814 100644
+--- a/error.rs
++++ b/error.rs
+@@ -8,14 +8,15 @@
+ // option. This file may not be copied, modified, or distributed
+ // except according to those terms.
+ 
+-use boxed::Box;
+-use convert::Into;
+-use error;
+-use fmt;
+-use marker::{Send, Sync};
+-use option::Option::{self, Some, None};
+-use result;
+-use sys;
++#[cfg(feature="alloc")] use alloc::boxed::Box;
++#[cfg(not(feature="alloc"))] use ::FakeBox as Box;
++use core::convert::Into;
++use core::fmt;
++use core::marker::{Send, Sync};
++use core::option::Option::{self, Some, None};
++use core::result;
++#[cfg(feature="collections")] use collections::string::String;
++#[cfg(not(feature="collections"))] use ::ErrorString as String;
+ 
+ /// A specialized [`Result`](../result/enum.Result.html) type for I/O
+ /// operations.
+@@ -47,7 +48,6 @@ use sys;
+ ///     Ok(buffer)
+ /// }
+ /// ```
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub type Result<T> = result::Result<T, Error>;
+ 
+ /// The error type for I/O operations of the `Read`, `Write`, `Seek`, and
+@@ -57,20 +57,22 @@ pub type Result<T> = result::Result<T, Error>;
+ /// `Error` can be created with crafted error messages and a particular value of
+ /// `ErrorKind`.
+ #[derive(Debug)]
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct Error {
+     repr: Repr,
+ }
+ 
+ enum Repr {
+     Os(i32),
++    #[cfg(feature="alloc")]
+     Custom(Box<Custom>),
++    #[cfg(not(feature="alloc"))]
++    Custom(Custom),
+ }
+ 
+ #[derive(Debug)]
+ struct Custom {
+     kind: ErrorKind,
+-    error: Box<error::Error+Send+Sync>,
++    error: String,
+ }
+ 
+ /// A list specifying general categories of I/O error.
+@@ -78,47 +80,34 @@ struct Custom {
+ /// This list is intended to grow over time and it is not recommended to
+ /// exhaustively match against it.
+ #[derive(Copy, PartialEq, Eq, Clone, Debug)]
+-#[stable(feature = "rust1", since = "1.0.0")]
+ #[allow(deprecated)]
+ pub enum ErrorKind {
+     /// An entity was not found, often a file.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     NotFound,
+     /// The operation lacked the necessary privileges to complete.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     PermissionDenied,
+     /// The connection was refused by the remote server.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     ConnectionRefused,
+     /// The connection was reset by the remote server.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     ConnectionReset,
+     /// The connection was aborted (terminated) by the remote server.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     ConnectionAborted,
+     /// The network operation failed because it was not connected yet.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     NotConnected,
+     /// A socket address could not be bound because the address is already in
+     /// use elsewhere.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     AddrInUse,
+     /// A nonexistent interface was requested or the requested address was not
+     /// local.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     AddrNotAvailable,
+     /// The operation failed because a pipe was closed.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     BrokenPipe,
+     /// An entity already exists, often a file.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     AlreadyExists,
+     /// The operation needs to block to complete, but the blocking operation was
+     /// requested to not occur.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     WouldBlock,
+     /// A parameter was incorrect.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     InvalidInput,
+     /// Data not valid for the operation were encountered.
+     ///
+@@ -128,10 +117,8 @@ pub enum ErrorKind {
+     ///
+     /// For example, a function that reads a file into a string will error with
+     /// `InvalidData` if the file's contents are not valid UTF-8.
+-    #[stable(feature = "io_invalid_data", since = "1.2.0")]
+     InvalidData,
+     /// The I/O operation's timeout expired, causing it to be canceled.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     TimedOut,
+     /// An error returned when an operation could not be completed because a
+     /// call to `write` returned `Ok(0)`.
+@@ -139,15 +126,12 @@ pub enum ErrorKind {
+     /// This typically means that an operation could only succeed if it wrote a
+     /// particular number of bytes but only a smaller number of bytes could be
+     /// written.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     WriteZero,
+     /// This operation was interrupted.
+     ///
+     /// Interrupted operations can typically be retried.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     Interrupted,
+     /// Any I/O error not part of this list.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     Other,
+ 
+     /// An error returned when an operation could not be completed because an
+@@ -156,14 +140,9 @@ pub enum ErrorKind {
+     /// This typically means that an operation could only succeed if it read a
+     /// particular number of bytes but only a smaller number of bytes could be
+     /// read.
+-    #[stable(feature = "read_exact", since = "1.6.0")]
+     UnexpectedEof,
+ 
+     /// Any I/O error not part of this list.
+-    #[unstable(feature = "io_error_internals",
+-               reason = "better expressed through extensible enums that this \
+-                         enum cannot be exhaustively matched against",
+-               issue = "0")]
+     #[doc(hidden)]
+     __Nonexhaustive,
+ }
+@@ -187,14 +166,13 @@ impl Error {
+     /// // errors can also be created from other errors
+     /// let custom_error2 = Error::new(ErrorKind::Interrupted, custom_error);
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn new<E>(kind: ErrorKind, error: E) -> Error
+-        where E: Into<Box<error::Error+Send+Sync>>
++        where E: Into<String>
+     {
+         Self::_new(kind, error.into())
+     }
+ 
+-    fn _new(kind: ErrorKind, error: Box<error::Error+Send+Sync>) -> Error {
++    fn _new(kind: ErrorKind, error: String) -> Error {
+         Error {
+             repr: Repr::Custom(Box::new(Custom {
+                 kind: kind,
+@@ -203,18 +181,7 @@ impl Error {
+         }
+     }
+ 
+-    /// Returns an error representing the last OS error which occurred.
+-    ///
+-    /// This function reads the value of `errno` for the target platform (e.g.
+-    /// `GetLastError` on Windows) and will return a corresponding instance of
+-    /// `Error` for the error code.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+-    pub fn last_os_error() -> Error {
+-        Error::from_raw_os_error(sys::os::errno() as i32)
+-    }
+-
+     /// Creates a new instance of an `Error` from a particular OS error code.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn from_raw_os_error(code: i32) -> Error {
+         Error { repr: Repr::Os(code) }
+     }
+@@ -224,7 +191,6 @@ impl Error {
+     /// If this `Error` was constructed via `last_os_error` or
+     /// `from_raw_os_error`, then this function will return `Some`, otherwise
+     /// it will return `None`.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn raw_os_error(&self) -> Option<i32> {
+         match self.repr {
+             Repr::Os(i) => Some(i),
+@@ -236,11 +202,10 @@ impl Error {
+     ///
+     /// If this `Error` was constructed via `new` then this function will
+     /// return `Some`, otherwise it will return `None`.
+-    #[stable(feature = "io_error_inner", since = "1.3.0")]
+-    pub fn get_ref(&self) -> Option<&(error::Error+Send+Sync+'static)> {
++    pub fn get_ref(&self) -> Option<&String> {
+         match self.repr {
+             Repr::Os(..) => None,
+-            Repr::Custom(ref c) => Some(&*c.error),
++            Repr::Custom(ref c) => Some(&c.error),
+         }
+     }
+ 
+@@ -249,11 +214,10 @@ impl Error {
+     ///
+     /// If this `Error` was constructed via `new` then this function will
+     /// return `Some`, otherwise it will return `None`.
+-    #[stable(feature = "io_error_inner", since = "1.3.0")]
+-    pub fn get_mut(&mut self) -> Option<&mut (error::Error+Send+Sync+'static)> {
++    pub fn get_mut(&mut self) -> Option<&mut String> {
+         match self.repr {
+             Repr::Os(..) => None,
+-            Repr::Custom(ref mut c) => Some(&mut *c.error),
++            Repr::Custom(ref mut c) => Some(&mut c.error),
+         }
+     }
+ 
+@@ -261,8 +225,7 @@ impl Error {
+     ///
+     /// If this `Error` was constructed via `new` then this function will
+     /// return `Some`, otherwise it will return `None`.
+-    #[stable(feature = "io_error_inner", since = "1.3.0")]
+-    pub fn into_inner(self) -> Option<Box<error::Error+Send+Sync>> {
++    pub fn into_inner(self) -> Option<String> {
+         match self.repr {
+             Repr::Os(..) => None,
+             Repr::Custom(c) => Some(c.error)
+@@ -270,10 +233,9 @@ impl Error {
+     }
+ 
+     /// Returns the corresponding `ErrorKind` for this error.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn kind(&self) -> ErrorKind {
+         match self.repr {
+-            Repr::Os(code) => sys::decode_error_kind(code),
++            Repr::Os(_code) => ErrorKind::Other,
+             Repr::Custom(ref c) => c.kind,
+         }
+     }
+@@ -283,63 +245,23 @@ impl fmt::Debug for Repr {
+     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+         match *self {
+             Repr::Os(ref code) =>
+-                fmt.debug_struct("Os").field("code", code)
+-                   .field("message", &sys::os::error_string(*code)).finish(),
++                fmt.debug_struct("Os").field("code", code).finish(),
+             Repr::Custom(ref c) => fmt.debug_tuple("Custom").field(c).finish(),
+         }
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl fmt::Display for Error {
+     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+         match self.repr {
+             Repr::Os(code) => {
+-                let detail = sys::os::error_string(code);
+-                write!(fmt, "{} (os error {})", detail, code)
++                write!(fmt, "os error {}", code)
+             }
+             Repr::Custom(ref c) => c.error.fmt(fmt),
+         }
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+-impl error::Error for Error {
+-    fn description(&self) -> &str {
+-        match self.repr {
+-            Repr::Os(..) => match self.kind() {
+-                ErrorKind::NotFound => "entity not found",
+-                ErrorKind::PermissionDenied => "permission denied",
+-                ErrorKind::ConnectionRefused => "connection refused",
+-                ErrorKind::ConnectionReset => "connection reset",
+-                ErrorKind::ConnectionAborted => "connection aborted",
+-                ErrorKind::NotConnected => "not connected",
+-                ErrorKind::AddrInUse => "address in use",
+-                ErrorKind::AddrNotAvailable => "address not available",
+-                ErrorKind::BrokenPipe => "broken pipe",
+-                ErrorKind::AlreadyExists => "entity already exists",
+-                ErrorKind::WouldBlock => "operation would block",
+-                ErrorKind::InvalidInput => "invalid input parameter",
+-                ErrorKind::InvalidData => "invalid data",
+-                ErrorKind::TimedOut => "timed out",
+-                ErrorKind::WriteZero => "write zero",
+-                ErrorKind::Interrupted => "operation interrupted",
+-                ErrorKind::Other => "other os error",
+-                ErrorKind::UnexpectedEof => "unexpected end of file",
+-                ErrorKind::__Nonexhaustive => unreachable!()
+-            },
+-            Repr::Custom(ref c) => c.error.description(),
+-        }
+-    }
+-
+-    fn cause(&self) -> Option<&error::Error> {
+-        match self.repr {
+-            Repr::Os(..) => None,
+-            Repr::Custom(ref c) => c.error.cause(),
+-        }
+-    }
+-}
+-
+ fn _assert_error_is_sync_send() {
+     fn _is_sync_send<T: Sync+Send>() {}
+     _is_sync_send::<Error>();
+diff --git a/impls.rs b/impls.rs
+index 3179938..291c69c 100644
+--- a/impls.rs
++++ b/impls.rs
+@@ -8,29 +8,31 @@
+ // option. This file may not be copied, modified, or distributed
+ // except according to those terms.
+ 
+-use boxed::Box;
+-use cmp;
+-use io::{self, SeekFrom, Read, Write, Seek, BufRead, Error, ErrorKind};
+-use fmt;
+-use mem;
+-use string::String;
+-use vec::Vec;
++#[cfg(feature="alloc")] use alloc::boxed::Box;
++use core::cmp;
++use io::{self, SeekFrom, Read, Write, Seek, Error, ErrorKind};
++#[cfg(feature="collections")] use io::BufRead;
++use core::fmt;
++use core::mem;
++#[cfg(feature="collections")] use collections::string::String;
++#[cfg(feature="collections")] use collections::vec::Vec;
+ 
+ // =============================================================================
+ // Forwarding implementations
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<'a, R: Read + ?Sized> Read for &'a mut R {
+     #[inline]
+     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+         (**self).read(buf)
+     }
+ 
++    #[cfg(feature="collections")]
+     #[inline]
+     fn read_to_end(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
+         (**self).read_to_end(buf)
+     }
+ 
++    #[cfg(feature="collections")]
+     #[inline]
+     fn read_to_string(&mut self, buf: &mut String) -> io::Result<usize> {
+         (**self).read_to_string(buf)
+@@ -41,7 +43,6 @@ impl<'a, R: Read + ?Sized> Read for &'a mut R {
+         (**self).read_exact(buf)
+     }
+ }
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<'a, W: Write + ?Sized> Write for &'a mut W {
+     #[inline]
+     fn write(&mut self, buf: &[u8]) -> io::Result<usize> { (**self).write(buf) }
+@@ -59,12 +60,11 @@ impl<'a, W: Write + ?Sized> Write for &'a mut W {
+         (**self).write_fmt(fmt)
+     }
+ }
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<'a, S: Seek + ?Sized> Seek for &'a mut S {
+     #[inline]
+     fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> { (**self).seek(pos) }
+ }
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ impl<'a, B: BufRead + ?Sized> BufRead for &'a mut B {
+     #[inline]
+     fn fill_buf(&mut self) -> io::Result<&[u8]> { (**self).fill_buf() }
+@@ -83,18 +83,20 @@ impl<'a, B: BufRead + ?Sized> BufRead for &'a mut B {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="alloc")]
+ impl<R: Read + ?Sized> Read for Box<R> {
+     #[inline]
+     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+         (**self).read(buf)
+     }
+ 
++    #[cfg(feature="collections")]
+     #[inline]
+     fn read_to_end(&mut self, buf: &mut Vec<u8>) -> io::Result<usize> {
+         (**self).read_to_end(buf)
+     }
+ 
++    #[cfg(feature="collections")]
+     #[inline]
+     fn read_to_string(&mut self, buf: &mut String) -> io::Result<usize> {
+         (**self).read_to_string(buf)
+@@ -105,7 +107,7 @@ impl<R: Read + ?Sized> Read for Box<R> {
+         (**self).read_exact(buf)
+     }
+ }
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="alloc")]
+ impl<W: Write + ?Sized> Write for Box<W> {
+     #[inline]
+     fn write(&mut self, buf: &[u8]) -> io::Result<usize> { (**self).write(buf) }
+@@ -123,12 +125,12 @@ impl<W: Write + ?Sized> Write for Box<W> {
+         (**self).write_fmt(fmt)
+     }
+ }
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="alloc")]
+ impl<S: Seek + ?Sized> Seek for Box<S> {
+     #[inline]
+     fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> { (**self).seek(pos) }
+ }
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ impl<B: BufRead + ?Sized> BufRead for Box<B> {
+     #[inline]
+     fn fill_buf(&mut self) -> io::Result<&[u8]> { (**self).fill_buf() }
+@@ -150,7 +152,6 @@ impl<B: BufRead + ?Sized> BufRead for Box<B> {
+ // =============================================================================
+ // In-memory buffer implementations
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<'a> Read for &'a [u8] {
+     #[inline]
+     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+@@ -174,7 +175,7 @@ impl<'a> Read for &'a [u8] {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ impl<'a> BufRead for &'a [u8] {
+     #[inline]
+     fn fill_buf(&mut self) -> io::Result<&[u8]> { Ok(*self) }
+@@ -183,7 +184,6 @@ impl<'a> BufRead for &'a [u8] {
+     fn consume(&mut self, amt: usize) { *self = &self[amt..]; }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<'a> Write for &'a mut [u8] {
+     #[inline]
+     fn write(&mut self, data: &[u8]) -> io::Result<usize> {
+@@ -207,7 +207,7 @@ impl<'a> Write for &'a mut [u8] {
+     fn flush(&mut self) -> io::Result<()> { Ok(()) }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ impl Write for Vec<u8> {
+     #[inline]
+     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+diff --git a/memchr.rs b/memchr.rs
+index 1d97611..110cfac 100644
+--- a/memchr.rs
++++ b/memchr.rs
+@@ -11,103 +11,12 @@
+ // Original implementation taken from rust-memchr
+ // Copyright 2015 Andrew Gallant, bluss and Nicolas Koch
+ 
+-
+-
+-/// A safe interface to `memchr`.
+-///
+-/// Returns the index corresponding to the first occurrence of `needle` in
+-/// `haystack`, or `None` if one is not found.
+-///
+-/// memchr reduces to super-optimized machine code at around an order of
+-/// magnitude faster than `haystack.iter().position(|&b| b == needle)`.
+-/// (See benchmarks.)
+-///
+-/// # Example
+-///
+-/// This shows how to find the first position of a byte in a byte string.
+-///
+-/// ```rust,ignore
+-/// use memchr::memchr;
+-///
+-/// let haystack = b"the quick brown fox";
+-/// assert_eq!(memchr(b'k', haystack), Some(8));
+-/// ```
+-pub fn memchr(needle: u8, haystack: &[u8]) -> Option<usize> {
+-    // libc memchr
+-    #[cfg(not(target_os = "windows"))]
+-    fn memchr_specific(needle: u8, haystack: &[u8]) -> Option<usize> {
+-        use libc;
+-
+-        let p = unsafe {
+-            libc::memchr(
+-                haystack.as_ptr() as *const libc::c_void,
+-                needle as libc::c_int,
+-                haystack.len() as libc::size_t)
+-        };
+-        if p.is_null() {
+-            None
+-        } else {
+-            Some(p as usize - (haystack.as_ptr() as usize))
+-        }
+-    }
+-
+-    // use fallback on windows, since it's faster
+-    #[cfg(target_os = "windows")]
+-    fn memchr_specific(needle: u8, haystack: &[u8]) -> Option<usize> {
+-        fallback::memchr(needle, haystack)
+-    }
+-
+-    memchr_specific(needle, haystack)
+-}
+-
+-/// A safe interface to `memrchr`.
+-///
+-/// Returns the index corresponding to the last occurrence of `needle` in
+-/// `haystack`, or `None` if one is not found.
+-///
+-/// # Example
+-///
+-/// This shows how to find the last position of a byte in a byte string.
+-///
+-/// ```rust,ignore
+-/// use memchr::memrchr;
+-///
+-/// let haystack = b"the quick brown fox";
+-/// assert_eq!(memrchr(b'o', haystack), Some(17));
+-/// ```
+-pub fn memrchr(needle: u8, haystack: &[u8]) -> Option<usize> {
+-
+-    #[cfg(target_os = "linux")]
+-    fn memrchr_specific(needle: u8, haystack: &[u8]) -> Option<usize> {
+-        use libc;
+-
+-        // GNU's memrchr() will - unlike memchr() - error if haystack is empty.
+-        if haystack.is_empty() {return None}
+-        let p = unsafe {
+-            libc::memrchr(
+-                haystack.as_ptr() as *const libc::c_void,
+-                needle as libc::c_int,
+-                haystack.len() as libc::size_t)
+-        };
+-        if p.is_null() {
+-            None
+-        } else {
+-            Some(p as usize - (haystack.as_ptr() as usize))
+-        }
+-    }
+-
+-    #[cfg(not(target_os = "linux"))]
+-    fn memrchr_specific(needle: u8, haystack: &[u8]) -> Option<usize> {
+-        fallback::memrchr(needle, haystack)
+-    }
+-
+-    memrchr_specific(needle, haystack)
+-}
++pub use self::fallback::{memchr,memrchr};
+ 
+ #[allow(dead_code)]
+ mod fallback {
+-    use cmp;
+-    use mem;
++    use core::cmp;
++    use core::mem;
+ 
+     const LO_U64: u64 = 0x0101010101010101;
+     const HI_U64: u64 = 0x8080808080808080;
+diff --git a/mod.rs b/mod.rs
+index 6dd7273..002d94e 100644
+--- a/mod.rs
++++ b/mod.rs
+@@ -248,49 +248,32 @@
+ //! contract. The implementation of many of these functions are subject to change over
+ //! time and may call fewer or more syscalls/library functions.
+ 
+-#![stable(feature = "rust1", since = "1.0.0")]
+-
+-use cmp;
++use core::cmp;
+ use rustc_unicode::str as core_str;
+-use error as std_error;
+-use fmt;
+-use iter::{Iterator};
+-use marker::Sized;
+-use ops::{Drop, FnOnce};
+-use option::Option::{self, Some, None};
+-use result::Result::{Ok, Err};
+-use result;
+-use string::String;
+-use str;
+-use vec::Vec;
+-use memchr;
+-
+-#[stable(feature = "rust1", since = "1.0.0")]
+-pub use self::buffered::{BufReader, BufWriter, LineWriter};
+-#[stable(feature = "rust1", since = "1.0.0")]
+-pub use self::buffered::IntoInnerError;
+-#[stable(feature = "rust1", since = "1.0.0")]
++use core::fmt;
++use core::iter::{Iterator};
++use core::marker::Sized;
++#[cfg(feature="collections")] use core::ops::{Drop, FnOnce};
++use core::option::Option::{self, Some, None};
++use core::result::Result::{Ok, Err};
++use core::result;
++#[cfg(feature="collections")] use collections::string::String;
++use core::str;
++#[cfg(feature="collections")] use collections::vec::Vec;
++mod memchr;
++
++#[cfg(feature="collections")] pub use self::buffered::{BufReader, BufWriter, LineWriter};
++#[cfg(feature="collections")] pub use self::buffered::IntoInnerError;
+ pub use self::cursor::Cursor;
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub use self::error::{Result, Error, ErrorKind};
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub use self::util::{copy, sink, Sink, empty, Empty, repeat, Repeat};
+-#[stable(feature = "rust1", since = "1.0.0")]
+-pub use self::stdio::{stdin, stdout, stderr, _print, Stdin, Stdout, Stderr};
+-#[stable(feature = "rust1", since = "1.0.0")]
+-pub use self::stdio::{StdoutLock, StderrLock, StdinLock};
+-#[unstable(feature = "libstd_io_internals", issue = "0")]
+-#[doc(no_inline, hidden)]
+-pub use self::stdio::{set_panic, set_print};
+ 
+ pub mod prelude;
+-mod buffered;
++#[cfg(feature="collections")] mod buffered;
+ mod cursor;
+ mod error;
+ mod impls;
+-mod lazy;
+ mod util;
+-mod stdio;
+ 
+ const DEFAULT_BUF_SIZE: usize = 8 * 1024;
+ 
+@@ -312,6 +295,7 @@ const DEFAULT_BUF_SIZE: usize = 8 * 1024;
+ // 2. We're passing a raw buffer to the function `f`, and it is expected that
+ //    the function only *appends* bytes to the buffer. We'll get undefined
+ //    behavior if existing bytes are overwritten to have non-UTF-8 data.
++#[cfg(feature="collections")]
+ fn append_to_string<F>(buf: &mut String, f: F) -> Result<usize>
+     where F: FnOnce(&mut Vec<u8>) -> Result<usize>
+ {
+@@ -343,6 +327,7 @@ fn append_to_string<F>(buf: &mut String, f: F) -> Result<usize>
+ // of data to return. Simply tacking on an extra DEFAULT_BUF_SIZE space every
+ // time is 4,500 times (!) slower than this if the reader has a very small
+ // amount of data to return.
++#[cfg(feature="collections")]
+ fn read_to_end<R: Read + ?Sized>(r: &mut R, buf: &mut Vec<u8>) -> Result<usize> {
+     let start_len = buf.len();
+     let mut len = start_len;
+@@ -425,7 +410,6 @@ fn read_to_end<R: Read + ?Sized>(r: &mut R, buf: &mut Vec<u8>) -> Result<usize>
+ /// # Ok(())
+ /// # }
+ /// ```
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub trait Read {
+     /// Pull some bytes from this source into the specified buffer, returning
+     /// how many bytes were read.
+@@ -475,7 +459,6 @@ pub trait Read {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn read(&mut self, buf: &mut [u8]) -> Result<usize>;
+ 
+     /// Read all bytes until EOF in this source, placing them into `buf`.
+@@ -517,7 +500,7 @@ pub trait Read {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
++    #[cfg(feature="collections")]
+     fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize> {
+         read_to_end(self, buf)
+     }
+@@ -555,7 +538,7 @@ pub trait Read {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
++    #[cfg(feature="collections")]
+     fn read_to_string(&mut self, buf: &mut String) -> Result<usize> {
+         // Note that we do *not* call `.read_to_end()` here. We are passing
+         // `&mut Vec<u8>` (the raw contents of `buf`) into the `read_to_end`
+@@ -616,7 +599,6 @@ pub trait Read {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "read_exact", since = "1.6.0")]
+     fn read_exact(&mut self, mut buf: &mut [u8]) -> Result<()> {
+         while !buf.is_empty() {
+             match self.read(buf) {
+@@ -668,7 +650,6 @@ pub trait Read {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn by_ref(&mut self) -> &mut Self where Self: Sized { self }
+ 
+     /// Transforms this `Read` instance to an `Iterator` over its bytes.
+@@ -698,7 +679,6 @@ pub trait Read {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn bytes(self) -> Bytes<Self> where Self: Sized {
+         Bytes { inner: self }
+     }
+@@ -735,10 +715,6 @@ pub trait Read {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[unstable(feature = "io", reason = "the semantics of a partial read/write \
+-                                         of where errors happen is currently \
+-                                         unclear and may change",
+-               issue = "27802")]
+     fn chars(self) -> Chars<Self> where Self: Sized {
+         Chars { inner: self }
+     }
+@@ -773,7 +749,6 @@ pub trait Read {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn chain<R: Read>(self, next: R) -> Chain<Self, R> where Self: Sized {
+         Chain { first: self, second: next, done_first: false }
+     }
+@@ -807,7 +782,6 @@ pub trait Read {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn take(self, limit: u64) -> Take<Self> where Self: Sized {
+         Take { inner: self, limit: limit }
+     }
+@@ -843,7 +817,6 @@ pub trait Read {
+ /// # Ok(())
+ /// # }
+ /// ```
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub trait Write {
+     /// Write a buffer into this object, returning how many bytes were written.
+     ///
+@@ -883,7 +856,6 @@ pub trait Write {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn write(&mut self, buf: &[u8]) -> Result<usize>;
+ 
+     /// Flush this output stream, ensuring that all intermediately buffered
+@@ -909,7 +881,6 @@ pub trait Write {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn flush(&mut self) -> Result<()>;
+ 
+     /// Attempts to write an entire buffer into this write.
+@@ -936,7 +907,6 @@ pub trait Write {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn write_all(&mut self, mut buf: &[u8]) -> Result<()> {
+         while !buf.is_empty() {
+             match self.write(buf) {
+@@ -988,7 +958,6 @@ pub trait Write {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn write_fmt(&mut self, fmt: fmt::Arguments) -> Result<()> {
+         // Create a shim which translates a Write to a fmt::Write and saves
+         // off I/O errors. instead of discarding them
+@@ -1044,7 +1013,6 @@ pub trait Write {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn by_ref(&mut self) -> &mut Self where Self: Sized { self }
+ }
+ 
+@@ -1074,7 +1042,6 @@ pub trait Write {
+ /// # Ok(())
+ /// # }
+ /// ```
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub trait Seek {
+     /// Seek to an offset, in bytes, in a stream.
+     ///
+@@ -1088,35 +1055,31 @@ pub trait Seek {
+     /// # Errors
+     ///
+     /// Seeking to a negative offset is considered an error.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn seek(&mut self, pos: SeekFrom) -> Result<u64>;
+ }
+ 
+ /// Enumeration of possible methods to seek within an I/O object.
+ #[derive(Copy, PartialEq, Eq, Clone, Debug)]
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub enum SeekFrom {
+     /// Set the offset to the provided number of bytes.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+-    Start(#[stable(feature = "rust1", since = "1.0.0")] u64),
++    Start(u64),
+ 
+     /// Set the offset to the size of this object plus the specified number of
+     /// bytes.
+     ///
+     /// It is possible to seek beyond the end of an object, but it's an error to
+     /// seek before byte 0.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+-    End(#[stable(feature = "rust1", since = "1.0.0")] i64),
++    End(i64),
+ 
+     /// Set the offset to the current position plus the specified number of
+     /// bytes.
+     ///
+     /// It is possible to seek beyond the end of an object, but it's an error to
+     /// seek before byte 0.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+-    Current(#[stable(feature = "rust1", since = "1.0.0")] i64),
++    Current(i64),
+ }
+ 
++#[cfg(feature="collections")]
+ fn read_until<R: BufRead + ?Sized>(r: &mut R, delim: u8, buf: &mut Vec<u8>)
+                                    -> Result<usize> {
+     let mut read = 0;
+@@ -1196,7 +1159,7 @@ fn read_until<R: BufRead + ?Sized>(r: &mut R, delim: u8, buf: &mut Vec<u8>)
+ /// # }
+ /// ```
+ ///
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ pub trait BufRead: Read {
+     /// Fills the internal buffer of this object, returning the buffer contents.
+     ///
+@@ -1241,7 +1204,6 @@ pub trait BufRead: Read {
+     /// // ensure the bytes we worked with aren't returned again later
+     /// stdin.consume(length);
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn fill_buf(&mut self) -> Result<&[u8]>;
+ 
+     /// Tells this buffer that `amt` bytes have been consumed from the buffer,
+@@ -1263,7 +1225,6 @@ pub trait BufRead: Read {
+     ///
+     /// Since `consume()` is meant to be used with [`fill_buf()`][fillbuf],
+     /// that method's example includes an example of `consume()`.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn consume(&mut self, amt: usize);
+ 
+     /// Read all bytes into `buf` until the delimiter `byte` is reached.
+@@ -1304,7 +1265,6 @@ pub trait BufRead: Read {
+     /// # Ok(())
+     /// # }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn read_until(&mut self, byte: u8, buf: &mut Vec<u8>) -> Result<usize> {
+         read_until(self, byte, buf)
+     }
+@@ -1352,7 +1312,6 @@ pub trait BufRead: Read {
+     ///     buffer.clear();
+     /// }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn read_line(&mut self, buf: &mut String) -> Result<usize> {
+         // Note that we are not calling the `.read_until` method here, but
+         // rather our hardcoded implementation. For more details as to why, see
+@@ -1385,7 +1344,6 @@ pub trait BufRead: Read {
+     ///     println!("{:?}", content.unwrap());
+     /// }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn split(self, byte: u8) -> Split<Self> where Self: Sized {
+         Split { buf: self, delim: byte }
+     }
+@@ -1410,7 +1368,6 @@ pub trait BufRead: Read {
+     ///     println!("{}", line.unwrap());
+     /// }
+     /// ```
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     fn lines(self) -> Lines<Self> where Self: Sized {
+         Lines { buf: self }
+     }
+@@ -1422,14 +1379,12 @@ pub trait BufRead: Read {
+ /// Please see the documentation of `chain()` for more details.
+ ///
+ /// [chain]: trait.Read.html#method.chain
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct Chain<T, U> {
+     first: T,
+     second: U,
+     done_first: bool,
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<T: Read, U: Read> Read for Chain<T, U> {
+     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+         if !self.done_first {
+@@ -1442,7 +1397,7 @@ impl<T: Read, U: Read> Read for Chain<T, U> {
+     }
+ }
+ 
+-#[stable(feature = "chain_bufread", since = "1.9.0")]
++#[cfg(feature="collections")]
+ impl<T: BufRead, U: BufRead> BufRead for Chain<T, U> {
+     fn fill_buf(&mut self) -> Result<&[u8]> {
+         if !self.done_first {
+@@ -1469,7 +1424,6 @@ impl<T: BufRead, U: BufRead> BufRead for Chain<T, U> {
+ /// Please see the documentation of `take()` for more details.
+ ///
+ /// [take]: trait.Read.html#method.take
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct Take<T> {
+     inner: T,
+     limit: u64,
+@@ -1483,11 +1437,9 @@ impl<T> Take<T> {
+     ///
+     /// This instance may reach EOF after reading fewer bytes than indicated by
+     /// this method if the underlying `Read` instance reaches EOF.
+-    #[stable(feature = "rust1", since = "1.0.0")]
+     pub fn limit(&self) -> u64 { self.limit }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<T: Read> Read for Take<T> {
+     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+         // Don't call into inner reader at all at EOF because it may still block
+@@ -1502,7 +1454,7 @@ impl<T: Read> Read for Take<T> {
+     }
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ impl<T: BufRead> BufRead for Take<T> {
+     fn fill_buf(&mut self) -> Result<&[u8]> {
+         let buf = self.inner.fill_buf()?;
+@@ -1524,12 +1476,10 @@ impl<T: BufRead> BufRead for Take<T> {
+ /// Please see the documentation of `bytes()` for more details.
+ ///
+ /// [bytes]: trait.Read.html#method.bytes
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct Bytes<R> {
+     inner: R,
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl<R: Read> Iterator for Bytes<R> {
+     type Item = Result<u8>;
+ 
+@@ -1549,8 +1499,6 @@ impl<R: Read> Iterator for Bytes<R> {
+ /// Please see the documentation of `chars()` for more details.
+ ///
+ /// [chars]: trait.Read.html#method.chars
+-#[unstable(feature = "io", reason = "awaiting stability of Read::chars",
+-           issue = "27802")]
+ pub struct Chars<R> {
+     inner: R,
+ }
+@@ -1558,8 +1506,6 @@ pub struct Chars<R> {
+ /// An enumeration of possible errors that can be generated from the `Chars`
+ /// adapter.
+ #[derive(Debug)]
+-#[unstable(feature = "io", reason = "awaiting stability of Read::chars",
+-           issue = "27802")]
+ pub enum CharsError {
+     /// Variant representing that the underlying stream was read successfully
+     /// but it did not contain valid utf8 data.
+@@ -1569,8 +1515,6 @@ pub enum CharsError {
+     Other(Error),
+ }
+ 
+-#[unstable(feature = "io", reason = "awaiting stability of Read::chars",
+-           issue = "27802")]
+ impl<R: Read> Iterator for Chars<R> {
+     type Item = result::Result<char, CharsError>;
+ 
+@@ -1602,25 +1546,6 @@ impl<R: Read> Iterator for Chars<R> {
+     }
+ }
+ 
+-#[unstable(feature = "io", reason = "awaiting stability of Read::chars",
+-           issue = "27802")]
+-impl std_error::Error for CharsError {
+-    fn description(&self) -> &str {
+-        match *self {
+-            CharsError::NotUtf8 => "invalid utf8 encoding",
+-            CharsError::Other(ref e) => std_error::Error::description(e),
+-        }
+-    }
+-    fn cause(&self) -> Option<&std_error::Error> {
+-        match *self {
+-            CharsError::NotUtf8 => None,
+-            CharsError::Other(ref e) => e.cause(),
+-        }
+-    }
+-}
+-
+-#[unstable(feature = "io", reason = "awaiting stability of Read::chars",
+-           issue = "27802")]
+ impl fmt::Display for CharsError {
+     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+         match *self {
+@@ -1639,13 +1564,13 @@ impl fmt::Display for CharsError {
+ /// `BufRead`. Please see the documentation of `split()` for more details.
+ ///
+ /// [split]: trait.BufRead.html#method.split
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ pub struct Split<B> {
+     buf: B,
+     delim: u8,
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ impl<B: BufRead> Iterator for Split<B> {
+     type Item = Result<Vec<u8>>;
+ 
+@@ -1670,12 +1595,12 @@ impl<B: BufRead> Iterator for Split<B> {
+ /// `BufRead`. Please see the documentation of `lines()` for more details.
+ ///
+ /// [lines]: trait.BufRead.html#method.lines
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ pub struct Lines<B> {
+     buf: B,
+ }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ impl<B: BufRead> Iterator for Lines<B> {
+     type Item = Result<String>;
+ 
+diff --git a/prelude.rs b/prelude.rs
+index 8772d0f..49d66c9 100644
+--- a/prelude.rs
++++ b/prelude.rs
+@@ -18,7 +18,8 @@
+ //! use std::io::prelude::*;
+ //! ```
+ 
+-#![stable(feature = "rust1", since = "1.0.0")]
++pub use super::{Read, Write, Seek};
++#[cfg(feature="collections")] pub use super::BufRead;
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+-pub use super::{Read, Write, BufRead, Seek};
++#[cfg(feature="collections")] pub use alloc::boxed::Box;
++#[cfg(feature="collections")] pub use collections::vec::Vec;
+diff --git a/util.rs b/util.rs
+index 2815c01..1edcae5 100644
+--- a/util.rs
++++ b/util.rs
+@@ -10,7 +10,8 @@
+ 
+ #![allow(missing_copy_implementations)]
+ 
+-use io::{self, Read, Write, ErrorKind, BufRead};
++use io::{self, Read, Write, ErrorKind};
++#[cfg(feature="collections")] use io::BufRead;
+ 
+ /// Copies the entire contents of a reader into a writer.
+ ///
+@@ -42,7 +43,6 @@ use io::{self, Read, Write, ErrorKind, BufRead};
+ /// # Ok(())
+ /// # }
+ /// ```
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> io::Result<u64>
+     where R: Read, W: Write
+ {
+@@ -66,7 +66,6 @@ pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> io::Result<
+ /// the documentation of `empty()` for more details.
+ ///
+ /// [empty]: fn.empty.html
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct Empty { _priv: () }
+ 
+ /// Constructs a new handle to an empty reader.
+@@ -87,14 +86,12 @@ pub struct Empty { _priv: () }
+ /// # Ok(buffer)
+ /// # }
+ /// ```
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub fn empty() -> Empty { Empty { _priv: () } }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl Read for Empty {
+     fn read(&mut self, _buf: &mut [u8]) -> io::Result<usize> { Ok(0) }
+ }
+-#[stable(feature = "rust1", since = "1.0.0")]
++#[cfg(feature="collections")]
+ impl BufRead for Empty {
+     fn fill_buf(&mut self) -> io::Result<&[u8]> { Ok(&[]) }
+     fn consume(&mut self, _n: usize) {}
+@@ -106,17 +103,14 @@ impl BufRead for Empty {
+ /// see the documentation of `repeat()` for more details.
+ ///
+ /// [repeat]: fn.repeat.html
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct Repeat { byte: u8 }
+ 
+ /// Creates an instance of a reader that infinitely repeats one byte.
+ ///
+ /// All reads from this reader will succeed by filling the specified buffer with
+ /// the given byte.
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub fn repeat(byte: u8) -> Repeat { Repeat { byte: byte } }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl Read for Repeat {
+     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+         for slot in &mut *buf {
+@@ -132,17 +126,14 @@ impl Read for Repeat {
+ /// see the documentation of `sink()` for more details.
+ ///
+ /// [sink]: fn.sink.html
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub struct Sink { _priv: () }
+ 
+ /// Creates an instance of a writer which will successfully consume all data.
+ ///
+ /// All calls to `write` on the returned instance will return `Ok(buf.len())`
+ /// and the contents of the buffer will not be inspected.
+-#[stable(feature = "rust1", since = "1.0.0")]
+ pub fn sink() -> Sink { Sink { _priv: () } }
+ 
+-#[stable(feature = "rust1", since = "1.0.0")]
+ impl Write for Sink {
+     fn write(&mut self, buf: &[u8]) -> io::Result<usize> { Ok(buf.len()) }
+     fn flush(&mut self) -> io::Result<()> { Ok(()) }

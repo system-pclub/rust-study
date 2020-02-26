@@ -1,0 +1,14 @@
+[package]
+name = "slab_allocator"
+version = "0.3.1"
+authors = ["Robert Węcławski <r.weclawski@gmail.com>"]
+license = "MIT"
+
+description = "Slab allocator for no_std systems. Uses multiple slabs with blocks of different sizes and a linked list for blocks larger than 4096 bytes"
+keywords = ["slab", "allocator", "no_std", "heap", "kernel"]
+
+repository = "https://github.com/weclaw1/slab_allocator"
+
+[dependencies]
+linked_list_allocator = "0.6"
+spin = "0.4"

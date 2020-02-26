@@ -1,0 +1,16 @@
+POSIX Threads for embedded systems (PTE)
+
+PTE is an open source implementation of the POSIX API for multithreaded 
+applications (pthreads).  It is intended to be used to provide a pthreads 
+API for embedded operating systems that do not natively provide a pthreads 
+API. PTE is designed to be easily portable to such operating systems and only 
+relies on basic primitives (e.g. semaphores) that are widely supported on most 
+embedded operating systems.
+
+Currently, PTE has been ported to Texas Instrument's DSP/BIOS and Sony's PSP OS.
+
+PTE is based heavily on Pthreads Win32, an implementation of pthreads 
+for Windows. 
+
+Information on building and porting PTE is available at 
+https://github.com/jschmidlapp/pthreads-emb/wiki.

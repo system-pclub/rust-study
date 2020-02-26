@@ -1,0 +1,15 @@
+error[E0277]: the trait bound `T: std::marker::Copy` is not satisfied
+  --> $DIR/wf-in-fn-type-arg.rs:9:5
+   |
+LL | struct MustBeCopy<T:Copy> {
+   | ------------------------- required by `MustBeCopy`
+...
+LL | struct Bar<T> {
+   |            - help: consider restricting this bound: `T: std::marker::Copy`
+LL |     // needs T: Copy
+LL |     x: fn(MustBeCopy<T>)
+   |     ^^^^^^^^^^^^^^^^^^^^ the trait `std::marker::Copy` is not implemented for `T`
+
+error: aborting due to previous error
+
+For more information about this error, try `rustc --explain E0277`.

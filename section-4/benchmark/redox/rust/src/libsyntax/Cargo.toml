@@ -1,0 +1,25 @@
+[package]
+authors = ["The Rust Project Developers"]
+name = "syntax"
+version = "0.0.0"
+edition = "2018"
+
+[lib]
+name = "syntax"
+path = "lib.rs"
+doctest = false
+
+[dependencies]
+bitflags = "1.2.1"
+rustc_serialize = { path = "../libserialize", package = "serialize" }
+log = "0.4"
+scoped-tls = "1.0"
+lazy_static = "1.0.0"
+syntax_pos = { path = "../libsyntax_pos" }
+errors = { path = "../librustc_errors", package = "rustc_errors" }
+rustc_data_structures = { path = "../librustc_data_structures" }
+rustc_index = { path = "../librustc_index" }
+rustc_lexer = { path = "../librustc_lexer" }
+rustc_macros = { path = "../librustc_macros" }
+smallvec = { version = "1.0", features = ["union", "may_dangle"] }
+rustc_error_codes = { path = "../librustc_error_codes" }

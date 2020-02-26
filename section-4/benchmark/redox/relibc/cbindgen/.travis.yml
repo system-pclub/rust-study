@@ -1,0 +1,20 @@
+language: rust
+cache: cargo
+rust:
+  - nightly
+before_script:
+  - rustup component add rustfmt
+addons:
+    apt:
+      sources:
+        - ubuntu-toolchain-r-test
+      packages:
+        - gcc-7
+        - g++-7
+script:
+  - export CC=gcc-7
+  - export CXX=g++-7
+  - cargo fmt --all -- --check
+  - cargo build --verbose
+  - cargo build --verbose --no-default-features
+  - CBINDGEN_TEST_VERIFY=1 cargo test --verbose

@@ -1,0 +1,58 @@
+error: Variable in the condition are not mutated in the loop body. This either leads to an infinite or to a never running loop.
+  --> $DIR/infinite_loop.rs:23:11
+   |
+LL |     while y < 10 {
+   |           ^^^^^^
+   |
+   = note: `#[deny(clippy::while_immutable_condition)]` on by default
+
+error: Variable in the condition are not mutated in the loop body. This either leads to an infinite or to a never running loop.
+  --> $DIR/infinite_loop.rs:28:11
+   |
+LL |     while y < 10 && x < 3 {
+   |           ^^^^^^^^^^^^^^^
+
+error: Variable in the condition are not mutated in the loop body. This either leads to an infinite or to a never running loop.
+  --> $DIR/infinite_loop.rs:35:11
+   |
+LL |     while !cond {
+   |           ^^^^^
+
+error: Variable in the condition are not mutated in the loop body. This either leads to an infinite or to a never running loop.
+  --> $DIR/infinite_loop.rs:79:11
+   |
+LL |     while i < 3 {
+   |           ^^^^^
+
+error: Variable in the condition are not mutated in the loop body. This either leads to an infinite or to a never running loop.
+  --> $DIR/infinite_loop.rs:84:11
+   |
+LL |     while i < 3 && j > 0 {
+   |           ^^^^^^^^^^^^^^
+
+error: Variable in the condition are not mutated in the loop body. This either leads to an infinite or to a never running loop.
+  --> $DIR/infinite_loop.rs:88:11
+   |
+LL |     while i < 3 {
+   |           ^^^^^
+
+error: Variable in the condition are not mutated in the loop body. This either leads to an infinite or to a never running loop.
+  --> $DIR/infinite_loop.rs:103:11
+   |
+LL |     while i < 3 {
+   |           ^^^^^
+
+error: Variable in the condition are not mutated in the loop body. This either leads to an infinite or to a never running loop.
+  --> $DIR/infinite_loop.rs:108:11
+   |
+LL |     while i < 3 {
+   |           ^^^^^
+
+error: Variable in the condition are not mutated in the loop body. This either leads to an infinite or to a never running loop.
+  --> $DIR/infinite_loop.rs:174:15
+   |
+LL |         while self.count < n {
+   |               ^^^^^^^^^^^^^^
+
+error: aborting due to 9 previous errors
+

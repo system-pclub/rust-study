@@ -1,0 +1,211 @@
+error: the function has a cognitive complexity of (28/25)
+  --> $DIR/cognitive_complexity.rs:6:1
+   |
+LL | / fn main() {
+LL | |     if true {
+LL | |         println!("a");
+LL | |     }
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = note: `-D clippy::cognitive-complexity` implied by `-D warnings`
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (7/1)
+  --> $DIR/cognitive_complexity.rs:91:1
+   |
+LL | / fn kaboom() {
+LL | |     let n = 0;
+LL | |     'a: for i in 0..20 {
+LL | |         'b: for j in i..20 {
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (2/1)
+  --> $DIR/cognitive_complexity.rs:149:1
+   |
+LL | / fn baa() {
+LL | |     let x = || match 99 {
+LL | |         0 => 0,
+LL | |         1 => 1,
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (2/1)
+  --> $DIR/cognitive_complexity.rs:150:13
+   |
+LL |       let x = || match 99 {
+   |  _____________^
+LL | |         0 => 0,
+LL | |         1 => 1,
+LL | |         2 => 2,
+...  |
+LL | |         _ => 42,
+LL | |     };
+   | |_____^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (2/1)
+  --> $DIR/cognitive_complexity.rs:167:1
+   |
+LL | / fn bar() {
+LL | |     match 99 {
+LL | |         0 => println!("hi"),
+LL | |         _ => println!("bye"),
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (2/1)
+  --> $DIR/cognitive_complexity.rs:186:1
+   |
+LL | / fn barr() {
+LL | |     match 99 {
+LL | |         0 => println!("hi"),
+LL | |         1 => println!("bla"),
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (3/1)
+  --> $DIR/cognitive_complexity.rs:196:1
+   |
+LL | / fn barr2() {
+LL | |     match 99 {
+LL | |         0 => println!("hi"),
+LL | |         1 => println!("bla"),
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (2/1)
+  --> $DIR/cognitive_complexity.rs:212:1
+   |
+LL | / fn barrr() {
+LL | |     match 99 {
+LL | |         0 => println!("hi"),
+LL | |         1 => panic!("bla"),
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (3/1)
+  --> $DIR/cognitive_complexity.rs:222:1
+   |
+LL | / fn barrr2() {
+LL | |     match 99 {
+LL | |         0 => println!("hi"),
+LL | |         1 => panic!("bla"),
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (2/1)
+  --> $DIR/cognitive_complexity.rs:238:1
+   |
+LL | / fn barrrr() {
+LL | |     match 99 {
+LL | |         0 => println!("hi"),
+LL | |         1 => println!("bla"),
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (3/1)
+  --> $DIR/cognitive_complexity.rs:248:1
+   |
+LL | / fn barrrr2() {
+LL | |     match 99 {
+LL | |         0 => println!("hi"),
+LL | |         1 => println!("bla"),
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (2/1)
+  --> $DIR/cognitive_complexity.rs:264:1
+   |
+LL | / fn cake() {
+LL | |     if 4 == 5 {
+LL | |         println!("yea");
+LL | |     } else {
+...  |
+LL | |     println!("whee");
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (4/1)
+  --> $DIR/cognitive_complexity.rs:274:1
+   |
+LL | / pub fn read_file(input_path: &str) -> String {
+LL | |     use std::fs::File;
+LL | |     use std::io::{Read, Write};
+LL | |     use std::path::Path;
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (2/1)
+  --> $DIR/cognitive_complexity.rs:305:1
+   |
+LL | / fn void(void: Void) {
+LL | |     if true {
+LL | |         match void {}
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: the function has a cognitive complexity of (8/1)
+  --> $DIR/cognitive_complexity.rs:356:1
+   |
+LL | / fn early_ret() -> i32 {
+LL | |     let a = if true { 42 } else { return 0; };
+LL | |     let a = if a < 99 { 42 } else { return 0; };
+LL | |     let a = if a < 99 { 42 } else { return 0; };
+...  |
+LL | |     }
+LL | | }
+   | |_^
+   |
+   = help: you could split it up into multiple smaller functions
+
+error: aborting due to 15 previous errors
+
