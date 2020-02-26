@@ -1,0 +1,46 @@
+[package]
+name = "crossbeam-epoch"
+# When publishing a new version:
+# - Update CHANGELOG.md
+# - Update README.md
+# - Create "crossbeam-epoch-X.Y.Z" git tag
+version = "0.7.1"
+authors = ["The Crossbeam Project Developers"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/crossbeam-rs/crossbeam"
+homepage = "https://github.com/crossbeam-rs/crossbeam/tree/master/crossbeam-epoch"
+documentation = "https://docs.rs/crossbeam-epoch"
+description = "Epoch-based garbage collection"
+keywords = ["lock-free", "rcu", "atomic", "garbage"]
+categories = ["concurrency", "memory-management", "no-std"]
+
+[features]
+default = ["std"]
+nightly = ["crossbeam-utils/nightly", "arrayvec/use_union"]
+std = ["crossbeam-utils/std", "lazy_static"]
+sanitize = [] # Makes it more likely to trigger any potential data races.
+
+[dependencies]
+cfg-if = "0.1.2"
+memoffset = "0.2"
+
+[dependencies.arrayvec]
+version = "0.4"
+default-features = false
+
+[dependencies.crossbeam-utils]
+version = "0.6"
+path = "../crossbeam-utils"
+default-features = false
+
+[dependencies.lazy_static]
+version = "1"
+optional = true
+
+[dependencies.scopeguard]
+version = "0.3"
+default-features = false
+
+[dev-dependencies]
+rand = "0.6"

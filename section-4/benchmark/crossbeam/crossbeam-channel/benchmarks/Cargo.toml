@@ -1,0 +1,59 @@
+[package]
+name = "benchmarks"
+version = "0.1.0"
+publish = false
+
+[dependencies]
+atomicring = "1.1.1"
+bus = "2.0.1"
+chan = "0.1.23"
+crossbeam = { path = "../.." }
+crossbeam-deque = { path = "../../crossbeam-deque" }
+crossbeam-channel = { path = ".." }
+lockfree = "0.5.1"
+futures-preview = "0.2.2"
+mpmc = "0.1.5"
+
+[[bin]]
+name = "atomicring"
+path = "atomicring.rs"
+
+[[bin]]
+name = "atomicringqueue"
+path = "atomicringqueue.rs"
+
+[[bin]]
+name = "bus"
+path = "bus.rs"
+
+[[bin]]
+name = "chan"
+path = "chan.rs"
+
+[[bin]]
+name = "crossbeam-channel"
+path = "crossbeam-channel.rs"
+
+[[bin]]
+name = "crossbeam-deque"
+path = "crossbeam-deque.rs"
+
+[[bin]]
+name = "futures-channel"
+path = "futures-channel.rs"
+
+[[bin]]
+name = "lockfree"
+path = "lockfree.rs"
+
+[[bin]]
+name = "mpsc"
+path = "mpsc.rs"
+
+[[bin]]
+name = "segqueue"
+path = "segqueue.rs"
+
+[[bin]]
+name = "mpmc"
+path = "mpmc.rs"

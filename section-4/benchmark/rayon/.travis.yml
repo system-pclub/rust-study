@@ -1,0 +1,102 @@
+language: rust
+
+# Using 16MB stacks for deep test/debug recursion
+env:
+  global:
+    - RUST_MIN_STACK=16777216
+
+matrix:
+  fast_finish: true
+  include:
+    # NB: To help with CI delays, each `pull_request` is only tested on Linux,
+    # with 1.13 for compatibility and stable+rayon_unstable for broad test
+    # coverage.  The bors bot counts as a `push` type, which will run it all.
+
+    - rust: 1.13.0
+      os: linux
+      #if: everything!
+      script: cargo build
+      before_script:
+        # lazy_static 1.1 requires Rust 1.21+, so downgrade it.
+        - cargo generate-lockfile
+        - cargo update -p lazy_static --precise 1.0.2
+
+    - rust: stable
+      os: linux
+      if: NOT type = pull_request
+    - rust: stable
+      os: linux
+      env: RUSTFLAGS='--cfg rayon_unstable'
+      #if: everything!
+
+    - rust: beta
+      os: linux
+      if: NOT type = pull_request
+    - rust: beta
+      os: linux
+      env: RUSTFLAGS='--cfg rayon_unstable'
+      if: NOT type = pull_request
+
+    - rust: nightly
+      os: linux
+      if: NOT type = pull_request
+    - rust: nightly
+      os: linux
+      env: RUSTFLAGS='--cfg rayon_unstable'
+      if: NOT type = pull_request
+
+    - rust: stable
+      os: osx
+      if: NOT type = pull_request
+    - rust: stable
+      os: osx
+      env: RUSTFLAGS='--cfg rayon_unstable'
+      if: NOT type = pull_request
+
+    - rust: nightly
+      os: osx
+      if: NOT type = pull_request
+    - rust: nightly
+      os: osx
+      env: RUSTFLAGS='--cfg rayon_unstable'
+      if: NOT type = pull_request
+
+    # wasm won't actually work without threading, but it builds
+    - rust: nightly
+      os: linux
+      env: TARGET=wasm32-unknown-unknown
+      script:
+        - rustup target add $TARGET
+        - cargo build --target $TARGET
+      if: NOT type = pull_request
+
+    # rayon-demo has huge dependencies, so limit its testing.
+    # build on stable, test on nightly (because of #[bench])
+    - rust: stable
+      os: linux
+      env: DEMO=1
+      script: cargo build -p rayon-demo
+      if: NOT type = pull_request
+    - rust: nightly
+      os: linux
+      env: DEMO=1
+      script: cargo test -p rayon-demo
+      if: NOT type = pull_request
+
+
+script:
+  - cargo build
+  - cargo test -p rayon
+  - cargo test -p rayon-core
+  - ./ci/highlander.sh
+  - |
+    if [ -n "$RUSTFLAGS" ]; then
+      cargo build -p rayon-futures &&
+      cargo test -p rayon-futures
+    fi
+
+branches:
+  only:
+    - master
+    - staging
+    - trying
