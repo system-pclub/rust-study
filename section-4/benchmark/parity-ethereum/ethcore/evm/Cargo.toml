@@ -1,0 +1,28 @@
+[package]
+name = "evm"
+version = "0.1.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+
+[dependencies]
+bit-set = "0.4"
+parity-bytes = "0.1"
+ethereum-types = "0.4"
+heapsize = "0.4"
+lazy_static = "1.0"
+log = "0.4"
+vm = { path = "../vm" }
+keccak-hash = "0.1"
+parking_lot = "0.7"
+memory-cache = { path = "../../util/memory-cache" }
+
+[dev-dependencies]
+rustc-hex = "1.0"
+criterion = "0.2"
+
+[features]
+evm-debug = []
+evm-debug-tests = ["evm-debug"]
+
+[[bench]]
+name = "basic"
+harness = false
