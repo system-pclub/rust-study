@@ -1,0 +1,33 @@
+[package]
+name = "launchxl"
+version = "0.1.0"
+authors = ["Tock Project Developers <tock-dev@googlegroups.com>"]
+build = "build.rs"
+edition = "2018"
+
+[profile.dev]
+panic = "abort"
+lto = false
+opt-level = "z"
+debug = true
+
+[profile.release]
+panic = "abort"
+lto = true
+opt-level = "z"
+debug = true
+
+[[bin]]
+name = "launchxl"
+path = "src/main.rs"
+
+[[bin]]
+name = "launchxlccfg"
+path = "src/ccfg.rs"
+
+[dependencies]
+cortexm4 = { path = "../../arch/cortex-m4" }
+capsules = { path = "../../capsules" }
+kernel = { path = "../../kernel" }
+cc26x2 = { path = "../../chips/cc26x2" }
+enum_primitive = { path = "../../libraries/enum_primitive" }
