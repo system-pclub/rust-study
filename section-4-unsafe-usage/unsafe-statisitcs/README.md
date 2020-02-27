@@ -26,16 +26,12 @@ commit: 2975a3c4befa8ad610da2e3c5f5de351d6d70a2b
 
 ## Usage:
 
-```./count_unsafe.py APP_REPO_DIR``` 
+```cd src_parser```
 
-```./count_LOC.py APP_REPO_DIR```
-
-## Example:
-
-```./count_unsafe.py ../rand```
-
-```./count_LOC.py ../rand```
+```./main.sh APP_REPO_DIR```
 
 ## Output:
 
-Numbers of unsafe regions, LOC of unsafe regions, unsafe functions, LOC of unsafe functions, and unsafe traits.
+Number of unsafe regions, LOC of unsafe regions;
+Number of unsafe functions, LOC of unsafe functions;
+Number of unsafe traits.
