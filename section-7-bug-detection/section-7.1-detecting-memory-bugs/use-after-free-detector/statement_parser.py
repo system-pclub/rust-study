@@ -202,7 +202,8 @@ class StatementParser:
         for src_variable, _, _ in source_variables:
             if src_variable.is_dangling_pointer():
                 print('Use-after-free detected: using dangling pointer: ', src_variable.name,
-                      ' as source variable, it points to: ', src_variable.reference_to.name)
+                      ' as source variable, it points to: ', src_variable.reference_to.name, " in file: ",
+                      self.function.filepath)
 
         return source_variables
 

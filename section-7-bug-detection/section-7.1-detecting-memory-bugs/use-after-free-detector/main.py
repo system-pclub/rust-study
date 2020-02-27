@@ -3,9 +3,8 @@ import logging
 import subprocess
 import line_parser
 
-skipping_file_list = ['rustc.header-stdio-printf-inner_printf.003-027.PreCodegen.after.mir',
-                      'rustc.header-stdio-scanf-inner_scanf.003-027.PreCodegen.after.mir',
-                      'rustc.header-stdio-scanf-inner_scanf.003-027.PreCodegen.after.mir']
+skip_name = ['*rustc.header-stdio-printf-inner_printf*', '*rustc.header-stdio-scanf-inner_scanf*']
+skip_files = []
 
 
 def find_mir_files(mir_dir):
@@ -18,8 +17,18 @@ def find_mir_files(mir_dir):
     return mir_files
 
 
+def find_files_in_skiplist(mir_dir):
+    global skip_files
+    for name in skip_name:
+        proc = subprocess.Popen(['find', mir_dir, '-name', name], stdout=subprocess.PIPE)
+        lines = proc.stdout.readlines()
+        for line in lines:
+            line = line.decode()[0: -1]
+            skip_files.append(line)
+
+
 def file_should_be_skipped(filename):
-    for f in skipping_file_list:
+    for f in skip_files:
         if filename.endswith(f):
             return True
     return False
@@ -49,6 +58,7 @@ if __name__ == '__main__':
     logging.info('logger is setup.')
 
     mir_files = find_mir_files(sys.argv[1])
+    find_files_in_skiplist(sys.argv[1])
     nr_files_parsed = 0
 
     for file in mir_files:
@@ -56,7 +66,7 @@ if __name__ == '__main__':
             continue
 
         logging.info('Parsing MIR file: %s', file)
-        print('NR_FILES parsed: ' + str(nr_files_parsed) + ', parsing MIR file: ' + file)
+        # print('NR_FILES parsed: ' + str(nr_files_parsed) + ', parsing MIR file: ' + file)
         parser = line_parser.LineParser(file)
         parser.run()
         nr_files_parsed += 1
