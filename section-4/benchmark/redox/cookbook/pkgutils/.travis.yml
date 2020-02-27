@@ -1,8 +1,0 @@
-language: rust
-rust:
-  - nightly
-sudo: false
-notifications:
-  email: false
-env:
-  - TARGET=x86_64-unknown-redox

@@ -1,5 +1,0 @@
-target
-Cargo.lock
-
-# Add tempfiles so cargo watch does not trigger before save
-*.kate-swp

@@ -1,9 +1,0 @@
-language: rust
-rust:
-  - stable
-  - beta
-  - nightly
-script:
-  - export LZMA_API_STATIC=1
-  - cargo build
-  - ./test.sh

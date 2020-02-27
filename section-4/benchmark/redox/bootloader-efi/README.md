@@ -1,1 +1,0 @@
-# Redox Bootloader for EFI

@@ -1,3 +1,0 @@
-target
-# Including .git lets the build inside Docker get the git commit
-# .git

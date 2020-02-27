@@ -1,2 +1,0 @@
-#[allow(unused)]
-struct Frobnicator;

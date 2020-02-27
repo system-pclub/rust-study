@@ -1,8 +1,0 @@
-namespace ServoApp
-{
-    [default_interface]
-    runtimeclass BrowserPage : Windows.UI.Xaml.Controls.Page
-    {
-        BrowserPage();
-    }
-}

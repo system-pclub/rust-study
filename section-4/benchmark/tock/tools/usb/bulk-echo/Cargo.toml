@@ -1,7 +1,0 @@
-[package]
-name = "bulk-echo"
-version = "0.1.0"
-authors = ["Daniel B Giffin <daniel@beech-grove.net>"]
-
-[dependencies]
-libusb = "0.3"

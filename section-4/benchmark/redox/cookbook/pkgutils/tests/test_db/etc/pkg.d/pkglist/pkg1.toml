@@ -1,4 +1,0 @@
-name = "pkg1"
-version = "0.0.1"
-target = "x86_64"
-depends = ["pkg2"]

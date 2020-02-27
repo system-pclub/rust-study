@@ -1,6 +1,0 @@
-[struct]
-derive_eq = true
-derive_neq = true
-
-[fn]
-rename_args = "GeckoCase"
