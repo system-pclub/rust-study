@@ -5,8 +5,9 @@ import queue
 
 
 class Function:
-    def __init__(self, name, args):
+    def __init__(self, name, args, filepath):
         self.name = name
+        self.filepath = filepath
         self.basic_blocks = []
         self.bb_idx = -1
         self.args = {}
@@ -178,8 +179,9 @@ class Function:
                 self.detect_dangling_pointer_recursive(child)
 
         if variable.is_dangling_pointer():
-            print("Use-after-free detected: source variable: " + variable.name +
-                  " is a dangling pointer and global accessible, it points to: " + variable.reference_to.name)
+            print("Use-after-free detected: source variable: ", variable.name,
+                  " is a dangling pointer and global accessible, it points to: ", variable.reference_to.name,
+                  " in file: ", self.filepath)
 
     """
     dump information

@@ -68,7 +68,7 @@ class LineParser:
                     args.append((arg_name, arg_type))
                     logging.debug('Adding arg (name: %s, type: %s) to function %s', arg_name, arg_type, name)
 
-        self.function = Function(name, args)
+        self.function = Function(name, args, self.filepath)
 
     def set_variable(self, line):
         line = line.split('//')[0]
