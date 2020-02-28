@@ -1,0 +1,81 @@
+// MIR for `use_after_free`
+// source = MirSource { instance: Item(DefId(0:19 ~ toy_bug[156c]::use_after_free[0])), promoted: None }
+// pass_name = PreCodegen
+// disambiguator = after
+
+| User Type Annotations
+| 0: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Ty(General(U0)) }, CanonicalVarInfo { kind: Ty(General(U0)) }], value: TypeOf(DefId(5:3225 ~ alloc[c1f5]::slice[0]::{{impl}}[0]::into_vec[0]), UserSubsts { substs: [^0], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(5:3209 ~ alloc[c1f5]::slice[0]::{{impl}}[0]), self_ty: [^1] }) }) } at <::alloc::macros::vec macros>:2:26: 2:45
+|
+fn  use_after_free() -> () {
+    let mut _0: ();                      // return place in scope 0 at src/main.rs:13:21: 13:21
+    let _1: Point;                       // "v" in scope 0 at src/main.rs:14:9: 14:10
+    let mut _2: std::vec::Vec<i32>;      // in scope 0 at <::alloc::macros::vec macros>:2:26: 2:65
+    let mut _3: std::boxed::Box<[i32]>;  // in scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+    let mut _4: std::boxed::Box<[i32; 1]>; // in scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+    let mut _5: std::boxed::Box<[i32; 1]>; // in scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+    let mut _7: &Point;                  // in scope 0 at src/main.rs:15:15: 15:17
+    let mut _8: &Point;                  // in scope 0 at src/main.rs:15:15: 15:17
+    let mut _9: *const Point;            // in scope 0 at src/main.rs:17:23: 17:26
+    scope 1 {
+        let _6: *const Point;            // "ptr" in scope 1 at src/main.rs:15:9: 15:12
+        scope 2 {
+            scope 3 {
+            }
+        }
+    }
+
+    bb0: {
+        StorageLive(_1);                 // bb0[0]: scope 0 at src/main.rs:14:9: 14:10
+        StorageLive(_2);                 // bb0[1]: scope 0 at <::alloc::macros::vec macros>:2:26: 2:65
+        StorageLive(_3);                 // bb0[2]: scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+        StorageLive(_4);                 // bb0[3]: scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+        StorageLive(_5);                 // bb0[4]: scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+        _5 = Box([i32; 1]);              // bb0[5]: scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+        (*_5) = [const 0i32];            // bb0[6]: scope 0 at <::alloc::macros::vec macros>:2:51: 2:64
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000000)
+                                         // mir::Constant
+                                         // + span: src/main.rs:14:24: 14:25
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000000) }
+        _4 = move _5;                    // bb0[7]: scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+        _3 = move _4 as std::boxed::Box<[i32]> (Pointer(Unsize)); // bb0[8]: scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+        StorageDead(_5);                 // bb0[9]: scope 0 at <::alloc::macros::vec macros>:2:63: 2:64
+        StorageDead(_4);                 // bb0[10]: scope 0 at <::alloc::macros::vec macros>:2:63: 2:64
+        _2 = const std::slice::<impl [i32]>::into_vec(move _3) -> bb1; // bb0[11]: scope 0 at <::alloc::macros::vec macros>:2:26: 2:65
+                                         // ty::Const
+                                         // + ty: fn(std::boxed::Box<[i32]>) -> std::vec::Vec<i32> {std::slice::<impl [i32]>::into_vec}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: <::alloc::macros::vec macros>:2:26: 2:45
+                                         // + ty: fn(std::boxed::Box<[i32]>) -> std::vec::Vec<i32> {std::slice::<impl [i32]>::into_vec}
+                                         // + user_ty: UserType(0)
+                                         // + literal: Const { ty: fn(std::boxed::Box<[i32]>) -> std::vec::Vec<i32> {std::slice::<impl [i32]>::into_vec}, val: Scalar(<ZST>) }
+    }
+
+    bb1: {
+        StorageDead(_3);                 // bb1[0]: scope 0 at <::alloc::macros::vec macros>:2:64: 2:65
+        (_1.0: std::vec::Vec<i32>) = move _2; // bb1[1]: scope 0 at src/main.rs:14:13: 14:27
+        StorageDead(_2);                 // bb1[2]: scope 0 at src/main.rs:14:26: 14:27
+        StorageLive(_6);                 // bb1[3]: scope 1 at src/main.rs:15:9: 15:12
+        StorageLive(_7);                 // bb1[4]: scope 1 at src/main.rs:15:15: 15:17
+        StorageLive(_8);                 // bb1[5]: scope 1 at src/main.rs:15:15: 15:17
+        _8 = &_1;                        // bb1[6]: scope 1 at src/main.rs:15:15: 15:17
+        _7 = _8;                         // bb1[7]: scope 1 at src/main.rs:15:15: 15:17
+        _6 = move _7 as *const Point (Misc); // bb1[8]: scope 1 at src/main.rs:15:15: 15:17
+        StorageDead(_7);                 // bb1[9]: scope 1 at src/main.rs:15:16: 15:17
+        StorageDead(_8);                 // bb1[10]: scope 1 at src/main.rs:15:33: 15:34
+        StorageLive(_9);                 // bb1[11]: scope 3 at src/main.rs:17:23: 17:26
+        _9 = _6;                         // bb1[12]: scope 3 at src/main.rs:17:23: 17:26
+        ((POINTER: Pointer).0: *const Point) = move _9; // bb1[13]: scope 3 at src/main.rs:17:9: 17:26
+        StorageDead(_9);                 // bb1[14]: scope 3 at src/main.rs:17:25: 17:26
+        StorageDead(_6);                 // bb1[15]: scope 1 at src/main.rs:19:1: 19:2
+        drop(_1) -> bb2;                 // bb1[16]: scope 0 at src/main.rs:19:1: 19:2
+    }
+
+    bb2: {
+        StorageDead(_1);                 // bb2[0]: scope 0 at src/main.rs:19:1: 19:2
+        return;                          // bb2[1]: scope 0 at src/main.rs:19:2: 19:2
+    }
+}

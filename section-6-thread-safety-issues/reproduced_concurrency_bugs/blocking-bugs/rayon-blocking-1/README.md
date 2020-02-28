@@ -6,3 +6,5 @@ The buggy version implements latch using an atomic bool variable (b), a mutex wi
 
 There is a possible interleave, where a thread can miss `Convar.notify_all()` and block for ever (block for a while unnecessarily).
 
+
+run `./install.sh` before `cargo run`

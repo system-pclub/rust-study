@@ -1,0 +1,65 @@
+/home/rust/Projects/double-lock-bc//ethereum-93fbbb9aaf161f21471050a2a3257f820c029a73
+// 1. This will cause conflicting lock once removed
+Manual Drop Info:
+ /home/boqin/Projects/Rust/double-lock/parity-ethereum util/network-devp2p/src/host.rs 378
+         /home/boqin/Projects/Rust/double-lock/parity-ethereum util/network-devp2p/src/host.rs 382
+// 2. This will cause double lock once removed
+Manual Drop Info:
+ /home/boqin/Projects/Rust/double-lock/parity-ethereum secret-store/src/key_server_cluster/client_sessions/generation_session.rs 279
+         /home/boqin/Projects/Rust/double-lock/parity-ethereum secret-store/src/key_server_cluster/client_sessions/generation_session.rs 326
+// 3. This will cause double lock once removed
+Manual Drop Info:
+ /home/boqin/Projects/Rust/double-lock/parity-ethereum secret-store/src/key_server_cluster/client_sessions/generation_session.rs 415
+         /home/boqin/Projects/Rust/double-lock/parity-ethereum secret-store/src/key_server_cluster/client_sessions/generation_session.rs 445
+// 4. This will cause double lock once removed
+Manual Drop Info:
+ /home/boqin/Projects/Rust/double-lock/parity-ethereum secret-store/src/key_server_cluster/client_sessions/generation_session.rs 455
+         /home/boqin/Projects/Rust/double-lock/parity-ethereum secret-store/src/key_server_cluster/client_sessions/generation_session.rs 469
+// 5. This will cause double lock once removed
+Manual Drop Info:
+ /home/boqin/Projects/Rust/double-lock/parity-ethereum secret-store/src/key_server_cluster/client_sessions/generation_session.rs 478
+         /home/boqin/Projects/Rust/double-lock/parity-ethereum secret-store/src/key_server_cluster/client_sessions/generation_session.rs 518
+// 6. This will cause double lock once removed
+Manual Drop Info:
+ /home/boqin/Projects/Rust/double-lock/parity-ethereum secret-store/src/key_server_cluster/client_sessions/generation_session.rs 524
+         /home/boqin/Projects/Rust/double-lock/parity-ethereum secret-store/src/key_server_cluster/client_sessions/generation_session.rs 550
+// 7. This will NOT cause double/conflicting lock once removed
+Manual Drop Info:
+  /home/boqin/Projects/Rust/double-lock/parity-ethereum/ethcore/sync/src/light_sync/mod.rs 608
+          /home/boqin/Projects/Rust/double-lock/parity-ethereum/ethcore/sync/src/light_sync/mod.rs 621
+
+/home/rust/Projects/double-lock-bc//lazy-static.rs-421669662b35fcb455f2902daed2e20bbbba79b6
+/home/rust/Projects/double-lock-bc//rand-9221d93f7bcbb68bf886760d710ba269bb8b31b9
+/home/rust/Projects/double-lock-bc//rayon
+/home/rust/Projects/double-lock-bc//redox
+// 8. This will cause double lock once removed
+Manual Drop Info:
+ /home/boqin/Projects/Rust/count/redox/kernel src/context/context.rs 340
+         /home/boqin/Projects/Rust/count/redox/kernel src/context/context.rs 353
+// 9. This will cause double lock once removed
+Manual Drop Info:
+ /home/boqin/Projects/Rust/count/redox/kernel src/syscall/fs.rs 341
+         /home/boqin/Projects/Rust/count/redox/kernel src/syscall/fs.rs 391
+/home/rust/Projects/double-lock-bc//servo-b5759e711348dfa1dab86d6e60940e2db720d259
+// 10. This will cause double lock once removed
+Manual Drop Info:
+  /home/boqin/.cargo/registry/src/github.com-1ecc6299db9ec823/crossbeam-channel-0.3.8/src/flavors/zero.rs 278
+          /home/boqin/.cargo/registry/src/github.com-1ecc6299db9ec823/crossbeam-channel-0.3.8/src/flavors/zero.rs 283
+// 11. This will cause double lock once removed
+Manual Drop Info:
+  /home/boqin/.cargo/registry/src/github.com-1ecc6299db9ec823/crossbeam-channel-0.3.8/src/flavors/zero.rs 208
+          /home/boqin/.cargo/registry/src/github.com-1ecc6299db9ec823/crossbeam-channel-0.3.8/src/flavors/zero.rs 213
+// This is unrelated to double/conflicting lock bug
+Manual Drop Info:
+ /home/boqin/Projects/Rust/double-lock/servo components/remutex/tests/smoke.rs 39
+         /home/boqin/Projects/Rust/double-lock/servo components/remutex/tests/smoke.rs 48
+
+/home/rust/Projects/double-lock-bc//crossbeam
+// This is unrelated to double/conflicting lock bug
+Manual Drop Info:
+ /home/boqin/Projects/Rust/double-lock/crossbeam crossbeam-utils/src/sync/parker.rs 308
+         /home/boqin/Projects/Rust/double-lock/crossbeam crossbeam-utils/src/sync/parker.rs 308
+
+/home/rust/Projects/double-lock-bc//thread-pool-21a70c7e8b19fb73a9f3f44a55ca1b7333d804f9
+/home/rust/Projects/double-lock-bc//tikv-24ce8e093a8e0051ca6894a149a64f39c5e1d34b
+/home/rust/Projects/double-lock-bc//tock

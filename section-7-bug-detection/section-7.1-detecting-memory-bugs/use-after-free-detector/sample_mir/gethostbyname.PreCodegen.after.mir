@@ -1,0 +1,1426 @@
+// MIR for `header::netdb::gethostbyname`
+// source = MirSource { instance: Item(DefId(0:1071 ~ relibc[6084]::header[0]::netdb[0]::gethostbyname[0])), promoted: None }
+// pass_name = PreCodegen
+// disambiguator = after
+
+| User Type Annotations
+| 0: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Region(U0) }], value: TypeOf(DefId(0:150 ~ relibc[6084]::c_str[0]::{{impl}}[28]::from_ptr[0]), UserSubsts { substs: [ReLateBound(DebruijnIndex(0), BrAnon(0))], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(0:149 ~ relibc[6084]::c_str[0]::{{impl}}[28]), self_ty: c_str::CStr }) }) } at src/header/netdb/mod.rs:247:21: 247:35
+| 1: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Ty(General(U0)) }], value: Ty(*const ^0) } at src/header/netdb/mod.rs:266:30: 266:47
+| 2: Canonical { max_universe: U0, variables: [], value: Ty(*mut header::netdb::hostent) } at src/header/netdb/mod.rs:270:16: 270:28
+| 3: Canonical { max_universe: U0, variables: [], value: Ty(*mut header::netdb::hostent) } at src/header/netdb/mod.rs:270:16: 270:28
+| 4: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Region(U0) }], value: TypeOf(DefId(0:150 ~ relibc[6084]::c_str[0]::{{impl}}[28]::from_ptr[0]), UserSubsts { substs: [ReLateBound(DebruijnIndex(0), BrAnon(0))], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(0:149 ~ relibc[6084]::c_str[0]::{{impl}}[28]), self_ty: c_str::CStr }) }) } at src/header/netdb/mod.rs:296:21: 296:35
+| 5: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<u8>) } at src/header/netdb/mod.rs:313:20: 313:27
+| 6: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<u8>) } at src/header/netdb/mod.rs:313:20: 313:27
+| 7: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<alloc::vec::Vec<u8>>) } at src/header/netdb/mod.rs:320:28: 320:40
+| 8: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Ty(General(U0)) }, CanonicalVarInfo { kind: Ty(General(U0)) }], value: TypeOf(DefId(4:3724 ~ alloc[c1f5]::vec[0]::{{impl}}[0]::new[0]), UserSubsts { substs: [^0], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(4:3722 ~ alloc[c1f5]::vec[0]::{{impl}}[0]), self_ty: alloc::vec::Vec<^1> }) }) } at src/header/netdb/mod.rs:320:43: 320:51
+| 9: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<alloc::vec::Vec<u8>>) } at src/header/netdb/mod.rs:320:28: 320:40
+| 10: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Ty(General(U0)) }, CanonicalVarInfo { kind: Ty(General(U0)) }], value: TypeOf(DefId(4:3225 ~ alloc[c1f5]::slice[0]::{{impl}}[0]::into_vec[0]), UserSubsts { substs: [^0], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(4:3209 ~ alloc[c1f5]::slice[0]::{{impl}}[0]), self_ty: [^1] }) }) } at <::alloc::macros::vec macros>:2:26: 2:45
+| 11: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<*mut i8>) } at src/header/netdb/mod.rs:322:27: 322:39
+| 12: Canonical { max_universe: U0, variables: [CanonicalVarInfo { kind: Ty(General(U0)) }, CanonicalVarInfo { kind: Ty(General(U0)) }], value: TypeOf(DefId(4:3724 ~ alloc[c1f5]::vec[0]::{{impl}}[0]::new[0]), UserSubsts { substs: [^0], user_self_ty: Some(UserSelfTy { impl_def_id: DefId(4:3722 ~ alloc[c1f5]::vec[0]::{{impl}}[0]), self_ty: alloc::vec::Vec<^1> }) }) } at src/header/netdb/mod.rs:322:42: 322:50
+| 13: Canonical { max_universe: U0, variables: [], value: Ty(alloc::vec::Vec<*mut i8>) } at src/header/netdb/mod.rs:322:27: 322:39
+|
+fn  header::netdb::gethostbyname(_1: *const i8) -> *mut header::netdb::hostent {
+    let mut _0: *mut header::netdb::hostent; // return place in scope 0 at src/header/netdb/mod.rs:245:64: 245:76
+    let _2: &c_str::CStr;                // "name_cstr" in scope 0 at src/header/netdb/mod.rs:247:9: 247:18
+    let mut _3: *const i8;               // in scope 0 at src/header/netdb/mod.rs:247:36: 247:40
+    let mut _5: &str;                    // in scope 0 at src/header/netdb/mod.rs:248:22: 248:68
+    let mut _6: &str;                    // in scope 0 at src/header/netdb/mod.rs:248:22: 248:68
+    let mut _7: &[u8];                   // in scope 0 at src/header/netdb/mod.rs:248:47: 248:67
+    let mut _8: &[u8];                   // in scope 0 at src/header/netdb/mod.rs:248:47: 248:67
+    let mut _9: &c_str::CStr;            // in scope 0 at src/header/netdb/mod.rs:248:47: 248:56
+    let mut _12: core::slice::IterMut<u8>; // in scope 0 at src/header/netdb/mod.rs:251:17: 251:28
+    let mut _13: &mut [u8; 4];           // in scope 0 at src/header/netdb/mod.rs:251:17: 251:28
+    let mut _16: core::option::Option<&mut u8>; // in scope 0 at src/header/netdb/mod.rs:251:17: 251:28
+    let mut _17: &mut core::slice::IterMut<u8>; // in scope 0 at src/header/netdb/mod.rs:251:17: 251:28
+    let mut _18: &mut core::slice::IterMut<u8>; // in scope 0 at src/header/netdb/mod.rs:251:17: 251:28
+    let mut _19: isize;                  // in scope 0 at src/header/netdb/mod.rs:251:9: 251:13
+    let mut _21: &mut u8;                // in scope 0 at src/header/netdb/mod.rs:251:9: 251:13
+    let mut _23: core::option::Option<u8>; // in scope 0 at src/header/netdb/mod.rs:252:26: 252:74
+    let mut _24: core::option::Option<&str>; // in scope 0 at src/header/netdb/mod.rs:252:26: 252:39
+    let mut _25: &mut core::str::Split<char>; // in scope 0 at src/header/netdb/mod.rs:252:26: 252:32
+    let mut _26: [closure@src/header/netdb/mod.rs:252:49: 252:73]; // in scope 0 at src/header/netdb/mod.rs:252:49: 252:73
+    let mut _27: isize;                  // in scope 0 at src/header/netdb/mod.rs:252:16: 252:23
+    let mut _29: u8;                     // in scope 0 at src/header/netdb/mod.rs:253:21: 253:22
+    let mut _30: bool;                   // in scope 0 at src/header/netdb/mod.rs:258:8: 258:29
+    let mut _31: &core::option::Option<&str>; // in scope 0 at src/header/netdb/mod.rs:258:8: 258:21
+    let _32: core::option::Option<&str>; // in scope 0 at src/header/netdb/mod.rs:258:8: 258:21
+    let mut _33: &mut core::str::Split<char>; // in scope 0 at src/header/netdb/mod.rs:258:8: 258:14
+    let mut _34: &core::option::Option<&str>; // in scope 0 at src/header/netdb/mod.rs:258:25: 258:29
+    let mut _35: bool;                   // in scope 0 at src/header/netdb/mod.rs:262:8: 262:15
+    let mut _37: u32;                    // in scope 0 at src/header/netdb/mod.rs:264:21: 264:59
+    let mut _38: [u8; 4];                // in scope 0 at src/header/netdb/mod.rs:264:52: 264:58
+    let mut _39: *const platform::types::c_void; // in scope 0 at src/header/netdb/mod.rs:266:30: 266:64
+    let mut _40: *const header::netinet_in::in_addr; // in scope 0 at src/header/netdb/mod.rs:266:30: 266:47
+    let mut _41: *const header::netinet_in::in_addr; // in scope 0 at src/header/netdb/mod.rs:266:30: 266:47
+    let mut _42: &header::netinet_in::in_addr; // in scope 0 at src/header/netdb/mod.rs:266:30: 266:35
+    let mut _43: &header::netinet_in::in_addr; // in scope 0 at src/header/netdb/mod.rs:266:30: 266:35
+    let _45: ();                         // in scope 0 at src/header/netdb/mod.rs:271:5: 271:30
+    let mut _46: i32;                    // in scope 0 at src/header/netdb/mod.rs:271:16: 271:29
+    let mut _47: bool;                   // in scope 0 at src/header/netdb/mod.rs:272:11: 275:6
+    let mut _48: *mut header::netdb::hostent; // in scope 0 at src/header/netdb/mod.rs:273:13: 273:25
+    let mut _49: bool;                   // in scope 0 at src/header/netdb/mod.rs:274:10: 274:21
+    let mut _50: *mut header::netdb::hostent; // in scope 0 at src/header/netdb/mod.rs:274:10: 274:11
+    let mut _51: bool;                   // in scope 0 at src/header/netdb/mod.rs:276:12: 276:46
+    let mut _52: i32;                    // in scope 0 at src/header/netdb/mod.rs:276:12: 276:41
+    let mut _53: *const i8;              // in scope 0 at src/header/netdb/mod.rs:276:23: 276:34
+    let mut _54: *mut i8;                // in scope 0 at src/header/netdb/mod.rs:276:23: 276:34
+    let mut _55: *const i8;              // in scope 0 at src/header/netdb/mod.rs:276:36: 276:40
+    let _56: ();                         // in scope 0 at src/header/netdb/mod.rs:277:13: 277:38
+    let mut _57: i32;                    // in scope 0 at src/header/netdb/mod.rs:277:24: 277:37
+    let mut _59: bool;                   // in scope 0 at src/header/netdb/mod.rs:282:16: 282:28
+    let mut _60: *mut *mut i8;           // in scope 0 at src/header/netdb/mod.rs:282:16: 282:18
+    let mut _61: bool;                   // in scope 0 at src/header/netdb/mod.rs:285:16: 285:31
+    let mut _62: *mut i8;                // in scope 0 at src/header/netdb/mod.rs:285:16: 285:21
+    let mut _63: bool;                   // in scope 0 at src/header/netdb/mod.rs:288:16: 288:42
+    let mut _64: i32;                    // in scope 0 at src/header/netdb/mod.rs:288:16: 288:37
+    let mut _65: *const i8;              // in scope 0 at src/header/netdb/mod.rs:288:27: 288:30
+    let mut _66: *mut i8;                // in scope 0 at src/header/netdb/mod.rs:288:27: 288:30
+    let mut _67: *const i8;              // in scope 0 at src/header/netdb/mod.rs:288:32: 288:36
+    let _68: ();                         // in scope 0 at src/header/netdb/mod.rs:289:17: 289:42
+    let mut _69: i32;                    // in scope 0 at src/header/netdb/mod.rs:289:28: 289:41
+    let mut _70: *mut *mut i8;           // in scope 0 at src/header/netdb/mod.rs:292:18: 292:30
+    let mut _71: *mut *mut i8;           // in scope 0 at src/header/netdb/mod.rs:292:18: 292:20
+    let mut _73: *const i8;              // in scope 0 at src/header/netdb/mod.rs:296:36: 296:40
+    let mut _75: core::result::Result<header::netdb::lookup::LookupHost, i32>; // in scope 0 at src/header/netdb/mod.rs:298:26: 298:85
+    let mut _76: &str;                   // in scope 0 at src/header/netdb/mod.rs:298:38: 298:84
+    let mut _77: &str;                   // in scope 0 at src/header/netdb/mod.rs:298:38: 298:84
+    let mut _78: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:298:63: 298:83
+    let mut _79: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:298:63: 298:83
+    let mut _80: &c_str::CStr;           // in scope 0 at src/header/netdb/mod.rs:298:63: 298:72
+    let mut _81: isize;                  // in scope 0 at src/header/netdb/mod.rs:299:9: 299:23
+    let mut _84: i32;                    // in scope 0 at src/header/netdb/mod.rs:301:31: 301:32
+    let mut _86: core::option::Option<header::netinet_in::in_addr>; // in scope 0 at src/header/netdb/mod.rs:305:27: 305:38
+    let mut _87: &mut header::netdb::lookup::LookupHost; // in scope 0 at src/header/netdb/mod.rs:305:27: 305:31
+    let mut _88: isize;                  // in scope 0 at src/header/netdb/mod.rs:306:9: 306:21
+    let mut _91: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:313:30: 313:50
+    let mut _92: &[u8];                  // in scope 0 at src/header/netdb/mod.rs:313:30: 313:50
+    let mut _93: &c_str::CStr;           // in scope 0 at src/header/netdb/mod.rs:313:30: 313:39
+    let mut _94: core::option::Option<alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:314:17: 314:32
+    let mut _95: alloc::vec::Vec<u8>;    // in scope 0 at src/header/netdb/mod.rs:314:22: 314:31
+    let mut _96: [u8; 4];                // in scope 0 at src/header/netdb/mod.rs:315:23: 315:71
+    let mut _97: u32;                    // in scope 0 at src/header/netdb/mod.rs:315:54: 315:70
+    let mut _98: *mut i8;                // in scope 0 at src/header/netdb/mod.rs:316:23: 316:66
+    let mut _99: *mut u8;                // in scope 0 at src/header/netdb/mod.rs:316:23: 316:51
+    let mut _100: &mut [u8];             // in scope 0 at src/header/netdb/mod.rs:316:23: 316:38
+    let mut _101: &mut [u8; 4];          // in scope 0 at src/header/netdb/mod.rs:316:23: 316:38
+    let mut _102: *mut i8;               // in scope 0 at src/header/netdb/mod.rs:316:68: 316:83
+    let mut _103: header::netinet_in::in_addr; // in scope 0 at src/header/netdb/mod.rs:317:22: 317:31
+    let _105: ();                        // in scope 0 at src/header/netdb/mod.rs:321:5: 321:36
+    let mut _106: &mut alloc::vec::Vec<alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:321:5: 321:18
+    let mut _107: alloc::vec::Vec<u8>;   // in scope 0 at <::alloc::macros::vec macros>:2:26: 2:65
+    let mut _108: alloc::boxed::Box<[u8]>; // in scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+    let mut _109: alloc::boxed::Box<[u8; 1]>; // in scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+    let mut _110: alloc::boxed::Box<[u8; 1]>; // in scope 0 at <::alloc::macros::vec macros>:2:47: 2:64
+    let _112: ();                        // in scope 0 at src/header/netdb/mod.rs:323:5: 323:39
+    let mut _113: &mut alloc::vec::Vec<*mut i8>; // in scope 0 at src/header/netdb/mod.rs:323:5: 323:17
+    let mut _114: *mut i8;               // in scope 0 at src/header/netdb/mod.rs:323:23: 323:38
+    let _115: ();                        // in scope 0 at src/header/netdb/mod.rs:324:5: 324:39
+    let mut _116: &mut alloc::vec::Vec<*mut i8>; // in scope 0 at src/header/netdb/mod.rs:324:5: 324:17
+    let mut _117: *mut i8;               // in scope 0 at src/header/netdb/mod.rs:324:23: 324:38
+    let mut _118: core::option::Option<alloc::vec::Vec<alloc::vec::Vec<u8>>>; // in scope 0 at src/header/netdb/mod.rs:325:20: 325:39
+    let mut _119: alloc::vec::Vec<alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:325:25: 325:38
+    let mut _120: *mut i8;               // in scope 0 at src/header/netdb/mod.rs:328:17: 328:72
+    let mut _121: *mut u8;               // in scope 0 at src/header/netdb/mod.rs:328:17: 328:57
+    let mut _122: &mut alloc::vec::Vec<u8>; // in scope 0 at src/header/netdb/mod.rs:328:17: 328:44
+    let mut _123: &mut alloc::vec::Vec<u8>; // in scope 0 at src/header/netdb/mod.rs:328:17: 328:44
+    let mut _124: core::option::Option<&mut alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:328:17: 328:35
+    let mut _125: &mut core::option::Option<alloc::vec::Vec<u8>>; // in scope 0 at src/header/netdb/mod.rs:328:17: 328:26
+    let mut _126: *mut *mut i8;          // in scope 0 at src/header/netdb/mod.rs:329:20: 329:76
+    let mut _127: &mut [*mut i8];        // in scope 0 at src/header/netdb/mod.rs:329:20: 329:47
+    let mut _128: &mut [*mut i8];        // in scope 0 at src/header/netdb/mod.rs:329:20: 329:47
+    let mut _129: &mut alloc::vec::Vec<*mut i8>; // in scope 0 at src/header/netdb/mod.rs:329:20: 329:32
+    let mut _130: *mut *mut i8;          // in scope 0 at src/header/netdb/mod.rs:332:22: 332:49
+    let mut _131: &mut [*mut i8];        // in scope 0 at src/header/netdb/mod.rs:332:22: 332:36
+    let mut _132: &mut [*mut i8; 2];     // in scope 0 at src/header/netdb/mod.rs:332:22: 332:36
+    let _133: ();                        // in scope 0 at src/header/netdb/mod.rs:334:5: 334:30
+    let mut _134: i32;                   // in scope 0 at src/header/netdb/mod.rs:334:16: 334:29
+    let mut _135: &mut header::netdb::hostent; // in scope 0 at src/header/netdb/mod.rs:335:5: 335:20
+    let mut _136: &mut header::netdb::hostent; // in scope 0 at src/header/netdb/mod.rs:335:5: 335:20
+    let mut _137: isize;                 // in scope 0 at src/header/netdb/mod.rs:304:6: 304:7
+    scope 1 {
+        let mut _4: core::str::Split<char>; // "octets" in scope 1 at src/header/netdb/mod.rs:248:9: 248:19
+        scope 2 {
+            let mut _10: [u8; 4];        // "s_addr" in scope 2 at src/header/netdb/mod.rs:249:9: 249:19
+            scope 3 {
+                let mut _11: bool;       // "is_addr" in scope 3 at src/header/netdb/mod.rs:250:9: 250:20
+                scope 4 {
+                    let mut _14: core::slice::IterMut<u8>; // "iter" in scope 4 at src/header/netdb/mod.rs:251:17: 251:28
+                    let _36: header::netinet_in::in_addr; // "addr" in scope 4 at src/header/netdb/mod.rs:263:13: 263:17
+                    let mut _44: *mut header::netdb::hostent as UserTypeProjection { base: UserType(2), projs: [] }; // "p" in scope 4 at src/header/netdb/mod.rs:270:9: 270:14
+                    scope 5 {
+                        let mut _15: &mut u8; // "__next" in scope 5 at src/header/netdb/mod.rs:251:17: 251:28
+                        scope 6 {
+                            let _20: &mut u8; // "val" in scope 6 at src/header/netdb/mod.rs:251:9: 251:13
+                            let _22: &mut u8; // "item" in scope 6 at src/header/netdb/mod.rs:251:9: 251:13
+                            scope 7 {
+                            }
+                            scope 8 {
+                                let _28: u8; // "n" in scope 8 at src/header/netdb/mod.rs:252:21: 252:22
+                                scope 9 {
+                                }
+                            }
+                        }
+                    }
+                    scope 10 {
+                    }
+                    scope 11 {
+                        let mut _58: *mut *mut i8; // "cp" in scope 11 at src/header/netdb/mod.rs:280:13: 280:19
+                        let _72: &c_str::CStr; // "name_cstr" in scope 11 at src/header/netdb/mod.rs:296:9: 296:18
+                        scope 12 {
+                        }
+                        scope 13 {
+                            let mut _74: header::netdb::lookup::LookupHost; // "host" in scope 13 at src/header/netdb/mod.rs:298:9: 298:17
+                            let _82: header::netdb::lookup::LookupHost; // "lookuphost" in scope 13 at src/header/netdb/mod.rs:299:12: 299:22
+                            let _83: i32; // "e" in scope 13 at src/header/netdb/mod.rs:300:13: 300:14
+                            scope 14 {
+                                let _85: header::netinet_in::in_addr; // "host_addr" in scope 14 at src/header/netdb/mod.rs:305:9: 305:18
+                                let _89: header::netinet_in::in_addr; // "result" in scope 14 at src/header/netdb/mod.rs:306:14: 306:20
+                                scope 17 {
+                                    let _90: alloc::vec::Vec<u8> as UserTypeProjection { base: UserType(5), projs: [] }; // "host_name" in scope 17 at src/header/netdb/mod.rs:313:9: 313:18
+                                    scope 19 {
+                                        let mut _104: alloc::vec::Vec<alloc::vec::Vec<u8>> as UserTypeProjection { base: UserType(7), projs: [] }; // "_host_aliases" in scope 19 at src/header/netdb/mod.rs:320:9: 320:26
+                                        scope 20 {
+                                            let mut _111: alloc::vec::Vec<*mut i8> as UserTypeProjection { base: UserType(11), projs: [] }; // "host_aliases" in scope 20 at src/header/netdb/mod.rs:322:9: 322:25
+                                            scope 21 {
+                                            }
+                                        }
+                                    }
+                                }
+                                scope 18 {
+                                }
+                            }
+                            scope 15 {
+                            }
+                            scope 16 {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    bb0: {
+        StorageLive(_2);                 // bb0[0]: scope 0 at src/header/netdb/mod.rs:247:9: 247:18
+        StorageLive(_3);                 // bb0[1]: scope 0 at src/header/netdb/mod.rs:247:36: 247:40
+        _3 = _1;                         // bb0[2]: scope 0 at src/header/netdb/mod.rs:247:36: 247:40
+        _2 = const c_str::CStr::from_ptr(move _3) -> bb1; // bb0[3]: scope 0 at src/header/netdb/mod.rs:247:21: 247:41
+                                         // ty::Const
+                                         // + ty: unsafe fn(*const i8) -> &c_str::CStr {c_str::CStr::from_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:247:21: 247:35
+                                         // + ty: unsafe fn(*const i8) -> &c_str::CStr {c_str::CStr::from_ptr}
+                                         // + user_ty: UserType(0)
+                                         // + literal: Const { ty: unsafe fn(*const i8) -> &c_str::CStr {c_str::CStr::from_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb1: {
+        StorageDead(_3);                 // bb1[0]: scope 0 at src/header/netdb/mod.rs:247:40: 247:41
+        StorageLive(_4);                 // bb1[1]: scope 1 at src/header/netdb/mod.rs:248:9: 248:19
+        StorageLive(_5);                 // bb1[2]: scope 1 at src/header/netdb/mod.rs:248:22: 248:68
+        StorageLive(_6);                 // bb1[3]: scope 1 at src/header/netdb/mod.rs:248:22: 248:68
+        StorageLive(_7);                 // bb1[4]: scope 1 at src/header/netdb/mod.rs:248:47: 248:67
+        StorageLive(_8);                 // bb1[5]: scope 1 at src/header/netdb/mod.rs:248:47: 248:67
+        StorageLive(_9);                 // bb1[6]: scope 1 at src/header/netdb/mod.rs:248:47: 248:56
+        _9 = _2;                         // bb1[7]: scope 1 at src/header/netdb/mod.rs:248:47: 248:56
+        _8 = const c_str::CStr::to_bytes(move _9) -> bb2; // bb1[8]: scope 1 at src/header/netdb/mod.rs:248:47: 248:67
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r c_str::CStr) -> &'r [u8] {c_str::CStr::to_bytes}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:248:57: 248:65
+                                         // + ty: for<'r> fn(&'r c_str::CStr) -> &'r [u8] {c_str::CStr::to_bytes}
+                                         // + literal: Const { ty: for<'r> fn(&'r c_str::CStr) -> &'r [u8] {c_str::CStr::to_bytes}, val: Scalar(<ZST>) }
+    }
+
+    bb2: {
+        _7 = _8;                         // bb2[0]: scope 1 at src/header/netdb/mod.rs:248:47: 248:67
+        StorageDead(_9);                 // bb2[1]: scope 1 at src/header/netdb/mod.rs:248:66: 248:67
+        _6 = const core::str::from_utf8_unchecked(move _7) -> bb3; // bb2[2]: scope 1 at src/header/netdb/mod.rs:248:22: 248:68
+                                         // ty::Const
+                                         // + ty: for<'r> unsafe fn(&'r [u8]) -> &'r str {core::str::from_utf8_unchecked}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:248:22: 248:46
+                                         // + ty: for<'r> unsafe fn(&'r [u8]) -> &'r str {core::str::from_utf8_unchecked}
+                                         // + literal: Const { ty: for<'r> unsafe fn(&'r [u8]) -> &'r str {core::str::from_utf8_unchecked}, val: Scalar(<ZST>) }
+    }
+
+    bb3: {
+        _5 = _6;                         // bb3[0]: scope 1 at src/header/netdb/mod.rs:248:22: 248:68
+        StorageDead(_7);                 // bb3[1]: scope 1 at src/header/netdb/mod.rs:248:67: 248:68
+        _4 = const core::str::<impl str>::split::<char>(move _5, const '.') -> bb4; // bb3[2]: scope 1 at src/header/netdb/mod.rs:248:22: 248:79
+                                         // ty::Const
+                                         // + ty: fn(&str, char) -> core::str::Split<char> {core::str::<impl str>::split::<char>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:248:69: 248:74
+                                         // + ty: fn(&str, char) -> core::str::Split<char> {core::str::<impl str>::split::<char>}
+                                         // + literal: Const { ty: fn(&str, char) -> core::str::Split<char> {core::str::<impl str>::split::<char>}, val: Scalar(<ZST>) }
+                                         // ty::Const
+                                         // + ty: char
+                                         // + val: Scalar(0x0000002e)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:248:75: 248:78
+                                         // + ty: char
+                                         // + literal: Const { ty: char, val: Scalar(0x0000002e) }
+    }
+
+    bb4: {
+        StorageDead(_5);                 // bb4[0]: scope 1 at src/header/netdb/mod.rs:248:78: 248:79
+        StorageDead(_8);                 // bb4[1]: scope 1 at src/header/netdb/mod.rs:248:79: 248:80
+        StorageDead(_6);                 // bb4[2]: scope 1 at src/header/netdb/mod.rs:248:79: 248:80
+        StorageLive(_10);                // bb4[3]: scope 2 at src/header/netdb/mod.rs:249:9: 249:19
+        _10 = [const 0u8; 4];            // bb4[4]: scope 2 at src/header/netdb/mod.rs:249:22: 249:30
+                                         // ty::Const
+                                         // + ty: u8
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:249:23: 249:26
+                                         // + ty: u8
+                                         // + literal: Const { ty: u8, val: Scalar(0x00) }
+        StorageLive(_11);                // bb4[5]: scope 3 at src/header/netdb/mod.rs:250:9: 250:20
+        _11 = const true;                // bb4[6]: scope 3 at src/header/netdb/mod.rs:250:23: 250:27
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x01)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:250:23: 250:27
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x01) }
+        StorageLive(_12);                // bb4[7]: scope 4 at src/header/netdb/mod.rs:251:17: 251:28
+        StorageLive(_13);                // bb4[8]: scope 4 at src/header/netdb/mod.rs:251:17: 251:28
+        _13 = &mut _10;                  // bb4[9]: scope 4 at src/header/netdb/mod.rs:251:17: 251:28
+        _12 = const <&mut [u8; 4] as core::iter::IntoIterator>::into_iter(move _13) -> bb5; // bb4[10]: scope 4 at src/header/netdb/mod.rs:251:17: 251:28
+                                         // ty::Const
+                                         // + ty: fn(&mut [u8; 4]) -> <&mut [u8; 4] as core::iter::IntoIterator>::IntoIter {<&mut [u8; 4] as core::iter::IntoIterator>::into_iter}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:251:17: 251:28
+                                         // + ty: fn(&mut [u8; 4]) -> <&mut [u8; 4] as core::iter::IntoIterator>::IntoIter {<&mut [u8; 4] as core::iter::IntoIterator>::into_iter}
+                                         // + literal: Const { ty: fn(&mut [u8; 4]) -> <&mut [u8; 4] as core::iter::IntoIterator>::IntoIter {<&mut [u8; 4] as core::iter::IntoIterator>::into_iter}, val: Scalar(<ZST>) }
+    }
+
+    bb5: {
+        StorageDead(_13);                // bb5[0]: scope 4 at src/header/netdb/mod.rs:251:27: 251:28
+        StorageLive(_14);                // bb5[1]: scope 4 at src/header/netdb/mod.rs:251:17: 251:28
+        _14 = move _12;                  // bb5[2]: scope 4 at src/header/netdb/mod.rs:251:17: 251:28
+        goto -> bb6;                     // bb5[3]: scope 5 at src/header/netdb/mod.rs:251:5: 257:6
+    }
+
+    bb6: {
+        StorageLive(_15);                // bb6[0]: scope 5 at src/header/netdb/mod.rs:251:17: 251:28
+        StorageLive(_16);                // bb6[1]: scope 6 at src/header/netdb/mod.rs:251:17: 251:28
+        StorageLive(_17);                // bb6[2]: scope 6 at src/header/netdb/mod.rs:251:17: 251:28
+        StorageLive(_18);                // bb6[3]: scope 6 at src/header/netdb/mod.rs:251:17: 251:28
+        _18 = &mut _14;                  // bb6[4]: scope 6 at src/header/netdb/mod.rs:251:17: 251:28
+        _17 = _18;                       // bb6[5]: scope 6 at src/header/netdb/mod.rs:251:17: 251:28
+        _16 = const <core::slice::IterMut<u8> as core::iter::Iterator>::next(move _17) -> bb7; // bb6[6]: scope 6 at src/header/netdb/mod.rs:251:17: 251:28
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut core::slice::IterMut<u8>) -> core::option::Option<<core::slice::IterMut<u8> as core::iter::Iterator>::Item> {<core::slice::IterMut<u8> as core::iter::Iterator>::next}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:251:17: 251:28
+                                         // + ty: for<'r> fn(&'r mut core::slice::IterMut<u8>) -> core::option::Option<<core::slice::IterMut<u8> as core::iter::Iterator>::Item> {<core::slice::IterMut<u8> as core::iter::Iterator>::next}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut core::slice::IterMut<u8>) -> core::option::Option<<core::slice::IterMut<u8> as core::iter::Iterator>::Item> {<core::slice::IterMut<u8> as core::iter::Iterator>::next}, val: Scalar(<ZST>) }
+    }
+
+    bb7: {
+        StorageDead(_17);                // bb7[0]: scope 6 at src/header/netdb/mod.rs:251:27: 251:28
+        _19 = discriminant(_16);         // bb7[1]: scope 6 at src/header/netdb/mod.rs:251:9: 251:13
+        switchInt(move _19) -> [0isize: bb8, 1isize: bb10, otherwise: bb9]; // bb7[2]: scope 6 at src/header/netdb/mod.rs:251:9: 251:13
+    }
+
+    bb8: {
+        StorageDead(_18);                // bb8[0]: scope 6 at src/header/netdb/mod.rs:251:27: 251:28
+        StorageDead(_16);                // bb8[1]: scope 6 at src/header/netdb/mod.rs:251:27: 251:28
+        StorageDead(_15);                // bb8[2]: scope 5 at src/header/netdb/mod.rs:257:5: 257:6
+        StorageDead(_14);                // bb8[3]: scope 4 at src/header/netdb/mod.rs:257:5: 257:6
+        StorageDead(_12);                // bb8[4]: scope 4 at src/header/netdb/mod.rs:251:27: 251:28
+        StorageLive(_30);                // bb8[5]: scope 4 at src/header/netdb/mod.rs:258:8: 258:29
+        StorageLive(_31);                // bb8[6]: scope 4 at src/header/netdb/mod.rs:258:8: 258:21
+        StorageLive(_32);                // bb8[7]: scope 4 at src/header/netdb/mod.rs:258:8: 258:21
+        StorageLive(_33);                // bb8[8]: scope 4 at src/header/netdb/mod.rs:258:8: 258:14
+        _33 = &mut _4;                   // bb8[9]: scope 4 at src/header/netdb/mod.rs:258:8: 258:14
+        _32 = const <core::str::Split<char> as core::iter::Iterator>::next(move _33) -> bb16; // bb8[10]: scope 4 at src/header/netdb/mod.rs:258:8: 258:21
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut core::str::Split<char>) -> core::option::Option<<core::str::Split<char> as core::iter::Iterator>::Item> {<core::str::Split<char> as core::iter::Iterator>::next}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:258:15: 258:19
+                                         // + ty: for<'r> fn(&'r mut core::str::Split<char>) -> core::option::Option<<core::str::Split<char> as core::iter::Iterator>::Item> {<core::str::Split<char> as core::iter::Iterator>::next}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut core::str::Split<char>) -> core::option::Option<<core::str::Split<char> as core::iter::Iterator>::Item> {<core::str::Split<char> as core::iter::Iterator>::next}, val: Scalar(<ZST>) }
+    }
+
+    bb9: {
+        unreachable;                     // bb9[0]: scope 6 at src/header/netdb/mod.rs:251:17: 251:28
+    }
+
+    bb10: {
+        StorageLive(_20);                // bb10[0]: scope 6 at src/header/netdb/mod.rs:251:9: 251:13
+        _20 = move ((_16 as Some).0: &mut u8); // bb10[1]: scope 6 at src/header/netdb/mod.rs:251:9: 251:13
+        StorageLive(_21);                // bb10[2]: scope 7 at src/header/netdb/mod.rs:251:9: 251:13
+        _21 = move _20;                  // bb10[3]: scope 7 at src/header/netdb/mod.rs:251:9: 251:13
+        _15 = move _21;                  // bb10[4]: scope 7 at src/header/netdb/mod.rs:251:9: 251:13
+        StorageDead(_21);                // bb10[5]: scope 7 at src/header/netdb/mod.rs:251:12: 251:13
+        StorageDead(_20);                // bb10[6]: scope 6 at src/header/netdb/mod.rs:251:12: 251:13
+        StorageDead(_18);                // bb10[7]: scope 6 at src/header/netdb/mod.rs:251:27: 251:28
+        StorageDead(_16);                // bb10[8]: scope 6 at src/header/netdb/mod.rs:251:27: 251:28
+        StorageLive(_22);                // bb10[9]: scope 6 at src/header/netdb/mod.rs:251:9: 251:13
+        _22 = move _15;                  // bb10[10]: scope 6 at src/header/netdb/mod.rs:251:17: 251:28
+        StorageLive(_23);                // bb10[11]: scope 8 at src/header/netdb/mod.rs:252:26: 252:74
+        StorageLive(_24);                // bb10[12]: scope 8 at src/header/netdb/mod.rs:252:26: 252:39
+        StorageLive(_25);                // bb10[13]: scope 8 at src/header/netdb/mod.rs:252:26: 252:32
+        _25 = &mut _4;                   // bb10[14]: scope 8 at src/header/netdb/mod.rs:252:26: 252:32
+        _24 = const <core::str::Split<char> as core::iter::Iterator>::next(move _25) -> bb11; // bb10[15]: scope 8 at src/header/netdb/mod.rs:252:26: 252:39
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut core::str::Split<char>) -> core::option::Option<<core::str::Split<char> as core::iter::Iterator>::Item> {<core::str::Split<char> as core::iter::Iterator>::next}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:252:33: 252:37
+                                         // + ty: for<'r> fn(&'r mut core::str::Split<char>) -> core::option::Option<<core::str::Split<char> as core::iter::Iterator>::Item> {<core::str::Split<char> as core::iter::Iterator>::next}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut core::str::Split<char>) -> core::option::Option<<core::str::Split<char> as core::iter::Iterator>::Item> {<core::str::Split<char> as core::iter::Iterator>::next}, val: Scalar(<ZST>) }
+    }
+
+    bb11: {
+        StorageDead(_25);                // bb11[0]: scope 8 at src/header/netdb/mod.rs:252:38: 252:39
+        StorageLive(_26);                // bb11[1]: scope 8 at src/header/netdb/mod.rs:252:49: 252:73
+        _23 = const core::option::Option::<&str>::and_then::<u8, [closure@src/header/netdb/mod.rs:252:49: 252:73]>(move _24, move _26) -> bb12; // bb11[2]: scope 8 at src/header/netdb/mod.rs:252:26: 252:74
+                                         // ty::Const
+                                         // + ty: fn(core::option::Option<&str>, [closure@src/header/netdb/mod.rs:252:49: 252:73]) -> core::option::Option<u8> {core::option::Option::<&str>::and_then::<u8, [closure@src/header/netdb/mod.rs:252:49: 252:73]>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:252:40: 252:48
+                                         // + ty: fn(core::option::Option<&str>, [closure@src/header/netdb/mod.rs:252:49: 252:73]) -> core::option::Option<u8> {core::option::Option::<&str>::and_then::<u8, [closure@src/header/netdb/mod.rs:252:49: 252:73]>}
+                                         // + literal: Const { ty: fn(core::option::Option<&str>, [closure@src/header/netdb/mod.rs:252:49: 252:73]) -> core::option::Option<u8> {core::option::Option::<&str>::and_then::<u8, [closure@src/header/netdb/mod.rs:252:49: 252:73]>}, val: Scalar(<ZST>) }
+    }
+
+    bb12: {
+        StorageDead(_26);                // bb12[0]: scope 8 at src/header/netdb/mod.rs:252:73: 252:74
+        StorageDead(_24);                // bb12[1]: scope 8 at src/header/netdb/mod.rs:252:73: 252:74
+        _27 = discriminant(_23);         // bb12[2]: scope 8 at src/header/netdb/mod.rs:252:16: 252:23
+        switchInt(move _27) -> [1isize: bb14, otherwise: bb13]; // bb12[3]: scope 8 at src/header/netdb/mod.rs:252:16: 252:23
+    }
+
+    bb13: {
+        _11 = const false;               // bb13[0]: scope 8 at src/header/netdb/mod.rs:255:13: 255:28
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:255:23: 255:28
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        goto -> bb15;                    // bb13[1]: scope 8 at src/header/netdb/mod.rs:252:9: 256:10
+    }
+
+    bb14: {
+        StorageLive(_28);                // bb14[0]: scope 8 at src/header/netdb/mod.rs:252:21: 252:22
+        _28 = ((_23 as Some).0: u8);     // bb14[1]: scope 8 at src/header/netdb/mod.rs:252:21: 252:22
+        StorageLive(_29);                // bb14[2]: scope 9 at src/header/netdb/mod.rs:253:21: 253:22
+        _29 = _28;                       // bb14[3]: scope 9 at src/header/netdb/mod.rs:253:21: 253:22
+        (*_22) = move _29;               // bb14[4]: scope 9 at src/header/netdb/mod.rs:253:13: 253:22
+        StorageDead(_29);                // bb14[5]: scope 9 at src/header/netdb/mod.rs:253:21: 253:22
+        StorageDead(_28);                // bb14[6]: scope 8 at src/header/netdb/mod.rs:254:9: 254:10
+        goto -> bb15;                    // bb14[7]: scope 8 at src/header/netdb/mod.rs:252:9: 256:10
+    }
+
+    bb15: {
+        StorageDead(_23);                // bb15[0]: scope 8 at src/header/netdb/mod.rs:257:5: 257:6
+        StorageDead(_22);                // bb15[1]: scope 6 at src/header/netdb/mod.rs:257:5: 257:6
+        StorageDead(_15);                // bb15[2]: scope 5 at src/header/netdb/mod.rs:257:5: 257:6
+        goto -> bb6;                     // bb15[3]: scope 5 at src/header/netdb/mod.rs:251:5: 257:6
+    }
+
+    bb16: {
+        _31 = &_32;                      // bb16[0]: scope 4 at src/header/netdb/mod.rs:258:8: 258:21
+        StorageDead(_33);                // bb16[1]: scope 4 at src/header/netdb/mod.rs:258:20: 258:21
+        StorageLive(_34);                // bb16[2]: scope 4 at src/header/netdb/mod.rs:258:25: 258:29
+        _34 = &(promoted[0]: core::option::Option<&str>); // bb16[3]: scope 4 at src/header/netdb/mod.rs:258:25: 258:29
+        _30 = const <core::option::Option<&str> as core::cmp::PartialEq>::ne(move _31, move _34) -> bb17; // bb16[4]: scope 4 at src/header/netdb/mod.rs:258:8: 258:29
+                                         // ty::Const
+                                         // + ty: for<'r, 's> fn(&'r core::option::Option<&str>, &'s core::option::Option<&str>) -> bool {<core::option::Option<&str> as core::cmp::PartialEq>::ne}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:258:8: 258:29
+                                         // + ty: for<'r, 's> fn(&'r core::option::Option<&str>, &'s core::option::Option<&str>) -> bool {<core::option::Option<&str> as core::cmp::PartialEq>::ne}
+                                         // + literal: Const { ty: for<'r, 's> fn(&'r core::option::Option<&str>, &'s core::option::Option<&str>) -> bool {<core::option::Option<&str> as core::cmp::PartialEq>::ne}, val: Scalar(<ZST>) }
+    }
+
+    bb17: {
+        StorageDead(_34);                // bb17[0]: scope 4 at src/header/netdb/mod.rs:258:28: 258:29
+        StorageDead(_32);                // bb17[1]: scope 4 at src/header/netdb/mod.rs:258:28: 258:29
+        StorageDead(_31);                // bb17[2]: scope 4 at src/header/netdb/mod.rs:258:28: 258:29
+        switchInt(_30) -> [false: bb19, otherwise: bb18]; // bb17[3]: scope 4 at src/header/netdb/mod.rs:258:5: 260:6
+    }
+
+    bb18: {
+        _11 = const false;               // bb18[0]: scope 4 at src/header/netdb/mod.rs:259:9: 259:24
+                                         // ty::Const
+                                         // + ty: bool
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:259:19: 259:24
+                                         // + ty: bool
+                                         // + literal: Const { ty: bool, val: Scalar(0x00) }
+        goto -> bb19;                    // bb18[1]: scope 4 at src/header/netdb/mod.rs:258:5: 260:6
+    }
+
+    bb19: {
+        StorageDead(_30);                // bb19[0]: scope 4 at src/header/netdb/mod.rs:260:5: 260:6
+        StorageLive(_35);                // bb19[1]: scope 4 at src/header/netdb/mod.rs:262:8: 262:15
+        _35 = _11;                       // bb19[2]: scope 4 at src/header/netdb/mod.rs:262:8: 262:15
+        switchInt(_35) -> [false: bb20, otherwise: bb21]; // bb19[3]: scope 4 at src/header/netdb/mod.rs:262:5: 267:6
+    }
+
+    bb20: {
+        StorageDead(_35);                // bb20[0]: scope 4 at src/header/netdb/mod.rs:267:5: 267:6
+        StorageLive(_44);                // bb20[1]: scope 4 at src/header/netdb/mod.rs:270:9: 270:14
+        StorageLive(_45);                // bb20[2]: scope 11 at src/header/netdb/mod.rs:271:5: 271:30
+        StorageLive(_46);                // bb20[3]: scope 11 at src/header/netdb/mod.rs:271:16: 271:29
+        _46 = (header::netdb::host::HOST_STAYOPEN: i32); // bb20[4]: scope 11 at src/header/netdb/mod.rs:271:16: 271:29
+        _45 = const header::netdb::host::sethostent(move _46) -> bb27; // bb20[5]: scope 11 at src/header/netdb/mod.rs:271:5: 271:30
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:271:5: 271:15
+                                         // + ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}
+                                         // + literal: Const { ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}, val: Scalar(<ZST>) }
+    }
+
+    bb21: {
+        StorageLive(_36);                // bb21[0]: scope 4 at src/header/netdb/mod.rs:263:13: 263:17
+        StorageLive(_37);                // bb21[1]: scope 4 at src/header/netdb/mod.rs:264:21: 264:59
+        StorageLive(_38);                // bb21[2]: scope 4 at src/header/netdb/mod.rs:264:52: 264:58
+        _38 = _10;                       // bb21[3]: scope 4 at src/header/netdb/mod.rs:264:52: 264:58
+        _37 = const core::intrinsics::transmute::<[u8; 4], u32>(move _38) -> bb22; // bb21[4]: scope 4 at src/header/netdb/mod.rs:264:21: 264:59
+                                         // ty::Const
+                                         // + ty: unsafe extern "rust-intrinsic" fn([u8; 4]) -> u32 {core::intrinsics::transmute::<[u8; 4], u32>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:264:21: 264:51
+                                         // + ty: unsafe extern "rust-intrinsic" fn([u8; 4]) -> u32 {core::intrinsics::transmute::<[u8; 4], u32>}
+                                         // + literal: Const { ty: unsafe extern "rust-intrinsic" fn([u8; 4]) -> u32 {core::intrinsics::transmute::<[u8; 4], u32>}, val: Scalar(<ZST>) }
+    }
+
+    bb22: {
+        StorageDead(_38);                // bb22[0]: scope 4 at src/header/netdb/mod.rs:264:58: 264:59
+        (_36.0: u32) = move _37;         // bb22[1]: scope 4 at src/header/netdb/mod.rs:263:20: 265:10
+        StorageDead(_37);                // bb22[2]: scope 4 at src/header/netdb/mod.rs:265:9: 265:10
+        StorageLive(_39);                // bb22[3]: scope 10 at src/header/netdb/mod.rs:266:30: 266:64
+        StorageLive(_40);                // bb22[4]: scope 10 at src/header/netdb/mod.rs:266:30: 266:47
+        StorageLive(_41);                // bb22[5]: scope 10 at src/header/netdb/mod.rs:266:30: 266:47
+        StorageLive(_42);                // bb22[6]: scope 10 at src/header/netdb/mod.rs:266:30: 266:35
+        StorageLive(_43);                // bb22[7]: scope 10 at src/header/netdb/mod.rs:266:30: 266:35
+        _43 = &_36;                      // bb22[8]: scope 10 at src/header/netdb/mod.rs:266:30: 266:35
+        _42 = _43;                       // bb22[9]: scope 10 at src/header/netdb/mod.rs:266:30: 266:35
+        _41 = move _42 as *const header::netinet_in::in_addr (Misc); // bb22[10]: scope 10 at src/header/netdb/mod.rs:266:30: 266:35
+        StorageDead(_42);                // bb22[11]: scope 10 at src/header/netdb/mod.rs:266:34: 266:35
+        _40 = _41;                       // bb22[12]: scope 10 at src/header/netdb/mod.rs:266:30: 266:47
+        _39 = move _40 as *const platform::types::c_void (Misc); // bb22[13]: scope 10 at src/header/netdb/mod.rs:266:30: 266:64
+        StorageDead(_40);                // bb22[14]: scope 10 at src/header/netdb/mod.rs:266:63: 266:64
+        _0 = const header::netdb::gethostbyaddr(move _39, const 4u32, const header::sys_socket::constants::AF_INET) -> bb24; // bb22[15]: scope 10 at src/header/netdb/mod.rs:266:16: 266:77
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn(*const platform::types::c_void, u32, i32) -> *mut header::netdb::hostent {header::netdb::gethostbyaddr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:266:16: 266:29
+                                         // + ty: unsafe extern "C" fn(*const platform::types::c_void, u32, i32) -> *mut header::netdb::hostent {header::netdb::gethostbyaddr}
+                                         // + literal: Const { ty: unsafe extern "C" fn(*const platform::types::c_void, u32, i32) -> *mut header::netdb::hostent {header::netdb::gethostbyaddr}, val: Scalar(<ZST>) }
+                                         // ty::Const
+                                         // + ty: u32
+                                         // + val: Scalar(0x00000004)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:266:66: 266:67
+                                         // + ty: u32
+                                         // + literal: Const { ty: u32, val: Scalar(0x00000004) }
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Unevaluated(DefId(0:2484 ~ relibc[6084]::header[0]::sys_socket[0]::constants[0]::AF_INET[0]), [])
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:266:69: 266:76
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Unevaluated(DefId(0:2484 ~ relibc[6084]::header[0]::sys_socket[0]::constants[0]::AF_INET[0]), []) }
+    }
+
+    bb23: {
+        return;                          // bb23[0]: scope 0 at src/header/netdb/mod.rs:336:2: 336:2
+    }
+
+    bb24: {
+        StorageDead(_39);                // bb24[0]: scope 10 at src/header/netdb/mod.rs:266:76: 266:77
+        StorageDead(_43);                // bb24[1]: scope 10 at src/header/netdb/mod.rs:266:77: 266:78
+        StorageDead(_41);                // bb24[2]: scope 10 at src/header/netdb/mod.rs:266:77: 266:78
+        StorageDead(_36);                // bb24[3]: scope 4 at src/header/netdb/mod.rs:267:5: 267:6
+        StorageDead(_35);                // bb24[4]: scope 4 at src/header/netdb/mod.rs:267:5: 267:6
+        goto -> bb25;                    // bb24[5]: scope 3 at src/header/netdb/mod.rs:266:9: 266:77
+    }
+
+    bb25: {
+        StorageDead(_11);                // bb25[0]: scope 3 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_10);                // bb25[1]: scope 2 at src/header/netdb/mod.rs:336:1: 336:2
+        drop(_4) -> bb26;                // bb25[2]: scope 1 at src/header/netdb/mod.rs:336:1: 336:2
+    }
+
+    bb26: {
+        StorageDead(_4);                 // bb26[0]: scope 1 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_2);                 // bb26[1]: scope 0 at src/header/netdb/mod.rs:336:1: 336:2
+        goto -> bb23;                    // bb26[2]: scope 0 at src/header/netdb/mod.rs:266:9: 266:77
+    }
+
+    bb27: {
+        StorageDead(_46);                // bb27[0]: scope 11 at src/header/netdb/mod.rs:271:29: 271:30
+        StorageDead(_45);                // bb27[1]: scope 11 at src/header/netdb/mod.rs:271:30: 271:31
+        goto -> bb28;                    // bb27[2]: scope 11 at src/header/netdb/mod.rs:272:5: 294:6
+    }
+
+    bb28: {
+        StorageLive(_47);                // bb28[0]: scope 11 at src/header/netdb/mod.rs:272:11: 275:6
+        StorageLive(_48);                // bb28[1]: scope 11 at src/header/netdb/mod.rs:273:13: 273:25
+        _48 = const header::netdb::host::gethostent() -> bb29; // bb28[2]: scope 11 at src/header/netdb/mod.rs:273:13: 273:25
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn() -> *mut header::netdb::hostent {header::netdb::host::gethostent}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:273:13: 273:23
+                                         // + ty: unsafe extern "C" fn() -> *mut header::netdb::hostent {header::netdb::host::gethostent}
+                                         // + literal: Const { ty: unsafe extern "C" fn() -> *mut header::netdb::hostent {header::netdb::host::gethostent}, val: Scalar(<ZST>) }
+    }
+
+    bb29: {
+        _44 = move _48;                  // bb29[0]: scope 11 at src/header/netdb/mod.rs:273:9: 273:25
+        StorageDead(_48);                // bb29[1]: scope 11 at src/header/netdb/mod.rs:273:24: 273:25
+        StorageLive(_49);                // bb29[2]: scope 11 at src/header/netdb/mod.rs:274:10: 274:21
+        StorageLive(_50);                // bb29[3]: scope 11 at src/header/netdb/mod.rs:274:10: 274:11
+        _50 = _44;                       // bb29[4]: scope 11 at src/header/netdb/mod.rs:274:10: 274:11
+        _49 = const core::ptr::<impl *mut header::netdb::hostent>::is_null(move _50) -> bb30; // bb29[5]: scope 11 at src/header/netdb/mod.rs:274:10: 274:21
+                                         // ty::Const
+                                         // + ty: fn(*mut header::netdb::hostent) -> bool {core::ptr::<impl *mut header::netdb::hostent>::is_null}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:274:12: 274:19
+                                         // + ty: fn(*mut header::netdb::hostent) -> bool {core::ptr::<impl *mut header::netdb::hostent>::is_null}
+                                         // + literal: Const { ty: fn(*mut header::netdb::hostent) -> bool {core::ptr::<impl *mut header::netdb::hostent>::is_null}, val: Scalar(<ZST>) }
+    }
+
+    bb30: {
+        StorageDead(_50);                // bb30[0]: scope 11 at src/header/netdb/mod.rs:274:20: 274:21
+        _47 = Not(move _49);             // bb30[1]: scope 11 at src/header/netdb/mod.rs:274:9: 274:21
+        StorageDead(_49);                // bb30[2]: scope 11 at src/header/netdb/mod.rs:274:20: 274:21
+        switchInt(_47) -> [false: bb31, otherwise: bb32]; // bb30[3]: scope 11 at src/header/netdb/mod.rs:272:5: 294:6
+    }
+
+    bb31: {
+        StorageDead(_47);                // bb31[0]: scope 11 at src/header/netdb/mod.rs:275:5: 275:6
+        StorageLive(_72);                // bb31[1]: scope 11 at src/header/netdb/mod.rs:296:9: 296:18
+        StorageLive(_73);                // bb31[2]: scope 11 at src/header/netdb/mod.rs:296:36: 296:40
+        _73 = _1;                        // bb31[3]: scope 11 at src/header/netdb/mod.rs:296:36: 296:40
+        _72 = const c_str::CStr::from_ptr(move _73) -> bb52; // bb31[4]: scope 11 at src/header/netdb/mod.rs:296:21: 296:41
+                                         // ty::Const
+                                         // + ty: unsafe fn(*const i8) -> &c_str::CStr {c_str::CStr::from_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:296:21: 296:35
+                                         // + ty: unsafe fn(*const i8) -> &c_str::CStr {c_str::CStr::from_ptr}
+                                         // + user_ty: UserType(4)
+                                         // + literal: Const { ty: unsafe fn(*const i8) -> &c_str::CStr {c_str::CStr::from_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb32: {
+        StorageLive(_51);                // bb32[0]: scope 11 at src/header/netdb/mod.rs:276:12: 276:46
+        StorageLive(_52);                // bb32[1]: scope 11 at src/header/netdb/mod.rs:276:12: 276:41
+        StorageLive(_53);                // bb32[2]: scope 11 at src/header/netdb/mod.rs:276:23: 276:34
+        StorageLive(_54);                // bb32[3]: scope 11 at src/header/netdb/mod.rs:276:23: 276:34
+        _54 = ((*_44).0: *mut i8);       // bb32[4]: scope 11 at src/header/netdb/mod.rs:276:23: 276:34
+        _53 = move _54 as *const i8 (Pointer(MutToConstPointer)); // bb32[5]: scope 11 at src/header/netdb/mod.rs:276:23: 276:34
+        StorageDead(_54);                // bb32[6]: scope 11 at src/header/netdb/mod.rs:276:33: 276:34
+        StorageLive(_55);                // bb32[7]: scope 11 at src/header/netdb/mod.rs:276:36: 276:40
+        _55 = _1;                        // bb32[8]: scope 11 at src/header/netdb/mod.rs:276:36: 276:40
+        _52 = const header::strings::strcasecmp(move _53, move _55) -> bb33; // bb32[9]: scope 11 at src/header/netdb/mod.rs:276:12: 276:41
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn(*const i8, *const i8) -> i32 {header::strings::strcasecmp}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:276:12: 276:22
+                                         // + ty: unsafe extern "C" fn(*const i8, *const i8) -> i32 {header::strings::strcasecmp}
+                                         // + literal: Const { ty: unsafe extern "C" fn(*const i8, *const i8) -> i32 {header::strings::strcasecmp}, val: Scalar(<ZST>) }
+    }
+
+    bb33: {
+        StorageDead(_55);                // bb33[0]: scope 11 at src/header/netdb/mod.rs:276:40: 276:41
+        StorageDead(_53);                // bb33[1]: scope 11 at src/header/netdb/mod.rs:276:40: 276:41
+        _51 = Eq(move _52, const 0i32);  // bb33[2]: scope 11 at src/header/netdb/mod.rs:276:12: 276:46
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000000)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:276:45: 276:46
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000000) }
+        StorageDead(_52);                // bb33[3]: scope 11 at src/header/netdb/mod.rs:276:45: 276:46
+        switchInt(_51) -> [false: bb34, otherwise: bb35]; // bb33[4]: scope 11 at src/header/netdb/mod.rs:276:9: 279:10
+    }
+
+    bb34: {
+        StorageDead(_51);                // bb34[0]: scope 11 at src/header/netdb/mod.rs:279:9: 279:10
+        StorageLive(_58);                // bb34[1]: scope 11 at src/header/netdb/mod.rs:280:13: 280:19
+        _58 = ((*_44).1: *mut *mut i8);  // bb34[2]: scope 11 at src/header/netdb/mod.rs:280:22: 280:36
+        goto -> bb40;                    // bb34[3]: scope 12 at src/header/netdb/mod.rs:281:9: 293:10
+    }
+
+    bb35: {
+        StorageLive(_56);                // bb35[0]: scope 11 at src/header/netdb/mod.rs:277:13: 277:38
+        StorageLive(_57);                // bb35[1]: scope 11 at src/header/netdb/mod.rs:277:24: 277:37
+        _57 = (header::netdb::host::HOST_STAYOPEN: i32); // bb35[2]: scope 11 at src/header/netdb/mod.rs:277:24: 277:37
+        _56 = const header::netdb::host::sethostent(move _57) -> bb36; // bb35[3]: scope 11 at src/header/netdb/mod.rs:277:13: 277:38
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:277:13: 277:23
+                                         // + ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}
+                                         // + literal: Const { ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}, val: Scalar(<ZST>) }
+    }
+
+    bb36: {
+        StorageDead(_57);                // bb36[0]: scope 11 at src/header/netdb/mod.rs:277:37: 277:38
+        StorageDead(_56);                // bb36[1]: scope 11 at src/header/netdb/mod.rs:277:38: 277:39
+        _0 = _44;                        // bb36[2]: scope 11 at src/header/netdb/mod.rs:278:20: 278:21
+        StorageDead(_51);                // bb36[3]: scope 11 at src/header/netdb/mod.rs:279:9: 279:10
+        goto -> bb37;                    // bb36[4]: scope 11 at src/header/netdb/mod.rs:278:13: 278:21
+    }
+
+    bb37: {
+        StorageDead(_47);                // bb37[0]: scope 11 at src/header/netdb/mod.rs:275:5: 275:6
+        goto -> bb38;                    // bb37[1]: scope 4 at src/header/netdb/mod.rs:278:13: 278:21
+    }
+
+    bb38: {
+        StorageDead(_44);                // bb38[0]: scope 4 at src/header/netdb/mod.rs:336:1: 336:2
+        goto -> bb25;                    // bb38[1]: scope 3 at src/header/netdb/mod.rs:278:13: 278:21
+    }
+
+    bb39: {
+        StorageDead(_58);                // bb39[0]: scope 11 at src/header/netdb/mod.rs:294:5: 294:6
+        StorageDead(_47);                // bb39[1]: scope 11 at src/header/netdb/mod.rs:275:5: 275:6
+        goto -> bb28;                    // bb39[2]: scope 11 at src/header/netdb/mod.rs:272:5: 294:6
+    }
+
+    bb40: {
+        StorageLive(_59);                // bb40[0]: scope 12 at src/header/netdb/mod.rs:282:16: 282:28
+        StorageLive(_60);                // bb40[1]: scope 12 at src/header/netdb/mod.rs:282:16: 282:18
+        _60 = _58;                       // bb40[2]: scope 12 at src/header/netdb/mod.rs:282:16: 282:18
+        _59 = const core::ptr::<impl *mut *mut i8>::is_null(move _60) -> bb41; // bb40[3]: scope 12 at src/header/netdb/mod.rs:282:16: 282:28
+                                         // ty::Const
+                                         // + ty: fn(*mut *mut i8) -> bool {core::ptr::<impl *mut *mut i8>::is_null}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:282:19: 282:26
+                                         // + ty: fn(*mut *mut i8) -> bool {core::ptr::<impl *mut *mut i8>::is_null}
+                                         // + literal: Const { ty: fn(*mut *mut i8) -> bool {core::ptr::<impl *mut *mut i8>::is_null}, val: Scalar(<ZST>) }
+    }
+
+    bb41: {
+        StorageDead(_60);                // bb41[0]: scope 12 at src/header/netdb/mod.rs:282:27: 282:28
+        switchInt(_59) -> [false: bb42, otherwise: bb43]; // bb41[1]: scope 12 at src/header/netdb/mod.rs:282:13: 284:14
+    }
+
+    bb42: {
+        StorageDead(_59);                // bb42[0]: scope 12 at src/header/netdb/mod.rs:284:13: 284:14
+        StorageLive(_61);                // bb42[1]: scope 12 at src/header/netdb/mod.rs:285:16: 285:31
+        StorageLive(_62);                // bb42[2]: scope 12 at src/header/netdb/mod.rs:285:16: 285:21
+        _62 = (*_58);                    // bb42[3]: scope 12 at src/header/netdb/mod.rs:285:16: 285:21
+        _61 = const core::ptr::<impl *mut i8>::is_null(move _62) -> bb44; // bb42[4]: scope 12 at src/header/netdb/mod.rs:285:16: 285:31
+                                         // ty::Const
+                                         // + ty: fn(*mut i8) -> bool {core::ptr::<impl *mut i8>::is_null}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:285:22: 285:29
+                                         // + ty: fn(*mut i8) -> bool {core::ptr::<impl *mut i8>::is_null}
+                                         // + literal: Const { ty: fn(*mut i8) -> bool {core::ptr::<impl *mut i8>::is_null}, val: Scalar(<ZST>) }
+    }
+
+    bb43: {
+        StorageDead(_59);                // bb43[0]: scope 12 at src/header/netdb/mod.rs:284:13: 284:14
+        goto -> bb39;                    // bb43[1]: scope 12 at src/header/netdb/mod.rs:283:17: 283:22
+    }
+
+    bb44: {
+        StorageDead(_62);                // bb44[0]: scope 12 at src/header/netdb/mod.rs:285:30: 285:31
+        switchInt(_61) -> [false: bb45, otherwise: bb46]; // bb44[1]: scope 12 at src/header/netdb/mod.rs:285:13: 287:14
+    }
+
+    bb45: {
+        StorageDead(_61);                // bb45[0]: scope 12 at src/header/netdb/mod.rs:287:13: 287:14
+        StorageLive(_63);                // bb45[1]: scope 12 at src/header/netdb/mod.rs:288:16: 288:42
+        StorageLive(_64);                // bb45[2]: scope 12 at src/header/netdb/mod.rs:288:16: 288:37
+        StorageLive(_65);                // bb45[3]: scope 12 at src/header/netdb/mod.rs:288:27: 288:30
+        StorageLive(_66);                // bb45[4]: scope 12 at src/header/netdb/mod.rs:288:27: 288:30
+        _66 = (*_58);                    // bb45[5]: scope 12 at src/header/netdb/mod.rs:288:27: 288:30
+        _65 = move _66 as *const i8 (Pointer(MutToConstPointer)); // bb45[6]: scope 12 at src/header/netdb/mod.rs:288:27: 288:30
+        StorageDead(_66);                // bb45[7]: scope 12 at src/header/netdb/mod.rs:288:29: 288:30
+        StorageLive(_67);                // bb45[8]: scope 12 at src/header/netdb/mod.rs:288:32: 288:36
+        _67 = _1;                        // bb45[9]: scope 12 at src/header/netdb/mod.rs:288:32: 288:36
+        _64 = const header::strings::strcasecmp(move _65, move _67) -> bb47; // bb45[10]: scope 12 at src/header/netdb/mod.rs:288:16: 288:37
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn(*const i8, *const i8) -> i32 {header::strings::strcasecmp}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:288:16: 288:26
+                                         // + ty: unsafe extern "C" fn(*const i8, *const i8) -> i32 {header::strings::strcasecmp}
+                                         // + literal: Const { ty: unsafe extern "C" fn(*const i8, *const i8) -> i32 {header::strings::strcasecmp}, val: Scalar(<ZST>) }
+    }
+
+    bb46: {
+        StorageDead(_61);                // bb46[0]: scope 12 at src/header/netdb/mod.rs:287:13: 287:14
+        goto -> bb39;                    // bb46[1]: scope 12 at src/header/netdb/mod.rs:286:17: 286:22
+    }
+
+    bb47: {
+        StorageDead(_67);                // bb47[0]: scope 12 at src/header/netdb/mod.rs:288:36: 288:37
+        StorageDead(_65);                // bb47[1]: scope 12 at src/header/netdb/mod.rs:288:36: 288:37
+        _63 = Eq(move _64, const 0i32);  // bb47[2]: scope 12 at src/header/netdb/mod.rs:288:16: 288:42
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000000)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:288:41: 288:42
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000000) }
+        StorageDead(_64);                // bb47[3]: scope 12 at src/header/netdb/mod.rs:288:41: 288:42
+        switchInt(_63) -> [false: bb48, otherwise: bb49]; // bb47[4]: scope 12 at src/header/netdb/mod.rs:288:13: 291:14
+    }
+
+    bb48: {
+        StorageDead(_63);                // bb48[0]: scope 12 at src/header/netdb/mod.rs:291:13: 291:14
+        StorageLive(_70);                // bb48[1]: scope 12 at src/header/netdb/mod.rs:292:18: 292:30
+        StorageLive(_71);                // bb48[2]: scope 12 at src/header/netdb/mod.rs:292:18: 292:20
+        _71 = _58;                       // bb48[3]: scope 12 at src/header/netdb/mod.rs:292:18: 292:20
+        _70 = const core::ptr::<impl *mut *mut i8>::offset(move _71, const 1isize) -> bb51; // bb48[4]: scope 12 at src/header/netdb/mod.rs:292:18: 292:30
+                                         // ty::Const
+                                         // + ty: unsafe fn(*mut *mut i8, isize) -> *mut *mut i8 {core::ptr::<impl *mut *mut i8>::offset}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:292:21: 292:27
+                                         // + ty: unsafe fn(*mut *mut i8, isize) -> *mut *mut i8 {core::ptr::<impl *mut *mut i8>::offset}
+                                         // + literal: Const { ty: unsafe fn(*mut *mut i8, isize) -> *mut *mut i8 {core::ptr::<impl *mut *mut i8>::offset}, val: Scalar(<ZST>) }
+                                         // ty::Const
+                                         // + ty: isize
+                                         // + val: Scalar(0x0000000000000001)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:292:28: 292:29
+                                         // + ty: isize
+                                         // + literal: Const { ty: isize, val: Scalar(0x0000000000000001) }
+    }
+
+    bb49: {
+        StorageLive(_68);                // bb49[0]: scope 12 at src/header/netdb/mod.rs:289:17: 289:42
+        StorageLive(_69);                // bb49[1]: scope 12 at src/header/netdb/mod.rs:289:28: 289:41
+        _69 = (header::netdb::host::HOST_STAYOPEN: i32); // bb49[2]: scope 12 at src/header/netdb/mod.rs:289:28: 289:41
+        _68 = const header::netdb::host::sethostent(move _69) -> bb50; // bb49[3]: scope 12 at src/header/netdb/mod.rs:289:17: 289:42
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:289:17: 289:27
+                                         // + ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}
+                                         // + literal: Const { ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}, val: Scalar(<ZST>) }
+    }
+
+    bb50: {
+        StorageDead(_69);                // bb50[0]: scope 12 at src/header/netdb/mod.rs:289:41: 289:42
+        StorageDead(_68);                // bb50[1]: scope 12 at src/header/netdb/mod.rs:289:42: 289:43
+        _0 = _44;                        // bb50[2]: scope 12 at src/header/netdb/mod.rs:290:24: 290:25
+        StorageDead(_63);                // bb50[3]: scope 12 at src/header/netdb/mod.rs:291:13: 291:14
+        StorageDead(_58);                // bb50[4]: scope 11 at src/header/netdb/mod.rs:294:5: 294:6
+        goto -> bb37;                    // bb50[5]: scope 11 at src/header/netdb/mod.rs:290:17: 290:25
+    }
+
+    bb51: {
+        StorageDead(_71);                // bb51[0]: scope 12 at src/header/netdb/mod.rs:292:29: 292:30
+        _58 = move _70;                  // bb51[1]: scope 12 at src/header/netdb/mod.rs:292:13: 292:30
+        StorageDead(_70);                // bb51[2]: scope 12 at src/header/netdb/mod.rs:292:29: 292:30
+        goto -> bb40;                    // bb51[3]: scope 12 at src/header/netdb/mod.rs:281:9: 293:10
+    }
+
+    bb52: {
+        StorageDead(_73);                // bb52[0]: scope 11 at src/header/netdb/mod.rs:296:40: 296:41
+        StorageLive(_74);                // bb52[1]: scope 13 at src/header/netdb/mod.rs:298:9: 298:17
+        StorageLive(_75);                // bb52[2]: scope 13 at src/header/netdb/mod.rs:298:26: 298:85
+        StorageLive(_76);                // bb52[3]: scope 13 at src/header/netdb/mod.rs:298:38: 298:84
+        StorageLive(_77);                // bb52[4]: scope 13 at src/header/netdb/mod.rs:298:38: 298:84
+        StorageLive(_78);                // bb52[5]: scope 13 at src/header/netdb/mod.rs:298:63: 298:83
+        StorageLive(_79);                // bb52[6]: scope 13 at src/header/netdb/mod.rs:298:63: 298:83
+        StorageLive(_80);                // bb52[7]: scope 13 at src/header/netdb/mod.rs:298:63: 298:72
+        _80 = _72;                       // bb52[8]: scope 13 at src/header/netdb/mod.rs:298:63: 298:72
+        _79 = const c_str::CStr::to_bytes(move _80) -> bb53; // bb52[9]: scope 13 at src/header/netdb/mod.rs:298:63: 298:83
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r c_str::CStr) -> &'r [u8] {c_str::CStr::to_bytes}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:298:73: 298:81
+                                         // + ty: for<'r> fn(&'r c_str::CStr) -> &'r [u8] {c_str::CStr::to_bytes}
+                                         // + literal: Const { ty: for<'r> fn(&'r c_str::CStr) -> &'r [u8] {c_str::CStr::to_bytes}, val: Scalar(<ZST>) }
+    }
+
+    bb53: {
+        _78 = _79;                       // bb53[0]: scope 13 at src/header/netdb/mod.rs:298:63: 298:83
+        StorageDead(_80);                // bb53[1]: scope 13 at src/header/netdb/mod.rs:298:82: 298:83
+        _77 = const core::str::from_utf8_unchecked(move _78) -> bb54; // bb53[2]: scope 13 at src/header/netdb/mod.rs:298:38: 298:84
+                                         // ty::Const
+                                         // + ty: for<'r> unsafe fn(&'r [u8]) -> &'r str {core::str::from_utf8_unchecked}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:298:38: 298:62
+                                         // + ty: for<'r> unsafe fn(&'r [u8]) -> &'r str {core::str::from_utf8_unchecked}
+                                         // + literal: Const { ty: for<'r> unsafe fn(&'r [u8]) -> &'r str {core::str::from_utf8_unchecked}, val: Scalar(<ZST>) }
+    }
+
+    bb54: {
+        _76 = _77;                       // bb54[0]: scope 13 at src/header/netdb/mod.rs:298:38: 298:84
+        StorageDead(_78);                // bb54[1]: scope 13 at src/header/netdb/mod.rs:298:83: 298:84
+        _75 = const header::netdb::lookup::lookup_host(move _76) -> bb55; // bb54[2]: scope 13 at src/header/netdb/mod.rs:298:26: 298:85
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r str) -> core::result::Result<header::netdb::lookup::LookupHost, i32> {header::netdb::lookup::lookup_host}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:298:26: 298:37
+                                         // + ty: for<'r> fn(&'r str) -> core::result::Result<header::netdb::lookup::LookupHost, i32> {header::netdb::lookup::lookup_host}
+                                         // + literal: Const { ty: for<'r> fn(&'r str) -> core::result::Result<header::netdb::lookup::LookupHost, i32> {header::netdb::lookup::lookup_host}, val: Scalar(<ZST>) }
+    }
+
+    bb55: {
+        StorageDead(_76);                // bb55[0]: scope 13 at src/header/netdb/mod.rs:298:84: 298:85
+        _81 = discriminant(_75);         // bb55[1]: scope 13 at src/header/netdb/mod.rs:299:9: 299:23
+        switchInt(move _81) -> [0isize: bb57, 1isize: bb58, otherwise: bb56]; // bb55[2]: scope 13 at src/header/netdb/mod.rs:299:9: 299:23
+    }
+
+    bb56: {
+        unreachable;                     // bb56[0]: scope 13 at src/header/netdb/mod.rs:298:26: 298:85
+    }
+
+    bb57: {
+        StorageLive(_82);                // bb57[0]: scope 13 at src/header/netdb/mod.rs:299:12: 299:22
+        _82 = move ((_75 as Ok).0: header::netdb::lookup::LookupHost); // bb57[1]: scope 13 at src/header/netdb/mod.rs:299:12: 299:22
+        _74 = move _82;                  // bb57[2]: scope 15 at src/header/netdb/mod.rs:299:27: 299:37
+        StorageDead(_82);                // bb57[3]: scope 13 at src/header/netdb/mod.rs:299:37: 299:38
+        _137 = discriminant(_75);        // bb57[4]: scope 13 at src/header/netdb/mod.rs:304:6: 304:7
+        switchInt(move _137) -> [0isize: bb91, otherwise: bb92]; // bb57[5]: scope 13 at src/header/netdb/mod.rs:304:6: 304:7
+    }
+
+    bb58: {
+        StorageLive(_83);                // bb58[0]: scope 13 at src/header/netdb/mod.rs:300:13: 300:14
+        _83 = ((_75 as Err).0: i32);     // bb58[1]: scope 13 at src/header/netdb/mod.rs:300:13: 300:14
+        StorageLive(_84);                // bb58[2]: scope 16 at src/header/netdb/mod.rs:301:31: 301:32
+        _84 = _83;                       // bb58[3]: scope 16 at src/header/netdb/mod.rs:301:31: 301:32
+        (platform::errno: i32) = move _84; // bb58[4]: scope 16 at src/header/netdb/mod.rs:301:13: 301:32
+        StorageDead(_84);                // bb58[5]: scope 16 at src/header/netdb/mod.rs:301:31: 301:32
+        _0 = const core::ptr::null_mut::<header::netdb::hostent>() -> bb59; // bb58[6]: scope 16 at src/header/netdb/mod.rs:302:20: 302:35
+                                         // ty::Const
+                                         // + ty: fn() -> *mut header::netdb::hostent {core::ptr::null_mut::<header::netdb::hostent>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:302:20: 302:33
+                                         // + ty: fn() -> *mut header::netdb::hostent {core::ptr::null_mut::<header::netdb::hostent>}
+                                         // + literal: Const { ty: fn() -> *mut header::netdb::hostent {core::ptr::null_mut::<header::netdb::hostent>}, val: Scalar(<ZST>) }
+    }
+
+    bb59: {
+        StorageDead(_83);                // bb59[0]: scope 13 at src/header/netdb/mod.rs:304:5: 304:6
+        drop(_75) -> bb60;               // bb59[1]: scope 13 at src/header/netdb/mod.rs:304:6: 304:7
+    }
+
+    bb60: {
+        StorageDead(_79);                // bb60[0]: scope 13 at src/header/netdb/mod.rs:304:6: 304:7
+        StorageDead(_77);                // bb60[1]: scope 13 at src/header/netdb/mod.rs:304:6: 304:7
+        StorageDead(_75);                // bb60[2]: scope 13 at src/header/netdb/mod.rs:304:6: 304:7
+        StorageDead(_74);                // bb60[3]: scope 13 at src/header/netdb/mod.rs:336:1: 336:2
+        goto -> bb61;                    // bb60[4]: scope 11 at src/header/netdb/mod.rs:302:13: 302:35
+    }
+
+    bb61: {
+        StorageDead(_72);                // bb61[0]: scope 11 at src/header/netdb/mod.rs:336:1: 336:2
+        goto -> bb38;                    // bb61[1]: scope 4 at src/header/netdb/mod.rs:302:13: 302:35
+    }
+
+    bb62: {
+        StorageDead(_87);                // bb62[0]: scope 14 at src/header/netdb/mod.rs:305:37: 305:38
+        _88 = discriminant(_86);         // bb62[1]: scope 14 at src/header/netdb/mod.rs:306:9: 306:21
+        switchInt(move _88) -> [0isize: bb63, 1isize: bb65, otherwise: bb64]; // bb62[2]: scope 14 at src/header/netdb/mod.rs:306:9: 306:21
+    }
+
+    bb63: {
+        (platform::errno: i32) = const header::errno::ENOENT; // bb63[0]: scope 14 at src/header/netdb/mod.rs:308:13: 308:37
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Unevaluated(DefId(0:508 ~ relibc[6084]::header[0]::errno[0]::ENOENT[0]), [])
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:308:31: 308:37
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Unevaluated(DefId(0:508 ~ relibc[6084]::header[0]::errno[0]::ENOENT[0]), []) }
+        _0 = const core::ptr::null_mut::<header::netdb::hostent>() -> bb66; // bb63[1]: scope 14 at src/header/netdb/mod.rs:309:20: 309:35
+                                         // ty::Const
+                                         // + ty: fn() -> *mut header::netdb::hostent {core::ptr::null_mut::<header::netdb::hostent>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:309:20: 309:33
+                                         // + ty: fn() -> *mut header::netdb::hostent {core::ptr::null_mut::<header::netdb::hostent>}
+                                         // + literal: Const { ty: fn() -> *mut header::netdb::hostent {core::ptr::null_mut::<header::netdb::hostent>}, val: Scalar(<ZST>) }
+    }
+
+    bb64: {
+        unreachable;                     // bb64[0]: scope 14 at src/header/netdb/mod.rs:305:27: 305:38
+    }
+
+    bb65: {
+        StorageLive(_89);                // bb65[0]: scope 14 at src/header/netdb/mod.rs:306:14: 306:20
+        _89 = ((_86 as Some).0: header::netinet_in::in_addr); // bb65[1]: scope 14 at src/header/netdb/mod.rs:306:14: 306:20
+        _85 = _89;                       // bb65[2]: scope 18 at src/header/netdb/mod.rs:306:25: 306:31
+        StorageDead(_89);                // bb65[3]: scope 14 at src/header/netdb/mod.rs:306:31: 306:32
+        StorageDead(_86);                // bb65[4]: scope 14 at src/header/netdb/mod.rs:311:6: 311:7
+        StorageLive(_90);                // bb65[5]: scope 17 at src/header/netdb/mod.rs:313:9: 313:18
+        StorageLive(_91);                // bb65[6]: scope 17 at src/header/netdb/mod.rs:313:30: 313:50
+        StorageLive(_92);                // bb65[7]: scope 17 at src/header/netdb/mod.rs:313:30: 313:50
+        StorageLive(_93);                // bb65[8]: scope 17 at src/header/netdb/mod.rs:313:30: 313:39
+        _93 = _72;                       // bb65[9]: scope 17 at src/header/netdb/mod.rs:313:30: 313:39
+        _92 = const c_str::CStr::to_bytes(move _93) -> bb68; // bb65[10]: scope 17 at src/header/netdb/mod.rs:313:30: 313:50
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r c_str::CStr) -> &'r [u8] {c_str::CStr::to_bytes}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:313:40: 313:48
+                                         // + ty: for<'r> fn(&'r c_str::CStr) -> &'r [u8] {c_str::CStr::to_bytes}
+                                         // + literal: Const { ty: for<'r> fn(&'r c_str::CStr) -> &'r [u8] {c_str::CStr::to_bytes}, val: Scalar(<ZST>) }
+    }
+
+    bb66: {
+        StorageDead(_86);                // bb66[0]: scope 14 at src/header/netdb/mod.rs:311:6: 311:7
+        StorageDead(_85);                // bb66[1]: scope 14 at src/header/netdb/mod.rs:336:1: 336:2
+        drop(_74) -> bb67;               // bb66[2]: scope 13 at src/header/netdb/mod.rs:336:1: 336:2
+    }
+
+    bb67: {
+        StorageDead(_74);                // bb67[0]: scope 13 at src/header/netdb/mod.rs:336:1: 336:2
+        goto -> bb61;                    // bb67[1]: scope 11 at src/header/netdb/mod.rs:309:13: 309:35
+    }
+
+    bb68: {
+        _91 = _92;                       // bb68[0]: scope 17 at src/header/netdb/mod.rs:313:30: 313:50
+        StorageDead(_93);                // bb68[1]: scope 17 at src/header/netdb/mod.rs:313:49: 313:50
+        _90 = const alloc::slice::<impl [u8]>::to_vec(move _91) -> bb69; // bb68[2]: scope 17 at src/header/netdb/mod.rs:313:30: 313:59
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:313:51: 313:57
+                                         // + ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}
+                                         // + literal: Const { ty: for<'r> fn(&'r [u8]) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::to_vec}, val: Scalar(<ZST>) }
+    }
+
+    bb69: {
+        StorageDead(_91);                // bb69[0]: scope 17 at src/header/netdb/mod.rs:313:58: 313:59
+        StorageDead(_92);                // bb69[1]: scope 17 at src/header/netdb/mod.rs:313:59: 313:60
+        StorageLive(_94);                // bb69[2]: scope 19 at src/header/netdb/mod.rs:314:17: 314:32
+        StorageLive(_95);                // bb69[3]: scope 19 at src/header/netdb/mod.rs:314:22: 314:31
+        _95 = move _90;                  // bb69[4]: scope 19 at src/header/netdb/mod.rs:314:22: 314:31
+        ((_94 as Some).0: alloc::vec::Vec<u8>) = move _95; // bb69[5]: scope 19 at src/header/netdb/mod.rs:314:17: 314:32
+        discriminant(_94) = 1;           // bb69[6]: scope 19 at src/header/netdb/mod.rs:314:17: 314:32
+        StorageDead(_95);                // bb69[7]: scope 19 at src/header/netdb/mod.rs:314:31: 314:32
+        drop((header::netdb::host::HOST_NAME: core::option::Option<alloc::vec::Vec<u8>>)) -> bb93; // bb69[8]: scope 19 at src/header/netdb/mod.rs:314:5: 314:14
+    }
+
+    bb70: {
+        StorageDead(_97);                // bb70[0]: scope 19 at src/header/netdb/mod.rs:315:70: 315:71
+        (header::netdb::host::_HOST_ADDR_LIST: [u8; 4]) = move _96; // bb70[1]: scope 19 at src/header/netdb/mod.rs:315:5: 315:71
+        StorageDead(_96);                // bb70[2]: scope 19 at src/header/netdb/mod.rs:315:70: 315:71
+        StorageLive(_98);                // bb70[3]: scope 19 at src/header/netdb/mod.rs:316:23: 316:66
+        StorageLive(_99);                // bb70[4]: scope 19 at src/header/netdb/mod.rs:316:23: 316:51
+        StorageLive(_100);               // bb70[5]: scope 19 at src/header/netdb/mod.rs:316:23: 316:38
+        StorageLive(_101);               // bb70[6]: scope 19 at src/header/netdb/mod.rs:316:23: 316:38
+        _101 = &mut (header::netdb::host::_HOST_ADDR_LIST: [u8; 4]); // bb70[7]: scope 19 at src/header/netdb/mod.rs:316:23: 316:38
+        _100 = move _101 as &mut [u8] (Pointer(Unsize)); // bb70[8]: scope 19 at src/header/netdb/mod.rs:316:23: 316:38
+        StorageDead(_101);               // bb70[9]: scope 19 at src/header/netdb/mod.rs:316:37: 316:38
+        _99 = const core::slice::<impl [u8]>::as_mut_ptr(move _100) -> bb71; // bb70[10]: scope 19 at src/header/netdb/mod.rs:316:23: 316:51
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut [u8]) -> *mut u8 {core::slice::<impl [u8]>::as_mut_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:316:39: 316:49
+                                         // + ty: for<'r> fn(&'r mut [u8]) -> *mut u8 {core::slice::<impl [u8]>::as_mut_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut [u8]) -> *mut u8 {core::slice::<impl [u8]>::as_mut_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb71: {
+        StorageDead(_100);               // bb71[0]: scope 19 at src/header/netdb/mod.rs:316:50: 316:51
+        _98 = move _99 as *mut i8 (Misc); // bb71[1]: scope 19 at src/header/netdb/mod.rs:316:23: 316:66
+        StorageDead(_99);                // bb71[2]: scope 19 at src/header/netdb/mod.rs:316:65: 316:66
+        StorageLive(_102);               // bb71[3]: scope 19 at src/header/netdb/mod.rs:316:68: 316:83
+        _102 = const core::ptr::null_mut::<i8>() -> bb72; // bb71[4]: scope 19 at src/header/netdb/mod.rs:316:68: 316:83
+                                         // ty::Const
+                                         // + ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:316:68: 316:81
+                                         // + ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}
+                                         // + literal: Const { ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}, val: Scalar(<ZST>) }
+    }
+
+    bb72: {
+        (header::netdb::host::HOST_ADDR_LIST: [*mut i8; 2]) = [move _98, move _102]; // bb72[0]: scope 19 at src/header/netdb/mod.rs:316:5: 316:84
+        StorageDead(_102);               // bb72[1]: scope 19 at src/header/netdb/mod.rs:316:83: 316:84
+        StorageDead(_98);                // bb72[2]: scope 19 at src/header/netdb/mod.rs:316:83: 316:84
+        StorageLive(_103);               // bb72[3]: scope 19 at src/header/netdb/mod.rs:317:22: 317:31
+        _103 = _85;                      // bb72[4]: scope 19 at src/header/netdb/mod.rs:317:22: 317:31
+        (((header::netdb::host::HOST_ADDR: core::option::Option<header::netinet_in::in_addr>) as Some).0: header::netinet_in::in_addr) = move _103; // bb72[5]: scope 19 at src/header/netdb/mod.rs:317:5: 317:32
+        discriminant((header::netdb::host::HOST_ADDR: core::option::Option<header::netinet_in::in_addr>)) = 1; // bb72[6]: scope 19 at src/header/netdb/mod.rs:317:5: 317:32
+        StorageDead(_103);               // bb72[7]: scope 19 at src/header/netdb/mod.rs:317:31: 317:32
+        StorageLive(_104);               // bb72[8]: scope 19 at src/header/netdb/mod.rs:320:9: 320:26
+        _104 = const alloc::vec::Vec::<alloc::vec::Vec<u8>>::new() -> bb73; // bb72[9]: scope 19 at src/header/netdb/mod.rs:320:43: 320:53
+                                         // ty::Const
+                                         // + ty: fn() -> alloc::vec::Vec<alloc::vec::Vec<u8>> {alloc::vec::Vec::<alloc::vec::Vec<u8>>::new}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:320:43: 320:51
+                                         // + ty: fn() -> alloc::vec::Vec<alloc::vec::Vec<u8>> {alloc::vec::Vec::<alloc::vec::Vec<u8>>::new}
+                                         // + user_ty: UserType(8)
+                                         // + literal: Const { ty: fn() -> alloc::vec::Vec<alloc::vec::Vec<u8>> {alloc::vec::Vec::<alloc::vec::Vec<u8>>::new}, val: Scalar(<ZST>) }
+    }
+
+    bb73: {
+        StorageLive(_105);               // bb73[0]: scope 20 at src/header/netdb/mod.rs:321:5: 321:36
+        StorageLive(_106);               // bb73[1]: scope 20 at src/header/netdb/mod.rs:321:5: 321:18
+        _106 = &mut _104;                // bb73[2]: scope 20 at src/header/netdb/mod.rs:321:5: 321:18
+        StorageLive(_107);               // bb73[3]: scope 20 at <::alloc::macros::vec macros>:2:26: 2:65
+        StorageLive(_108);               // bb73[4]: scope 20 at <::alloc::macros::vec macros>:2:47: 2:64
+        StorageLive(_109);               // bb73[5]: scope 20 at <::alloc::macros::vec macros>:2:47: 2:64
+        StorageLive(_110);               // bb73[6]: scope 20 at <::alloc::macros::vec macros>:2:47: 2:64
+        _110 = Box([u8; 1]);             // bb73[7]: scope 20 at <::alloc::macros::vec macros>:2:47: 2:64
+        (*_110) = [const 0u8];           // bb73[8]: scope 20 at <::alloc::macros::vec macros>:2:51: 2:64
+                                         // ty::Const
+                                         // + ty: u8
+                                         // + val: Scalar(0x00)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:321:29: 321:34
+                                         // + ty: u8
+                                         // + literal: Const { ty: u8, val: Scalar(0x00) }
+        _109 = move _110;                // bb73[9]: scope 20 at <::alloc::macros::vec macros>:2:47: 2:64
+        _108 = move _109 as alloc::boxed::Box<[u8]> (Pointer(Unsize)); // bb73[10]: scope 20 at <::alloc::macros::vec macros>:2:47: 2:64
+        StorageDead(_110);               // bb73[11]: scope 20 at <::alloc::macros::vec macros>:2:63: 2:64
+        StorageDead(_109);               // bb73[12]: scope 20 at <::alloc::macros::vec macros>:2:63: 2:64
+        _107 = const alloc::slice::<impl [u8]>::into_vec(move _108) -> bb74; // bb73[13]: scope 20 at <::alloc::macros::vec macros>:2:26: 2:65
+                                         // ty::Const
+                                         // + ty: fn(alloc::boxed::Box<[u8]>) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::into_vec}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: <::alloc::macros::vec macros>:2:26: 2:45
+                                         // + ty: fn(alloc::boxed::Box<[u8]>) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::into_vec}
+                                         // + user_ty: UserType(10)
+                                         // + literal: Const { ty: fn(alloc::boxed::Box<[u8]>) -> alloc::vec::Vec<u8> {alloc::slice::<impl [u8]>::into_vec}, val: Scalar(<ZST>) }
+    }
+
+    bb74: {
+        StorageDead(_108);               // bb74[0]: scope 20 at <::alloc::macros::vec macros>:2:64: 2:65
+        _105 = const alloc::vec::Vec::<alloc::vec::Vec<u8>>::push(move _106, move _107) -> bb75; // bb74[1]: scope 20 at src/header/netdb/mod.rs:321:5: 321:36
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<alloc::vec::Vec<u8>>, alloc::vec::Vec<u8>) {alloc::vec::Vec::<alloc::vec::Vec<u8>>::push}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:321:19: 321:23
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<alloc::vec::Vec<u8>>, alloc::vec::Vec<u8>) {alloc::vec::Vec::<alloc::vec::Vec<u8>>::push}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<alloc::vec::Vec<u8>>, alloc::vec::Vec<u8>) {alloc::vec::Vec::<alloc::vec::Vec<u8>>::push}, val: Scalar(<ZST>) }
+    }
+
+    bb75: {
+        StorageDead(_107);               // bb75[0]: scope 20 at src/header/netdb/mod.rs:321:35: 321:36
+        StorageDead(_106);               // bb75[1]: scope 20 at src/header/netdb/mod.rs:321:35: 321:36
+        StorageDead(_105);               // bb75[2]: scope 20 at src/header/netdb/mod.rs:321:36: 321:37
+        StorageLive(_111);               // bb75[3]: scope 20 at src/header/netdb/mod.rs:322:9: 322:25
+        _111 = const alloc::vec::Vec::<*mut i8>::new() -> bb76; // bb75[4]: scope 20 at src/header/netdb/mod.rs:322:42: 322:52
+                                         // ty::Const
+                                         // + ty: fn() -> alloc::vec::Vec<*mut i8> {alloc::vec::Vec::<*mut i8>::new}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:322:42: 322:50
+                                         // + ty: fn() -> alloc::vec::Vec<*mut i8> {alloc::vec::Vec::<*mut i8>::new}
+                                         // + user_ty: UserType(12)
+                                         // + literal: Const { ty: fn() -> alloc::vec::Vec<*mut i8> {alloc::vec::Vec::<*mut i8>::new}, val: Scalar(<ZST>) }
+    }
+
+    bb76: {
+        StorageLive(_112);               // bb76[0]: scope 21 at src/header/netdb/mod.rs:323:5: 323:39
+        StorageLive(_113);               // bb76[1]: scope 21 at src/header/netdb/mod.rs:323:5: 323:17
+        _113 = &mut _111;                // bb76[2]: scope 21 at src/header/netdb/mod.rs:323:5: 323:17
+        StorageLive(_114);               // bb76[3]: scope 21 at src/header/netdb/mod.rs:323:23: 323:38
+        _114 = const core::ptr::null_mut::<i8>() -> bb77; // bb76[4]: scope 21 at src/header/netdb/mod.rs:323:23: 323:38
+                                         // ty::Const
+                                         // + ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:323:23: 323:36
+                                         // + ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}
+                                         // + literal: Const { ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}, val: Scalar(<ZST>) }
+    }
+
+    bb77: {
+        _112 = const alloc::vec::Vec::<*mut i8>::push(move _113, move _114) -> bb78; // bb77[0]: scope 21 at src/header/netdb/mod.rs:323:5: 323:39
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>, *mut i8) {alloc::vec::Vec::<*mut i8>::push}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:323:18: 323:22
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>, *mut i8) {alloc::vec::Vec::<*mut i8>::push}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>, *mut i8) {alloc::vec::Vec::<*mut i8>::push}, val: Scalar(<ZST>) }
+    }
+
+    bb78: {
+        StorageDead(_114);               // bb78[0]: scope 21 at src/header/netdb/mod.rs:323:38: 323:39
+        StorageDead(_113);               // bb78[1]: scope 21 at src/header/netdb/mod.rs:323:38: 323:39
+        StorageDead(_112);               // bb78[2]: scope 21 at src/header/netdb/mod.rs:323:39: 323:40
+        StorageLive(_115);               // bb78[3]: scope 21 at src/header/netdb/mod.rs:324:5: 324:39
+        StorageLive(_116);               // bb78[4]: scope 21 at src/header/netdb/mod.rs:324:5: 324:17
+        _116 = &mut _111;                // bb78[5]: scope 21 at src/header/netdb/mod.rs:324:5: 324:17
+        StorageLive(_117);               // bb78[6]: scope 21 at src/header/netdb/mod.rs:324:23: 324:38
+        _117 = const core::ptr::null_mut::<i8>() -> bb79; // bb78[7]: scope 21 at src/header/netdb/mod.rs:324:23: 324:38
+                                         // ty::Const
+                                         // + ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:324:23: 324:36
+                                         // + ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}
+                                         // + literal: Const { ty: fn() -> *mut i8 {core::ptr::null_mut::<i8>}, val: Scalar(<ZST>) }
+    }
+
+    bb79: {
+        _115 = const alloc::vec::Vec::<*mut i8>::push(move _116, move _117) -> bb80; // bb79[0]: scope 21 at src/header/netdb/mod.rs:324:5: 324:39
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>, *mut i8) {alloc::vec::Vec::<*mut i8>::push}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:324:18: 324:22
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>, *mut i8) {alloc::vec::Vec::<*mut i8>::push}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>, *mut i8) {alloc::vec::Vec::<*mut i8>::push}, val: Scalar(<ZST>) }
+    }
+
+    bb80: {
+        StorageDead(_117);               // bb80[0]: scope 21 at src/header/netdb/mod.rs:324:38: 324:39
+        StorageDead(_116);               // bb80[1]: scope 21 at src/header/netdb/mod.rs:324:38: 324:39
+        StorageDead(_115);               // bb80[2]: scope 21 at src/header/netdb/mod.rs:324:39: 324:40
+        StorageLive(_118);               // bb80[3]: scope 21 at src/header/netdb/mod.rs:325:20: 325:39
+        StorageLive(_119);               // bb80[4]: scope 21 at src/header/netdb/mod.rs:325:25: 325:38
+        _119 = move _104;                // bb80[5]: scope 21 at src/header/netdb/mod.rs:325:25: 325:38
+        ((_118 as Some).0: alloc::vec::Vec<alloc::vec::Vec<u8>>) = move _119; // bb80[6]: scope 21 at src/header/netdb/mod.rs:325:20: 325:39
+        discriminant(_118) = 1;          // bb80[7]: scope 21 at src/header/netdb/mod.rs:325:20: 325:39
+        StorageDead(_119);               // bb80[8]: scope 21 at src/header/netdb/mod.rs:325:38: 325:39
+        drop((header::netdb::host::HOST_ALIASES: core::option::Option<alloc::vec::Vec<alloc::vec::Vec<u8>>>)) -> bb94; // bb80[9]: scope 21 at src/header/netdb/mod.rs:325:5: 325:17
+    }
+
+    bb81: {
+        StorageDead(_125);               // bb81[0]: scope 21 at src/header/netdb/mod.rs:328:34: 328:35
+        _123 = const core::option::Option::<&mut alloc::vec::Vec<u8>>::unwrap(move _124) -> bb82; // bb81[1]: scope 21 at src/header/netdb/mod.rs:328:17: 328:44
+                                         // ty::Const
+                                         // + ty: fn(core::option::Option<&mut alloc::vec::Vec<u8>>) -> &mut alloc::vec::Vec<u8> {core::option::Option::<&mut alloc::vec::Vec<u8>>::unwrap}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:328:36: 328:42
+                                         // + ty: fn(core::option::Option<&mut alloc::vec::Vec<u8>>) -> &mut alloc::vec::Vec<u8> {core::option::Option::<&mut alloc::vec::Vec<u8>>::unwrap}
+                                         // + literal: Const { ty: fn(core::option::Option<&mut alloc::vec::Vec<u8>>) -> &mut alloc::vec::Vec<u8> {core::option::Option::<&mut alloc::vec::Vec<u8>>::unwrap}, val: Scalar(<ZST>) }
+    }
+
+    bb82: {
+        _122 = _123;                     // bb82[0]: scope 21 at src/header/netdb/mod.rs:328:17: 328:44
+        StorageDead(_124);               // bb82[1]: scope 21 at src/header/netdb/mod.rs:328:43: 328:44
+        _121 = const alloc::vec::Vec::<u8>::as_mut_ptr(move _122) -> bb83; // bb82[2]: scope 21 at src/header/netdb/mod.rs:328:17: 328:57
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>) -> *mut u8 {alloc::vec::Vec::<u8>::as_mut_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:328:45: 328:55
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>) -> *mut u8 {alloc::vec::Vec::<u8>::as_mut_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<u8>) -> *mut u8 {alloc::vec::Vec::<u8>::as_mut_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb83: {
+        StorageDead(_122);               // bb83[0]: scope 21 at src/header/netdb/mod.rs:328:56: 328:57
+        _120 = move _121 as *mut i8 (Misc); // bb83[1]: scope 21 at src/header/netdb/mod.rs:328:17: 328:72
+        StorageDead(_121);               // bb83[2]: scope 21 at src/header/netdb/mod.rs:328:71: 328:72
+        StorageLive(_126);               // bb83[3]: scope 21 at src/header/netdb/mod.rs:329:20: 329:76
+        StorageLive(_127);               // bb83[4]: scope 21 at src/header/netdb/mod.rs:329:20: 329:47
+        StorageLive(_128);               // bb83[5]: scope 21 at src/header/netdb/mod.rs:329:20: 329:47
+        StorageLive(_129);               // bb83[6]: scope 21 at src/header/netdb/mod.rs:329:20: 329:32
+        _129 = &mut _111;                // bb83[7]: scope 21 at src/header/netdb/mod.rs:329:20: 329:32
+        _128 = const alloc::vec::Vec::<*mut i8>::as_mut_slice(move _129) -> bb84; // bb83[8]: scope 21 at src/header/netdb/mod.rs:329:20: 329:47
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>) -> &'r mut [*mut i8] {alloc::vec::Vec::<*mut i8>::as_mut_slice}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:329:33: 329:45
+                                         // + ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>) -> &'r mut [*mut i8] {alloc::vec::Vec::<*mut i8>::as_mut_slice}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut alloc::vec::Vec<*mut i8>) -> &'r mut [*mut i8] {alloc::vec::Vec::<*mut i8>::as_mut_slice}, val: Scalar(<ZST>) }
+    }
+
+    bb84: {
+        _127 = _128;                     // bb84[0]: scope 21 at src/header/netdb/mod.rs:329:20: 329:47
+        StorageDead(_129);               // bb84[1]: scope 21 at src/header/netdb/mod.rs:329:46: 329:47
+        _126 = const core::slice::<impl [*mut i8]>::as_mut_ptr(move _127) -> bb85; // bb84[2]: scope 21 at src/header/netdb/mod.rs:329:20: 329:60
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut [*mut i8]) -> *mut *mut i8 {core::slice::<impl [*mut i8]>::as_mut_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:329:48: 329:58
+                                         // + ty: for<'r> fn(&'r mut [*mut i8]) -> *mut *mut i8 {core::slice::<impl [*mut i8]>::as_mut_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut [*mut i8]) -> *mut *mut i8 {core::slice::<impl [*mut i8]>::as_mut_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb85: {
+        StorageDead(_127);               // bb85[0]: scope 21 at src/header/netdb/mod.rs:329:59: 329:60
+        StorageLive(_130);               // bb85[1]: scope 21 at src/header/netdb/mod.rs:332:22: 332:49
+        StorageLive(_131);               // bb85[2]: scope 21 at src/header/netdb/mod.rs:332:22: 332:36
+        StorageLive(_132);               // bb85[3]: scope 21 at src/header/netdb/mod.rs:332:22: 332:36
+        _132 = &mut (header::netdb::host::HOST_ADDR_LIST: [*mut i8; 2]); // bb85[4]: scope 21 at src/header/netdb/mod.rs:332:22: 332:36
+        _131 = move _132 as &mut [*mut i8] (Pointer(Unsize)); // bb85[5]: scope 21 at src/header/netdb/mod.rs:332:22: 332:36
+        StorageDead(_132);               // bb85[6]: scope 21 at src/header/netdb/mod.rs:332:35: 332:36
+        _130 = const core::slice::<impl [*mut i8]>::as_mut_ptr(move _131) -> bb86; // bb85[7]: scope 21 at src/header/netdb/mod.rs:332:22: 332:49
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut [*mut i8]) -> *mut *mut i8 {core::slice::<impl [*mut i8]>::as_mut_ptr}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:332:37: 332:47
+                                         // + ty: for<'r> fn(&'r mut [*mut i8]) -> *mut *mut i8 {core::slice::<impl [*mut i8]>::as_mut_ptr}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut [*mut i8]) -> *mut *mut i8 {core::slice::<impl [*mut i8]>::as_mut_ptr}, val: Scalar(<ZST>) }
+    }
+
+    bb86: {
+        StorageDead(_131);               // bb86[0]: scope 21 at src/header/netdb/mod.rs:332:48: 332:49
+        ((header::netdb::host::HOST_ENTRY: header::netdb::hostent).0: *mut i8) = move _120; // bb86[1]: scope 21 at src/header/netdb/mod.rs:327:5: 333:6
+        ((header::netdb::host::HOST_ENTRY: header::netdb::hostent).1: *mut *mut i8) = move _126; // bb86[2]: scope 21 at src/header/netdb/mod.rs:327:5: 333:6
+        ((header::netdb::host::HOST_ENTRY: header::netdb::hostent).2: i32) = const header::sys_socket::constants::AF_INET; // bb86[3]: scope 21 at src/header/netdb/mod.rs:327:5: 333:6
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Unevaluated(DefId(0:2484 ~ relibc[6084]::header[0]::sys_socket[0]::constants[0]::AF_INET[0]), [])
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:330:21: 330:28
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Unevaluated(DefId(0:2484 ~ relibc[6084]::header[0]::sys_socket[0]::constants[0]::AF_INET[0]), []) }
+        ((header::netdb::host::HOST_ENTRY: header::netdb::hostent).3: i32) = const 4i32; // bb86[4]: scope 21 at src/header/netdb/mod.rs:327:5: 333:6
+                                         // ty::Const
+                                         // + ty: i32
+                                         // + val: Scalar(0x00000004)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:331:19: 331:20
+                                         // + ty: i32
+                                         // + literal: Const { ty: i32, val: Scalar(0x00000004) }
+        ((header::netdb::host::HOST_ENTRY: header::netdb::hostent).4: *mut *mut i8) = move _130; // bb86[5]: scope 21 at src/header/netdb/mod.rs:327:5: 333:6
+        StorageDead(_130);               // bb86[6]: scope 21 at src/header/netdb/mod.rs:333:5: 333:6
+        StorageDead(_126);               // bb86[7]: scope 21 at src/header/netdb/mod.rs:333:5: 333:6
+        StorageDead(_120);               // bb86[8]: scope 21 at src/header/netdb/mod.rs:333:5: 333:6
+        StorageDead(_128);               // bb86[9]: scope 21 at src/header/netdb/mod.rs:333:6: 333:7
+        StorageDead(_123);               // bb86[10]: scope 21 at src/header/netdb/mod.rs:333:6: 333:7
+        StorageLive(_133);               // bb86[11]: scope 21 at src/header/netdb/mod.rs:334:5: 334:30
+        StorageLive(_134);               // bb86[12]: scope 21 at src/header/netdb/mod.rs:334:16: 334:29
+        _134 = (header::netdb::host::HOST_STAYOPEN: i32); // bb86[13]: scope 21 at src/header/netdb/mod.rs:334:16: 334:29
+        _133 = const header::netdb::host::sethostent(move _134) -> bb87; // bb86[14]: scope 21 at src/header/netdb/mod.rs:334:5: 334:30
+                                         // ty::Const
+                                         // + ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:334:5: 334:15
+                                         // + ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}
+                                         // + literal: Const { ty: unsafe extern "C" fn(i32) {header::netdb::host::sethostent}, val: Scalar(<ZST>) }
+    }
+
+    bb87: {
+        StorageDead(_134);               // bb87[0]: scope 21 at src/header/netdb/mod.rs:334:29: 334:30
+        StorageDead(_133);               // bb87[1]: scope 21 at src/header/netdb/mod.rs:334:30: 334:31
+        StorageLive(_135);               // bb87[2]: scope 21 at src/header/netdb/mod.rs:335:5: 335:20
+        StorageLive(_136);               // bb87[3]: scope 21 at src/header/netdb/mod.rs:335:5: 335:20
+        _136 = &mut (header::netdb::host::HOST_ENTRY: header::netdb::hostent); // bb87[4]: scope 21 at src/header/netdb/mod.rs:335:5: 335:20
+        _135 = _136;                     // bb87[5]: scope 21 at src/header/netdb/mod.rs:335:5: 335:20
+        _0 = move _135 as *mut header::netdb::hostent (Misc); // bb87[6]: scope 21 at src/header/netdb/mod.rs:335:5: 335:20
+        StorageDead(_135);               // bb87[7]: scope 21 at src/header/netdb/mod.rs:335:19: 335:20
+        drop(_111) -> bb88;              // bb87[8]: scope 20 at src/header/netdb/mod.rs:336:1: 336:2
+    }
+
+    bb88: {
+        StorageDead(_111);               // bb88[0]: scope 20 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_104);               // bb88[1]: scope 19 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_90);                // bb88[2]: scope 17 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_85);                // bb88[3]: scope 14 at src/header/netdb/mod.rs:336:1: 336:2
+        drop(_74) -> bb89;               // bb88[4]: scope 13 at src/header/netdb/mod.rs:336:1: 336:2
+    }
+
+    bb89: {
+        StorageDead(_74);                // bb89[0]: scope 13 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_72);                // bb89[1]: scope 11 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_44);                // bb89[2]: scope 4 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_11);                // bb89[3]: scope 3 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_10);                // bb89[4]: scope 2 at src/header/netdb/mod.rs:336:1: 336:2
+        drop(_4) -> bb90;                // bb89[5]: scope 1 at src/header/netdb/mod.rs:336:1: 336:2
+    }
+
+    bb90: {
+        StorageDead(_4);                 // bb90[0]: scope 1 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_2);                 // bb90[1]: scope 0 at src/header/netdb/mod.rs:336:1: 336:2
+        StorageDead(_136);               // bb90[2]: scope 0 at src/header/netdb/mod.rs:336:1: 336:2
+        goto -> bb23;                    // bb90[3]: scope 0 at src/header/netdb/mod.rs:336:2: 336:2
+    }
+
+    bb91: {
+        StorageDead(_79);                // bb91[0]: scope 13 at src/header/netdb/mod.rs:304:6: 304:7
+        StorageDead(_77);                // bb91[1]: scope 13 at src/header/netdb/mod.rs:304:6: 304:7
+        StorageDead(_75);                // bb91[2]: scope 13 at src/header/netdb/mod.rs:304:6: 304:7
+        StorageLive(_85);                // bb91[3]: scope 14 at src/header/netdb/mod.rs:305:9: 305:18
+        StorageLive(_86);                // bb91[4]: scope 14 at src/header/netdb/mod.rs:305:27: 305:38
+        StorageLive(_87);                // bb91[5]: scope 14 at src/header/netdb/mod.rs:305:27: 305:31
+        _87 = &mut _74;                  // bb91[6]: scope 14 at src/header/netdb/mod.rs:305:27: 305:31
+        _86 = const <header::netdb::lookup::LookupHost as core::iter::Iterator>::next(move _87) -> bb62; // bb91[7]: scope 14 at src/header/netdb/mod.rs:305:27: 305:38
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut header::netdb::lookup::LookupHost) -> core::option::Option<<header::netdb::lookup::LookupHost as core::iter::Iterator>::Item> {<header::netdb::lookup::LookupHost as core::iter::Iterator>::next}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:305:32: 305:36
+                                         // + ty: for<'r> fn(&'r mut header::netdb::lookup::LookupHost) -> core::option::Option<<header::netdb::lookup::LookupHost as core::iter::Iterator>::Item> {<header::netdb::lookup::LookupHost as core::iter::Iterator>::next}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut header::netdb::lookup::LookupHost) -> core::option::Option<<header::netdb::lookup::LookupHost as core::iter::Iterator>::Item> {<header::netdb::lookup::LookupHost as core::iter::Iterator>::next}, val: Scalar(<ZST>) }
+    }
+
+    bb92: {
+        drop(_75) -> bb91;               // bb92[0]: scope 13 at src/header/netdb/mod.rs:304:6: 304:7
+    }
+
+    bb93: {
+        (header::netdb::host::HOST_NAME: core::option::Option<alloc::vec::Vec<u8>>) = move _94; // bb93[0]: scope 19 at src/header/netdb/mod.rs:314:5: 314:14
+        StorageDead(_94);                // bb93[1]: scope 19 at src/header/netdb/mod.rs:314:31: 314:32
+        StorageLive(_96);                // bb93[2]: scope 19 at src/header/netdb/mod.rs:315:23: 315:71
+        StorageLive(_97);                // bb93[3]: scope 19 at src/header/netdb/mod.rs:315:54: 315:70
+        _97 = (_85.0: u32);              // bb93[4]: scope 19 at src/header/netdb/mod.rs:315:54: 315:70
+        _96 = const core::intrinsics::transmute::<u32, [u8; 4]>(move _97) -> bb70; // bb93[5]: scope 19 at src/header/netdb/mod.rs:315:23: 315:71
+                                         // ty::Const
+                                         // + ty: unsafe extern "rust-intrinsic" fn(u32) -> [u8; 4] {core::intrinsics::transmute::<u32, [u8; 4]>}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:315:23: 315:53
+                                         // + ty: unsafe extern "rust-intrinsic" fn(u32) -> [u8; 4] {core::intrinsics::transmute::<u32, [u8; 4]>}
+                                         // + literal: Const { ty: unsafe extern "rust-intrinsic" fn(u32) -> [u8; 4] {core::intrinsics::transmute::<u32, [u8; 4]>}, val: Scalar(<ZST>) }
+    }
+
+    bb94: {
+        (header::netdb::host::HOST_ALIASES: core::option::Option<alloc::vec::Vec<alloc::vec::Vec<u8>>>) = move _118; // bb94[0]: scope 21 at src/header/netdb/mod.rs:325:5: 325:17
+        StorageDead(_118);               // bb94[1]: scope 21 at src/header/netdb/mod.rs:325:38: 325:39
+        StorageLive(_120);               // bb94[2]: scope 21 at src/header/netdb/mod.rs:328:17: 328:72
+        StorageLive(_121);               // bb94[3]: scope 21 at src/header/netdb/mod.rs:328:17: 328:57
+        StorageLive(_122);               // bb94[4]: scope 21 at src/header/netdb/mod.rs:328:17: 328:44
+        StorageLive(_123);               // bb94[5]: scope 21 at src/header/netdb/mod.rs:328:17: 328:44
+        StorageLive(_124);               // bb94[6]: scope 21 at src/header/netdb/mod.rs:328:17: 328:35
+        StorageLive(_125);               // bb94[7]: scope 21 at src/header/netdb/mod.rs:328:17: 328:26
+        _125 = &mut (header::netdb::host::HOST_NAME: core::option::Option<alloc::vec::Vec<u8>>); // bb94[8]: scope 21 at src/header/netdb/mod.rs:328:17: 328:26
+        _124 = const core::option::Option::<alloc::vec::Vec<u8>>::as_mut(move _125) -> bb81; // bb94[9]: scope 21 at src/header/netdb/mod.rs:328:17: 328:35
+                                         // ty::Const
+                                         // + ty: for<'r> fn(&'r mut core::option::Option<alloc::vec::Vec<u8>>) -> core::option::Option<&'r mut alloc::vec::Vec<u8>> {core::option::Option::<alloc::vec::Vec<u8>>::as_mut}
+                                         // + val: Scalar(<ZST>)
+                                         // mir::Constant
+                                         // + span: src/header/netdb/mod.rs:328:27: 328:33
+                                         // + ty: for<'r> fn(&'r mut core::option::Option<alloc::vec::Vec<u8>>) -> core::option::Option<&'r mut alloc::vec::Vec<u8>> {core::option::Option::<alloc::vec::Vec<u8>>::as_mut}
+                                         // + literal: Const { ty: for<'r> fn(&'r mut core::option::Option<alloc::vec::Vec<u8>>) -> core::option::Option<&'r mut alloc::vec::Vec<u8>> {core::option::Option::<alloc::vec::Vec<u8>>::as_mut}, val: Scalar(<ZST>) }
+    }
+}
