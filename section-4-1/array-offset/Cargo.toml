@@ -1,7 +1,0 @@
-[package]
-name = "array-offset"
-version = "0.1.0"
-authors = ["BurtonQin"]
-edition = "2018"
-
-[dependencies]

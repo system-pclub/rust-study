@@ -6,6 +6,6 @@ LOG_FILE=./double_lock.log
 
 for bc in `ls -1v ${BC_DIR}/*.m2r.bc`
 do
-    echo $bc
+    #echo $bc
     opt -load ${DOUBLE_LOCK_DETECTOR_LIB} -detect $bc 1>/dev/null
-done 2>${LOG_FILE}
+done 2>>${LOG_FILE}
