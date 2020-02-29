@@ -382,4 +382,4 @@ https://github.com/system-pclub/rust-study/tree/master/section-7-bug-detection/s
 Our identified bugs are reported in the following pull requests: \
 https://github.com/OpenEthereum/open-ethereum/pull/11172 \
 https://github.com/OpenEthereum/open-ethereum/pull/11175 \
-https://github.com/OpenEthereum/open-ethereum/issues/11176 \
+https://github.com/OpenEthereum/open-ethereum/issues/11176
