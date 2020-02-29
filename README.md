@@ -1,11 +1,8 @@
-The dataset, analysis scripts and bug detectors for PLDI 2020 Artifact Evaluation
----------------------------------------------------------------------------------
+# The dataset, analysis scripts and bug detectors for PLDI 2020 Artifact Evaluation
 
-*************************************************************************************************
-*Version: 1.0
-*Update:  Feb 28, 2020
-*Paper:   Understanding Memory and Thread Safety Practices and Issues in Real-World Rust Programs
-*************************************************************************************************
+Version: 1.0
+Update:  Feb 28, 2020
+Paper:   Understanding Memory and Thread Safety Practices and Issues in Real-World Rust Programs
 
 This document is to help users make use of the dataset we collected and 
 reproduce the results we reported in our submission. It contains the 
@@ -13,7 +10,7 @@ following descriptions:
 
 
 
-0. Artifact Expectation
+## 0. Artifact Expectation
 -----------------------------------
 
 The information of our collected data is released in an excel file. The scripts 
@@ -23,7 +20,7 @@ or higher to start the VM.
 
 
 
-1. Artifact Overview
+## 1. Artifact Overview
 -----------------------------------
 
 Our paper presents an empirical study of safety practices and safety issues 
@@ -35,21 +32,22 @@ and 4) the bug detectors we built.
 In total, we sampled 850 unsafe code usages, 70 memory bugs and 100 concurrency 
 bugs from five open-source Rust projects, five widely-used Rust libraries, 
 two online security databases, and the Rust standard library. The origin of 
-our studied bugs/usages/issues and our detailed labeling of them are released using a Google Sheet file 
-"artifact.xlsx" (https://docs.google.com/spreadsheets/d/1GWbiPSBCIbqH2g3Vzc-o2XdxOskXyDhkJjNUjFi1pzs/edit?usp=sharing). 
-All columns and tabs discussed later are inside the Google Sheet file, unless otherwise 
-specified. 
+our studied bugs/usages/issues and our detailed labeling of them are released 
+using a Google Sheet file "artifact.xlsx" 
+(https://docs.google.com/spreadsheets/d/1GWbiPSBCIbqH2g3Vzc-o2XdxOskXyDhkJjNUjFi1pzs/edit?usp=sharing). 
+All columns and tabs discussed later are inside the Google Sheet file, unless 
+otherwise specified. 
 
 Our analysis scripts and bug detectors we created are open-sourced on 
 GitHub at https://github.com/system-pclub/rust-study.git. To facilitate the 
 production of our results, we also release a virtual machine. In the VM, 
-we have installed all the required libraries, checked out 
-our code, and downloaded the analyzed data. The user name of the virtual 
-machine is "user" and the password is "123". 
+we have installed all the required libraries, checked out our code, and 
+downloaded the analyzed data. The user name of the virtual machine is "user" 
+and the password is "123". 
 
 
 
-2. Background and Related Work (Section 2)
+## 2. Background and Related Work (Section 2)
 ---------------------------------------------------------
 
 Figure 1. The figure can be plotted by executing the following commands 
@@ -113,8 +111,9 @@ cd ~/pldi-2020/rust-study/section-4-unsafe-usages/unsafe-statisitcs/src_parser
 ./run_all.sh
 ```
 
-Lines 436 - 441. "We randomly select 600 unsafe usages from our studied applications, 
-including 400 interior unsafe usages and 200 unsafe functions." The sampled unsafe usages 
+Lines 436 - 441. "We randomly select 600 unsafe usages from our studied 
+applications, including 400 interior unsafe usages and 200 unsafe 
+functions." The sampled unsafe usages 
 are in tab "section-4.1-usage".
 
 Lines 441 - 442. "We also studied 250 interior unsafe usages in Rust std". 
