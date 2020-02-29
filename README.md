@@ -193,7 +193,7 @@ Lines 576 - 579. "After understanding std interior unsafe functions,
 we inspect 400 sampled interior unsafe functions in our studied 
 applications. We have similar findings from these application-written 
 interior unsafe functions." The sampled interior unsafe functions are 
-listed in tab "section-4.3-interior-std".
+listed in tab "section-4.3-interior-app".
 
 Lines 580 - 591. "Worth noticing is that we identified 19 cases where 
 interior unsafe code is improperly encapsulated, including five from 
