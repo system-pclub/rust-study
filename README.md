@@ -111,7 +111,7 @@ functions." The sampled unsafe usages
 are in tab "section-4.1-usage".
 
 Lines 441 - 442. "We also studied 250 interior unsafe usages in Rust std". 
-The sampled interior unsafe usages from Rust std are in tab "section-4.3-interior". 
+The sampled interior unsafe usages from Rust std are in tab "section-4.3-interior-std". 
 The commit number for the studied Rust version is 2975a3c4befa8ad610da2e3c5f5de351d6d70a2b.
 
 Lines 451 - 453. "Most of them (66%) are for (unsafe) memory operations, such as 
