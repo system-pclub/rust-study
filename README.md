@@ -54,11 +54,9 @@ in the VM:
 cd ~/pldi-2020/rust-study/section-2-background-and-related-work/Figure-1
 ./plot_Figure_1.sh
 ```
-
-The raw data is available at 
-https://github.com/system-pclub/rust-study/blob/master/section-2-background-and-related-work/Figure-1/data_rust_history.tab
-
-The detailed explanation of the raw data format is available at 
+The raw data is available at \
+https://github.com/system-pclub/rust-study/blob/master/section-2-background-and-related-work/Figure-1/data_rust_history.tab \
+The detailed explanation of the raw data format is available at\
 https://github.com/system-pclub/rust-study/tree/master/section-2-background-and-related-work/Figure-1
 
 
@@ -68,11 +66,9 @@ in the VM:
 cd ~/pldi-2020/rust-study/section-2-background-and-related-work/Figure-2
 ./plot_Figure_2.sh
 ```
-
-The raw data is available at 
-https://github.com/system-pclub/rust-study/tree/master/section-2-background-and-related-work/Figure-2/raw_data
-
-The detailed explanation of the raw data format is available at 
+The raw data is available at \
+https://github.com/system-pclub/rust-study/tree/master/section-2-background-and-related-work/Figure-2/raw_data \
+The detailed explanation of the raw data format is available at \
 https://github.com/system-pclub/rust-study/tree/master/section-2-background-and-related-work/Figure-2
 
 Lines 196-197. "Among the 170 bugs, 145 of them were fixed after 2016."
@@ -368,11 +364,9 @@ commands in the VM:
 cd ~/pldi-2020/rust-study/section-7-bug-detection/section-7.1-detecting-memory-bugs
 ./run_uaf_detector.sh
 ```
-
-Its detailed document can be found here: 
-https://github.com/system-pclub/rust-study/tree/master/section-7-bug-detection/section-7.1-detecting-memory-bugs/use-after-free-detector
-
-All identified UAF bugs are reported in the following pull request: 
+Its detailed document can be found here:\
+https://github.com/system-pclub/rust-study/tree/master/section-7-bug-detection/section-7.1-detecting-memory-bugs/use-after-free-detector \
+All identified UAF bugs are reported in the following pull request:\
 https://gitlab.redox-os.org/redox-os/relibc/issues/159
 
 
@@ -382,13 +376,10 @@ cd section-7-bug-detection/section-7.2-detecting-concurrency-bugs/double-lock-de
 ./run_all.sh
 ```
 
-Its detailed document can be found here: 
+Its detailed document can be found here:\
 https://github.com/system-pclub/rust-study/tree/master/section-7-bug-detection/section-7.2-detecting-concurrency-bugs/double-lock-detector
 
-Our identified bugs are reported in the following pull requests: 
-
-https://github.com/OpenEthereum/open-ethereum/pull/11172
-
-https://github.com/OpenEthereum/open-ethereum/pull/11175
-
-https://github.com/OpenEthereum/open-ethereum/issues/11176
+Our identified bugs are reported in the following pull requests: \
+https://github.com/OpenEthereum/open-ethereum/pull/11172 \
+https://github.com/OpenEthereum/open-ethereum/pull/11175 \
+https://github.com/OpenEthereum/open-ethereum/issues/11176 \
