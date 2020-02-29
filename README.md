@@ -1,9 +1,7 @@
 # The dataset, analysis scripts and bug detectors for PLDI 2020 Artifact Evaluation
 
-Version: 1.0
-
-Update:  Feb 28, 2020
-
+Version: 1.0\
+Update:  Feb 28, 2020\
 Paper:   Understanding Memory and Thread Safety Practices and Issues in Real-World Rust Programs
 
 This document is to help users make use of the dataset we collected and 
@@ -388,6 +386,9 @@ Its detailed document can be found here:
 https://github.com/system-pclub/rust-study/tree/master/section-7-bug-detection/section-7.2-detecting-concurrency-bugs/double-lock-detector
 
 Our identified bugs are reported in the following pull requests: 
+
 https://github.com/OpenEthereum/open-ethereum/pull/11172
+
 https://github.com/OpenEthereum/open-ethereum/pull/11175
+
 https://github.com/OpenEthereum/open-ethereum/issues/11176
