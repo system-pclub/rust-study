@@ -328,7 +328,7 @@ cd ~/pldi-2020/rust-study/section-6-thread-safety-issues/section-6-1-blocking-bu
 
 ## 7. Non-Blocking Bugs (Section 6.2)
 
-All numbers in this section are in tab "section-6.1-non-blocking", 
+All numbers in this section are in tab "section-6.2-non-blocking", 
 unless otherwise specified. 
 
 Table 4. Detailed labels are in columns "F" - "R". 
