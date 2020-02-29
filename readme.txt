@@ -8,7 +8,7 @@ The dataset, analysis scripts and bug detectors for PLDI 2020 Artifact Evaluatio
 *************************************************************************************************
 
 This document is to help users make use of the dataset we collected and 
-reproduce the numbers we reported in our submission. It contains the 
+reproduce the results we reported in our submission. It contains the 
 following descriptions:
 
 
@@ -16,10 +16,10 @@ following descriptions:
 0. Artifact Expectation
 -----------------------------------
 
-The information of our collected data is released in an excel. The scripts 
-and the bug detectors are released in a virtual machine, which is created 
-using Virtual Box 5.1.38. We expect a Virtual Box in the version or higher 
-to open the release virtual machine.
+The information of our collected data is released in an excel file. The scripts 
+and the bug detectors are released in a virtual machine that is created 
+using Virtual Box 5.1.38. We expect users to use a Virtual Box of this version
+or higher to start the VM.
 
 
 
@@ -30,20 +30,20 @@ Our paper presents an empirical study of safety practices and safety issues
 in Rust. For artifact evaluation, we release 1) the study results of sampled 
 unsafe usages, 2) the study results of collected memory and concurrency bugs, 
 3) the scripts to compute the numbers and plot the figures in our paper, 
-and 4) the built bug detectors.
+and 4) the bug detectors we built.
 
 In total, we sampled 850 unsafe code usages, 70 memory bugs and 100 concurrency 
 bugs from five open-source Rust projects, five widely-used Rust libraries, 
-two online security databases, and the Rust standard library. Where we collected 
-these study objects and the detailed labels of them are released using a google excel 
+two online security databases, and the Rust standard library. The origin of 
+our studied bugs/usages/issues and our detailed labeling of them are released using a Google Sheet file 
 "artifact.xlsx" (https://docs.google.com/spreadsheets/d/1GWbiPSBCIbqH2g3Vzc-o2XdxOskXyDhkJjNUjFi1pzs/edit?usp=sharing). 
-All columns and tabs discussed later are inside the excel, unless otherwise 
+All columns and tabs discussed later are inside the Google Sheet file, unless otherwise 
 specified. 
 
-Our analysis scripts and built bug detectors are already open-sourced on 
-GitHub (https://github.com/system-pclub/rust-study.git). To facilitate the 
-production of our results, we also release a virtual machine. In the virtual 
-machine, we have already installed all the required libraries, checked out 
+Our analysis scripts and bug detectors we created are open-sourced on 
+GitHub at https://github.com/system-pclub/rust-study.git. To facilitate the 
+production of our results, we also release a virtual machine. In the VM, 
+we have installed all the required libraries, checked out 
 our code, and downloaded the analyzed data. The user name of the virtual 
 machine is "user" and the password is "123". 
 
@@ -53,7 +53,7 @@ machine is "user" and the password is "123".
 ---------------------------------------------------------
 
 Figure 1. The figure can be plotted by executing the following commands 
-on the virtual machine: 
+in the VM: 
 ```
 cd ~/pldi-2020/rust-study/section-2-background-and-related-work/Figure-1
 ./plot_Figure_1.sh
@@ -67,7 +67,7 @@ https://github.com/system-pclub/rust-study/tree/master/section-2-background-and-
 
 
 Figure 2. The figure can be plotted by executing the following commands 
-on the virtual machine: 
+in the VM: 
 ```
 cd ~/pldi-2020/rust-study/section-2-background-and-related-work/Figure-2
 ./plot_Figure_2.sh
@@ -89,7 +89,7 @@ and column "E" of tab "section-6.2-non-blocking".
 3. Application and Methodology (Section 3)
 ---------------------------------------------------------
 
-Table 1. We combine the information of the five libraries in one row. 
+Table 1. We combined the information of the five libraries in one row. 
 The detailed information of the five libraries is in tab "section-3". 
 
 Line 418. "In total, we studied 70 memory and 100 concurrency bugs." 
@@ -107,7 +107,7 @@ Table 1, including 7061 unsafe code regions, 5727 unsafe functions,
 and 47 unsafe traits. In Rust’s standard library (Rust std for short), 
 we found 1577 unsafe code regions, 870 unsafe functions, and 12 unsafe traits." 
 The detailed numbers are in tab "section-4-stat". They can be generated 
-by executing the following commands on the virtual machine: 
+by executing the following commands in the VM: 
 ```
 cd ~/pldi-2020/rust-study/section-4-unsafe-usages/unsafe-statisitcs/src_parser
 ./run_all.sh
@@ -132,8 +132,8 @@ numbers are in columns "Z" - "AE" of tab "section-4.1-usage".
 
 Lines 468 - 471. "Our experiments show that unsafe memory copy with 
 ptr::copy_nonoverlapping() is 23% faster than the slice::copy_from_slice() in some case." 
-The performance number can be got by executing the following command on 
-the virtual machine: 
+The performance results can be obtained by executing the following command in 
+the VM: 
 ```
 cd ~/pldi-2020/rust-study/section-4-unsafe-usages/section-4-1-reasons-of-usage/mem-copy
 cargo bench
@@ -141,7 +141,7 @@ cargo bench
 
 Lines 471 - 473. "Unsafe memory access with slice::get_ unchecked() is 4-5× 
 faster than the safe memory access with boundary checking."  The performance 
-number can be got by executing the following command on the virtual machine. 
+results can be obtained by executing the following command in the VM. 
 ```
 cd ~/pldi-2020/rust-study/section-4-unsafe-usages/section-4-1-reasons-of-usage/array-access
 cargo bench
@@ -149,8 +149,8 @@ cargo bench
 
 Lines 473 - 475. "Traversing an array by pointer computing (ptr::offset()) 
 and dereferencing is also 4-5× faster than the safe array access with boundary checking." 
-The performance number can be got by executing the following command on 
-the virtual machine:
+The performance results can be obtained by executing the following command in 
+the VM:
 ```
 cd ~/pldi-2020/rust-study/section-4-unsafe-usages/section-4-1-reasons-of-usage/array-offset
 cargo bench
@@ -328,7 +328,7 @@ Lines 969 - 972. "We found 11 such usages in our studied applications.
 Among them, nine cases perform explicit drop to avoid double lock and 
 one case is to avoid acquiring locks in conflicting orders." All these 
 cases are listed in tab "section-6.1-drop". We built a tool to search 
-these cases, and the tool can be executed on the virtual machine using the following command:
+these cases, and the tool can be executed in the VM using the following command:
 ```
 cd ~/pldi-2020/rust-study/section-6-thread-safety-issues/section-6-1-blocking-bugs
 ./run_all.sh
@@ -370,7 +370,7 @@ How to fix non-blocking bugs are labeled in columns "AG" - "AK".
 ------------------------------------------------
 
 Our use-after-free detector can be executed using the following 
-commands on the virtual machine: 
+commands in the VM: 
 ```
 cd ~/pldi-2020/rust-study/section-7-bug-detection/section-7.1-detecting-memory-bugs
 ./run_uaf_detector.sh
@@ -383,7 +383,7 @@ All identified UAF bugs are reported in the following pull request:
 https://gitlab.redox-os.org/redox-os/relibc/issues/159
 
 
-Our double-lock detector can be executed using the following commands on the virtual machine:
+Our double-lock detector can be executed using the following commands in the VM:
 ```
 cd section-7-bug-detection/section-7.2-detecting-concurrency-bugs/double-lock-detector
 ./run_all.sh
