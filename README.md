@@ -1,7 +1,9 @@
 # The dataset, analysis scripts and bug detectors for PLDI 2020 Artifact Evaluation
 
 Version: 1.0
+
 Update:  Feb 28, 2020
+
 Paper:   Understanding Memory and Thread Safety Practices and Issues in Real-World Rust Programs
 
 This document is to help users make use of the dataset we collected and 
