@@ -13,7 +13,6 @@ following descriptions:
 
 
 ## 0. Artifact Expectation
------------------------------------
 
 The information of our collected data is released in an excel file. The scripts 
 and the bug detectors are released in a virtual machine that is created 
@@ -23,7 +22,6 @@ or higher to start the VM.
 
 
 ## 1. Artifact Overview
------------------------------------
 
 Our paper presents an empirical study of safety practices and safety issues 
 in Rust. For artifact evaluation, we release 1) the study results of sampled 
@@ -50,7 +48,7 @@ and the password is "123".
 
 
 ## 2. Background and Related Work (Section 2)
----------------------------------------------------------
+
 
 Figure 1. The figure can be plotted by executing the following commands 
 in the VM: 
@@ -86,8 +84,8 @@ and column "E" of tab "section-6.2-non-blocking".
 
 
 
-3. Application and Methodology (Section 3)
----------------------------------------------------------
+## 3. Application and Methodology (Section 3)
+
 
 Table 1. We combined the information of the five libraries in one row. 
 The detailed information of the five libraries is in tab "section-3". 
@@ -99,8 +97,8 @@ in column "B" of tab "section-5-memory", column "B" of tab
 
 
 
-4. Unsafe Usages (Section 4)
----------------------------------------------------------
+## 4. Unsafe Usages (Section 4)
+
 
 Lines 428 - 434. "We found 12835 unsafe usages in our studied applications in 
 Table 1, including 7061 unsafe code regions, 5727 unsafe functions, 
@@ -216,8 +214,7 @@ change objects’ lifetime to static, and potentially accessing uninitialized
 memory." The identified cases are listed in tab "section-4.3-interior-bad".
 
 
-5. Memory Safety Issues (Section 4)
----------------------------------------------------------
+## 5. Memory Safety Issues (Section 5)
 
 All numbers in this section are in tab "section-5-memory".
 
@@ -281,8 +278,7 @@ code." The detailed labels are in columns "AS" - "AU".
 
 
 
-6. Blocking Bugs (Section 6.1)
-----------------------------------------
+## 6. Blocking Bugs (Section 6.1)
 
 All numbers in this section are in tab "section-6.1-blocking", unless 
 otherwise specified. 
@@ -336,8 +332,7 @@ cd ~/pldi-2020/rust-study/section-6-thread-safety-issues/section-6-1-blocking-bu
 ```
 
 
-7. Non-Blocking Bugs (Section 6.2)
-------------------------------------------------
+## 7. Non-Blocking Bugs (Section 6.2)
 
 All numbers in this section are in tab "section-6.1-non-blocking", 
 unless otherwise specified. 
@@ -367,8 +362,7 @@ How to fix non-blocking bugs are labeled in columns "AG" - "AK".
 
 
 
-8. Bug Detection (Section 7)
-------------------------------------------------
+## 8. Bug Detection (Section 7)
 
 Our use-after-free detector can be executed using the following 
 commands in the VM: 
