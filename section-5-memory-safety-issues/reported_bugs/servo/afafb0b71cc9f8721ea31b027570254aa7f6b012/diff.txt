@@ -1,0 +1,217 @@
+diff --git a/components/gfx/font.rs b/components/gfx/font.rs
+index f0b0c1bfc7..59e3cc3762 100644
+--- a/components/gfx/font.rs
++++ b/components/gfx/font.rs
+@@ -42,7 +42,7 @@ pub trait FontHandleMethods: Sized {
+     fn glyph_h_advance(&self, GlyphId) -> Option<FractionalPixel>;
+     fn glyph_h_kerning(&self, GlyphId, GlyphId) -> FractionalPixel;
+     fn metrics(&self) -> FontMetrics;
+-    fn get_table_for_tag(&self, FontTableTag) -> Option<FontTable>;
++    fn get_table_for_tag(&self, FontTableTag) -> Option<Box<FontTable>>;
+ }
+ 
+ // Used to abstract over the shaper's choice of fixed int representation.
+@@ -170,7 +170,7 @@ impl Font {
+         self.shaper.as_ref().unwrap()
+     }
+ 
+-    pub fn get_table_for_tag(&self, tag: FontTableTag) -> Option<FontTable> {
++    pub fn get_table_for_tag(&self, tag: FontTableTag) -> Option<Box<FontTable>> {
+         let result = self.handle.get_table_for_tag(tag);
+         let status = if result.is_some() { "Found" } else { "Didn't find" };
+ 
+diff --git a/components/gfx/lib.rs b/components/gfx/lib.rs
+index db73b9b200..850da72997 100644
+--- a/components/gfx/lib.rs
++++ b/components/gfx/lib.rs
+@@ -3,7 +3,7 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ #![feature(arc_weak)]
+-#![cfg_attr(any(target_os = "linux", target_os = "android"), feature(box_raw))]
++#![feature(box_raw)]
+ #![feature(box_syntax)]
+ #![feature(custom_attribute)]
+ #![feature(custom_derive)]
+diff --git a/components/gfx/platform/freetype/font.rs b/components/gfx/platform/freetype/font.rs
+index e8b1c26363..cd387a6db5 100644
+--- a/components/gfx/platform/freetype/font.rs
++++ b/components/gfx/platform/freetype/font.rs
+@@ -16,7 +16,7 @@ use util::str::c_str_to_string;
+ 
+ use freetype::freetype::{FTErrorMethods, FT_F26Dot6, FT_Face, FT_FaceRec};
+ use freetype::freetype::{FT_Get_Char_Index, FT_Get_Postscript_Name};
+-use freetype::freetype::{FT_Get_Kerning, FT_Get_Sfnt_Table};
++use freetype::freetype::{FT_Get_Kerning, FT_Get_Sfnt_Table, FT_Load_Sfnt_Table};
+ use freetype::freetype::{FT_GlyphSlot, FT_Library, FT_Long, FT_ULong};
+ use freetype::freetype::{FT_KERNING_DEFAULT, FT_STYLE_FLAG_ITALIC, FT_STYLE_FLAG_BOLD};
+ use freetype::freetype::{FT_Load_Glyph, FT_Set_Char_Size};
+@@ -38,11 +38,13 @@ fn fixed_to_float_ft(f: i32) -> f64 {
+     fixed_to_float(6, f)
+ }
+ 
+-pub struct FontTable;
++pub struct FontTable {
++    buffer: Vec<u8>,
++}
+ 
+ impl FontTableMethods for FontTable {
+-    fn with_buffer<F>(&self, _blk: F) where F: FnOnce(*const u8, usize) {
+-        panic!()
++    fn with_buffer<F>(&self, blk: F) where F: FnOnce(*const u8, usize) {
++        blk(self.buffer.as_ptr(), self.buffer.len())
+     }
+ }
+ 
+@@ -261,8 +263,22 @@ impl FontHandleMethods for FontHandle {
+         return metrics;
+     }
+ 
+-    fn get_table_for_tag(&self, _: FontTableTag) -> Option<FontTable> {
+-        None
++    fn get_table_for_tag(&self, tag: FontTableTag) -> Option<Box<FontTable>> {
++        let tag = tag as FT_ULong;
++
++        unsafe {
++            // Get the length
++            let mut len = 0;
++            if !FT_Load_Sfnt_Table(self.face, tag, 0, ptr::null_mut(), &mut len).succeeded() {
++                return None
++            }
++            // Get the bytes
++            let mut buf = vec![0u8; len as usize];
++            if !FT_Load_Sfnt_Table(self.face, tag, 0, buf.as_mut_ptr(), &mut len).succeeded() {
++                return None
++            }
++            Some(box FontTable { buffer: buf })
++        }
+     }
+ }
+ 
+diff --git a/components/gfx/platform/macos/font.rs b/components/gfx/platform/macos/font.rs
+index eb33e32623..b332d680c3 100644
+--- a/components/gfx/platform/macos/font.rs
++++ b/components/gfx/platform/macos/font.rs
+@@ -192,10 +192,10 @@ impl FontHandleMethods for FontHandle {
+         return metrics;
+     }
+ 
+-    fn get_table_for_tag(&self, tag: FontTableTag) -> Option<FontTable> {
++    fn get_table_for_tag(&self, tag: FontTableTag) -> Option<Box<FontTable>> {
+         let result: Option<CFData> = self.ctfont.get_font_table(tag);
+         result.and_then(|data| {
+-            Some(FontTable::wrap(data))
++            Some(box FontTable::wrap(data))
+         })
+     }
+ }
+diff --git a/components/gfx/text/shaping/harfbuzz.rs b/components/gfx/text/shaping/harfbuzz.rs
+index 426068a410..db8edb911f 100644
+--- a/components/gfx/text/shaping/harfbuzz.rs
++++ b/components/gfx/text/shaping/harfbuzz.rs
+@@ -41,7 +41,6 @@ use harfbuzz::{hb_position_t, hb_tag_t};
+ use libc::{c_uint, c_int, c_void, c_char};
+ use std::char;
+ use std::cmp;
+-use std::mem;
+ use std::ptr;
+ use util::geometry::Au;
+ use util::range::Range;
+@@ -616,16 +615,19 @@ extern fn get_font_table_func(_: *mut hb_face_t,
+         // TODO(Issue #197): reuse font table data, which will change the unsound trickery here.
+         match (*(*font_and_shaping_options).font).get_table_for_tag(tag as FontTableTag) {
+             None => ptr::null_mut(),
+-            Some(ref font_table) => {
+-                let skinny_font_table_ptr: *const FontTable = font_table;   // private context
++            Some(font_table) => {
++                // `Box::into_raw` intentionally leaks the FontTable so we don't destroy the buffer
++                // while HarfBuzz is using it.  When HarfBuzz is done with the buffer, it will pass
++                // this raw pointer back to `destroy_blob_func` which will deallocate the Box.
++                let font_table_ptr = Box::into_raw(font_table);
+ 
+                 let mut blob: *mut hb_blob_t = ptr::null_mut();
+-                (*skinny_font_table_ptr).with_buffer(|buf: *const u8, len: usize| {
++                (*font_table_ptr).with_buffer(|buf: *const u8, len: usize| {
+                     // HarfBuzz calls `destroy_blob_func` when the buffer is no longer needed.
+                     blob = RUST_hb_blob_create(buf as *const c_char,
+                                                len as c_uint,
+                                                HB_MEMORY_MODE_READONLY,
+-                                               mem::transmute(skinny_font_table_ptr),
++                                               font_table_ptr as *mut c_void,
+                                                destroy_blob_func);
+                 });
+ 
+@@ -636,10 +638,8 @@ extern fn get_font_table_func(_: *mut hb_face_t,
+     }
+ }
+ 
+-// TODO(Issue #197): reuse font table data, which will change the unsound trickery here.
+-// In particular, we'll need to cast to a boxed, rather than owned, FontTable.
+-
+-// even better, should cache the harfbuzz blobs directly instead of recreating a lot.
+-extern fn destroy_blob_func(_: *mut c_void) {
+-    // TODO: Previous code here was broken. Rewrite.
++extern fn destroy_blob_func(font_table_ptr: *mut c_void) {
++    unsafe {
++        drop(Box::from_raw(font_table_ptr as *mut FontTable));
++    }
+ }
+diff --git a/components/servo/Cargo.lock b/components/servo/Cargo.lock
+index b29e113cea..06f1b31118 100644
+--- a/components/servo/Cargo.lock
++++ b/components/servo/Cargo.lock
+@@ -497,7 +497,7 @@ dependencies = [
+ [[package]]
+ name = "freetype"
+ version = "0.1.0"
+-source = "git+https://github.com/servo/rust-freetype#507cee774458dc704c902d405bb869fb286f7a64"
++source = "git+https://github.com/servo/rust-freetype#d564ff90a3c69d987f5c015d7ec034cfaee21aff"
+ dependencies = [
+  "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ ]
+diff --git a/ports/cef/Cargo.lock b/ports/cef/Cargo.lock
+index e5c8682377..685801d239 100644
+--- a/ports/cef/Cargo.lock
++++ b/ports/cef/Cargo.lock
+@@ -489,7 +489,7 @@ dependencies = [
+ [[package]]
+ name = "freetype"
+ version = "0.1.0"
+-source = "git+https://github.com/servo/rust-freetype#507cee774458dc704c902d405bb869fb286f7a64"
++source = "git+https://github.com/servo/rust-freetype#d564ff90a3c69d987f5c015d7ec034cfaee21aff"
+ dependencies = [
+  "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ ]
+diff --git a/ports/gonk/Cargo.lock b/ports/gonk/Cargo.lock
+index 18697ebb98..6f75b43098 100644
+--- a/ports/gonk/Cargo.lock
++++ b/ports/gonk/Cargo.lock
+@@ -444,7 +444,7 @@ dependencies = [
+ [[package]]
+ name = "freetype"
+ version = "0.1.0"
+-source = "git+https://github.com/servo/rust-freetype#507cee774458dc704c902d405bb869fb286f7a64"
++source = "git+https://github.com/servo/rust-freetype#d564ff90a3c69d987f5c015d7ec034cfaee21aff"
+ dependencies = [
+  "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ ]
+diff --git a/tests/wpt/metadata-css/css21_dev/html4/font-family-013.htm.ini b/tests/wpt/metadata-css/css21_dev/html4/font-family-013.htm.ini
+deleted file mode 100644
+index 5e61e96184..0000000000
+--- a/tests/wpt/metadata-css/css21_dev/html4/font-family-013.htm.ini
++++ /dev/null
+@@ -1,4 +0,0 @@
+-[font-family-013.htm]
+-  type: reftest
+-  expected:
+-    if os == "linux": FAIL
+diff --git a/tests/wpt/metadata-css/css21_dev/html4/fonts-013.htm.ini b/tests/wpt/metadata-css/css21_dev/html4/fonts-013.htm.ini
+deleted file mode 100644
+index dd8e1baa20..0000000000
+--- a/tests/wpt/metadata-css/css21_dev/html4/fonts-013.htm.ini
++++ /dev/null
+@@ -1,4 +0,0 @@
+-[fonts-013.htm]
+-  type: reftest
+-  expected:
+-    if os == "linux": FAIL

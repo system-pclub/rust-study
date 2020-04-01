@@ -1,0 +1,13 @@
+diff --git a/src/sync/seg_queue.rs b/src/sync/seg_queue.rs
+index 8a8d8cb..254a6a7 100644
+--- a/src/sync/seg_queue.rs
++++ b/src/sync/seg_queue.rs
+@@ -62,7 +62,7 @@ impl<T> SegQueue<T> {
+             let i = tail.high.fetch_add(1, Relaxed);
+             unsafe {
+                 if i < SEG_SIZE {
+-                    *(*tail).data.get_unchecked(i).get() = t;
++                    ptr::write((*tail).data.get_unchecked(i).get(), t);
+                     tail.ready.get_unchecked(i).store(true, Release);
+ 
+                     if i + 1 == SEG_SIZE {

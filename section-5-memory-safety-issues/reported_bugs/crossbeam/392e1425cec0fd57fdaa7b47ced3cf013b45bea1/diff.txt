@@ -1,0 +1,77 @@
+diff --git a/src/treiber_stack.rs b/src/treiber_stack.rs
+index d675a1a..f1fe50b 100644
+--- a/src/treiber_stack.rs
++++ b/src/treiber_stack.rs
+@@ -1,5 +1,5 @@
+ use std::sync::atomic::Ordering::{Acquire, Relaxed, Release};
+-use std::ptr;
++use std::{ptr, mem};
+ 
+ use epoch::{self, Atomic, Owned};
+ 
+@@ -17,6 +17,13 @@ struct Node<T> {
+     next: Atomic<Node<T>>,
+ }
+ 
++impl<T> Node<T> {
++    /// Deallocates the memory for this node without executing T's destructor.
++    fn finalize(n: Node<T>) {
++        mem::forget(n.data);
++    }
++}
++
+ impl<T> TreiberStack<T> {
+     /// Create a new, empty stack.
+     pub fn new() -> TreiberStack<T> {
+@@ -57,7 +64,9 @@ impl<T> TreiberStack<T> {
+                         .is_ok()
+                     {
+                         unsafe {
+-                            guard.defer(move || head_shared.into_owned());
++                            guard.defer(move || {
++                                Node::<T>::finalize(*head_shared.into_owned().into_box())
++                            } );
+                             return Some(ptr::read(&(*head).data));
+                         }
+                     }
+@@ -89,6 +98,8 @@ impl<T> Default for TreiberStack<T> {
+ #[cfg(test)]
+ mod test {
+     use super::*;
++    use ::{thread, epoch};
++    use std::sync::atomic::{Ordering, AtomicUsize};
+ 
+     #[test]
+     fn is_empty() {
+@@ -104,4 +115,31 @@ mod test {
+         q.push(25);
+         assert!(!q.is_empty());
+     }
++
++    #[test]
++    fn no_double_drop() {
++        static DROP_COUNT: AtomicUsize = AtomicUsize::new(0);
++
++        struct Dropper;
++
++        impl Drop for Dropper {
++            fn drop(&mut self) {
++                DROP_COUNT.fetch_add(1, Ordering::SeqCst);
++            }
++        }
++
++        const N_THREADS: usize = 8;
++        thread::scope(|s| {
++            for _ in 0..N_THREADS {
++                s.spawn(|| {
++                    let q: TreiberStack<Dropper> = TreiberStack::new();
++                    for _ in 0..4 { q.push(Dropper); }
++                    drop(q);
++                    epoch::pin().flush();
++                } );
++            }
++        } );
++
++        assert!(DROP_COUNT.load(Ordering::SeqCst) == N_THREADS * 4);
++    }
+ }

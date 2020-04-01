@@ -1,0 +1,22 @@
+diff --git a/crossbeam-skiplist/src/base.rs b/crossbeam-skiplist/src/base.rs
+index 2cd78e5..585fec0 100644
+--- a/crossbeam-skiplist/src/base.rs
++++ b/crossbeam-skiplist/src/base.rs
+@@ -1,6 +1,6 @@
+ //! TODO: docs
+ 
+-use alloc::alloc::{alloc, dealloc, Layout};
++use alloc::alloc::{alloc, dealloc, handle_alloc_error, Layout};
+ use core::borrow::Borrow;
+ use core::cmp;
+ use core::fmt;
+@@ -101,6 +101,9 @@ impl<K, V> Node<K, V> {
+     unsafe fn alloc(height: usize, ref_count: usize) -> *mut Self {
+         let layout = Self::get_layout(height);
+         let ptr = alloc(layout) as *mut Self;
++        if ptr.is_null() {
++            handle_alloc_error(layout);
++        }
+ 
+         ptr::write(
+             &mut (*ptr).refs_and_height,

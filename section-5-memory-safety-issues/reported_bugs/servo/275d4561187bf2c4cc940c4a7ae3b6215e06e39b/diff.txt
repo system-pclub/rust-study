@@ -1,0 +1,13 @@
+diff --git a/src/servo/text/font.rs b/src/servo/text/font.rs
+index a7871bf7a0..2e2e3d08f8 100644
+--- a/src/servo/text/font.rs
++++ b/src/servo/text/font.rs
+@@ -33,7 +33,7 @@ impl Font {
+     }
+ }
+ 
+-fn Font(fontbuf: ~[u8], native_font: NativeFont) -> Font {
++fn Font(fontbuf: ~[u8], +native_font: NativeFont) -> Font {
+     Font {
+         fontbuf : @fontbuf,
+         native_font : native_font,
