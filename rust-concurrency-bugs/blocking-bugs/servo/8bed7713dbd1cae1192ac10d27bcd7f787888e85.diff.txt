@@ -1,0 +1,183 @@
+diff --git a/webrender/src/render_backend.rs b/webrender/src/render_backend.rs
+index 468fd2ffd..356390e4a 100644
+--- a/webrender/src/render_backend.rs
++++ b/webrender/src/render_backend.rs
+@@ -9,8 +9,7 @@ use api::{DeviceIntPoint, DevicePixelScale, DeviceUintPoint, DeviceUintRect, Dev
+ use api::{DocumentId, DocumentLayer, ExternalScrollId, FrameMsg, HitTestResult};
+ use api::{IdNamespace, LayerPoint, PipelineId, RenderNotifier, SceneMsg, ScrollClamping};
+ use api::{ScrollEventPhase, ScrollLocation, ScrollNodeState, TransactionMsg, WorldPoint};
+-use api::channel::{MsgReceiver, PayloadReceiver, PayloadReceiverHelperMethods};
+-use api::channel::{PayloadSender, PayloadSenderHelperMethods};
++use api::channel::{MsgReceiver, Payload};
+ #[cfg(feature = "capture")]
+ use api::CaptureBits;
+ #[cfg(feature = "replay")]
+@@ -409,12 +408,13 @@ struct PlainRenderBackend {
+ /// The render backend operates on its own thread.
+ pub struct RenderBackend {
+     api_rx: MsgReceiver<ApiMsg>,
+-    payload_rx: PayloadReceiver,
+-    payload_tx: PayloadSender,
++    payload_rx: Receiver<Payload>,
+     result_tx: Sender<ResultMsg>,
+     scene_tx: Sender<SceneBuilderRequest>,
+     scene_rx: Receiver<SceneBuilderResult>,
+ 
++    payload_buffer: Vec<Payload>,
++
+     default_device_pixel_ratio: f32,
+ 
+     gpu_cache: GpuCache,
+@@ -432,8 +432,7 @@ pub struct RenderBackend {
+ impl RenderBackend {
+     pub fn new(
+         api_rx: MsgReceiver<ApiMsg>,
+-        payload_rx: PayloadReceiver,
+-        payload_tx: PayloadSender,
++        payload_rx: Receiver<Payload>,
+         result_tx: Sender<ResultMsg>,
+         scene_tx: Sender<SceneBuilderRequest>,
+         scene_rx: Receiver<SceneBuilderResult>,
+@@ -450,10 +449,10 @@ impl RenderBackend {
+         RenderBackend {
+             api_rx,
+             payload_rx,
+-            payload_tx,
+             result_tx,
+             scene_tx,
+             scene_rx,
++            payload_buffer: Vec::new(),
+             default_device_pixel_ratio,
+             resource_cache,
+             gpu_cache: GpuCache::new(),
+@@ -509,13 +508,20 @@ impl RenderBackend {
+             } => {
+                 profile_scope!("SetDisplayList");
+ 
+-                let mut data;
+-                while {
+-                    data = self.payload_rx.recv_payload().unwrap();
+-                    data.epoch != epoch || data.pipeline_id != pipeline_id
+-                } {
+-                    self.payload_tx.send_payload(data).unwrap()
+-                }
++                let data = if let Some(idx) = self.payload_buffer.iter().position(|data|
++                    data.epoch == epoch && data.pipeline_id == pipeline_id
++                ) {
++                    self.payload_buffer.swap_remove(idx)
++                } else {
++                    loop {
++                        let data = self.payload_rx.recv().unwrap();
++                        if data.epoch == epoch && data.pipeline_id == pipeline_id {
++                            break data;
++                        } else {
++                            self.payload_buffer.push(data);
++                        }
++                    }
++                };
+ 
+                 if let Some(ref mut r) = self.recorder {
+                     r.write_payload(frame_counter, &data.to_data());
+diff --git a/webrender/src/renderer.rs b/webrender/src/renderer.rs
+index 06e6cf79c..2727e68f1 100644
+--- a/webrender/src/renderer.rs
++++ b/webrender/src/renderer.rs
+@@ -19,6 +19,7 @@ use api::ApiMsg;
+ use api::DebugCommand;
+ #[cfg(not(feature = "debugger"))]
+ use api::channel::MsgSender;
++use api::channel::PayloadReceiverHelperMethods;
+ use batch::{BatchKey, BatchKind, BatchTextures, BrushBatchKind};
+ use batch::{TransformBatchKind};
+ #[cfg(any(feature = "capture", feature = "replay"))]
+@@ -2175,7 +2176,7 @@ impl Renderer {
+         // First set the flags to default and later call set_debug_flags to ensure any
+         // potential transition when enabling a flag is run.
+         let debug_flags = DebugFlags::default();
+-        let payload_tx_for_backend = payload_tx.clone();
++        let payload_rx_for_backend = payload_rx.to_mpsc_receiver();
+         let recorder = options.recorder;
+         let thread_listener = Arc::new(options.thread_listener);
+         let thread_listener_for_rayon_start = thread_listener.clone();
+@@ -2238,8 +2239,7 @@ impl Renderer {
+                 }
+                 let mut backend = RenderBackend::new(
+                     api_rx,
+-                    payload_rx,
+-                    payload_tx_for_backend,
++                    payload_rx_for_backend,
+                     result_tx,
+                     scene_tx,
+                     scene_rx,
+diff --git a/webrender_api/src/channel.rs b/webrender_api/src/channel.rs
+index 72f121ced..46f0cfcd6 100644
+--- a/webrender_api/src/channel.rs
++++ b/webrender_api/src/channel.rs
+@@ -6,6 +6,7 @@ use api::{Epoch, PipelineId};
+ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+ use std::io::{Cursor, Read};
+ use std::mem;
++use std::sync::mpsc::Receiver;
+ 
+ #[derive(Clone)]
+ pub struct Payload {
+@@ -74,6 +75,10 @@ pub trait PayloadSenderHelperMethods {
+ 
+ pub trait PayloadReceiverHelperMethods {
+     fn recv_payload(&self) -> Result<Payload, Error>;
++
++    // For an MPSC receiver, this is the identity function,
++    // for an IPC receiver, it routes to a new mpsc receiver
++    fn to_mpsc_receiver(self) -> Receiver<Payload>;
+ }
+ 
+ #[cfg(not(feature = "ipc"))]
+diff --git a/webrender_api/src/channel_ipc.rs b/webrender_api/src/channel_ipc.rs
+index acfc46958..051f7984f 100644
+--- a/webrender_api/src/channel_ipc.rs
++++ b/webrender_api/src/channel_ipc.rs
+@@ -5,6 +5,8 @@
+ use ipc_channel::ipc::{self, IpcBytesReceiver, IpcBytesSender, IpcReceiver, IpcSender};
+ use serde::{Deserialize, Serialize};
+ use std::io::{Error, ErrorKind};
++use std::sync::mpsc;
++use std::thread;
+ use std::{error, io};
+ 
+ ///
+@@ -30,6 +32,20 @@ impl PayloadReceiverHelperMethods for PayloadReceiver {
+         self.recv().map(|data| Payload::from_data(&data) )
+                    .map_err(|e| io::Error::new(ErrorKind::Other, error::Error::description(&e)))
+     }
++
++    fn to_mpsc_receiver(self) -> Receiver<Payload> {
++        // It would be nice to use the IPC router for this,
++        // but that requires an IpcReceiver, not an IpcBytesReceiver.
++        let (tx, rx) = mpsc::channel();
++        thread::spawn(move || {
++            while let Ok(payload) = self.recv_payload() {
++                if tx.send(payload).is_err() {
++                    break;
++                }
++            }
++        });
++        rx
++    }
+ }
+ 
+ pub fn msg_channel<T: Serialize + for<'de> Deserialize<'de>>() -> Result<(MsgSender<T>, MsgReceiver<T>), Error> {
+diff --git a/webrender_api/src/channel_mpsc.rs b/webrender_api/src/channel_mpsc.rs
+index fea390f3a..1feceb88f 100644
+--- a/webrender_api/src/channel_mpsc.rs
++++ b/webrender_api/src/channel_mpsc.rs
+@@ -25,6 +25,10 @@ impl PayloadReceiverHelperMethods for PayloadReceiver {
+     fn recv_payload(&self) -> Result<Payload, Error> {
+         self.recv()
+     }
++
++    fn to_mpsc_receiver(self) -> Receiver<Payload> {
++        self.rx
++    }
+ }
+ 
+ pub struct MsgReceiver<T> {

@@ -1,0 +1,34 @@
+diff --git a/src/components/main/compositing/run.rs b/src/components/main/compositing/run.rs
+index b8125665543b..12bdafa2df71 100644
+--- a/src/components/main/compositing/run.rs
++++ b/src/components/main/compositing/run.rs
+@@ -421,4 +421,8 @@ pub fn run_compositor(compositor: &CompositorTask) {
+         None => {}
+         Some(ref mut layer) => layer.forget_all_tiles(),
+     }
++
++    // Drain compositor port, sometimes messages contain channels that are blocking
++    // another task from finishing (i.e. SetIds)
++    while compositor.port.peek() { compositor.port.recv(); }
+ }
+diff --git a/src/components/main/constellation.rs b/src/components/main/constellation.rs
+index bdd1b87c8d59..aa63afb6fc2d 100644
+--- a/src/components/main/constellation.rs
++++ b/src/components/main/constellation.rs
+@@ -807,9 +807,13 @@ impl Constellation {
+     fn set_ids(&self, frame_tree: @mut FrameTree) {
+         let (port, chan) = comm::stream();
+         self.compositor_chan.send(SetIds(frame_tree.to_sendable(), chan, self.chan.clone()));
+-        port.try_recv();
+-        for frame in frame_tree.iter() {
+-            frame.pipeline.grant_paint_permission();
++        match port.try_recv() {
++            Some(()) => {
++                for frame in frame_tree.iter() {
++                    frame.pipeline.grant_paint_permission();
++                }
++            }
++            None => {} // message has been discarded, probably shutting down
+         }
+     }
+ }
