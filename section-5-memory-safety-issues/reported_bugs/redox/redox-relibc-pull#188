@@ -1,0 +1,51 @@
+diff --git a/src/header/stdlib/mod.rs b/src/header/stdlib/mod.rs
+index d36e13a..713ba6c 100644
+--- a/src/header/stdlib/mod.rs
++++ b/src/header/stdlib/mod.rs
+@@ -186,12 +186,18 @@ pub unsafe extern "C" fn bsearch(
+ 
+ #[no_mangle]
+ pub unsafe extern "C" fn calloc(nelem: size_t, elsize: size_t) -> *mut c_void {
+-    let size = nelem * elsize;
+-    let ptr = malloc(size);
+-    if !ptr.is_null() {
+-        intrinsics::write_bytes(ptr as *mut u8, 0, size);
++    //Handle possible integer overflow in size calculation
++    let size_result = nelem.checked_mul(elsize);
++    match size_result {
++        Some(size) => {
++            let ptr = malloc(size);
++            if !ptr.is_null() {
++                intrinsics::write_bytes(ptr as *mut u8, 0, size);
++            }
++            ptr
++        },
++        None => core::ptr::null_mut()
+     }
+-    ptr
+ }
+ 
+ #[repr(C)]
+diff --git a/tests/stdlib/alloc.c b/tests/stdlib/alloc.c
+index b21dfad..25460e1 100644
+--- a/tests/stdlib/alloc.c
++++ b/tests/stdlib/alloc.c
+@@ -1,6 +1,7 @@
+ #include <malloc.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <stdint.h> /* for SIZE_MAX */
+ 
+ int main(void) {
+     char * ptr = (char *)malloc(256);
+@@ -18,6 +19,10 @@ int main(void) {
+     }
+     free(ptrc);
+ 
++    char * ptrco = (char *)calloc(SIZE_MAX, SIZE_MAX);
++    printf("calloc (overflowing) %p\n", ptrco);
++    free(ptrco); /* clean up correctly even if overflow is not handled */
++
+     char * ptra = (char *)memalign(256, 256);
+     printf("memalign %p\n", ptra);
+     for(i = 0; i < 256; i++) {
