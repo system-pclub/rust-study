@@ -1,0 +1,227 @@
+diff --git a/secret_store/src/key_server_cluster/cluster_sessions.rs b/secret_store/src/key_server_cluster/cluster_sessions.rs
+index 2e6b02943b9..66b0d41e971 100644
+--- a/secret_store/src/key_server_cluster/cluster_sessions.rs
++++ b/secret_store/src/key_server_cluster/cluster_sessions.rs
+@@ -153,32 +153,30 @@ impl ClusterSessions {
+ 
+ 	/// Create new generation session.
+ 	pub fn new_generation_session(&self, master: NodeId, session_id: SessionId, cluster: Arc<ClusterView>) -> Result<Arc<GenerationSessionImpl>, Error> {
+-		// check that there's no active encryption session with the same id
+-		if self.generation_sessions.contains(&session_id) { // TODO: possible race here and below
+-			return Err(Error::DuplicateSessionId);
+-		}
+ 		// check that there's no finished encryption session with the same id
+ 		if self.key_storage.contains(&session_id) {
+ 			return Err(Error::DuplicateSessionId);
+ 		}
+-
+ 		// communicating to all other nodes is crucial for encryption session
+ 		// => check that we have connections to all cluster nodes
+ 		if self.nodes.iter().any(|n| !cluster.is_connected(n)) {
+ 			return Err(Error::NodeDisconnected);
+ 		}
+ 
+-		let session = self.generation_sessions.insert(master, session_id, cluster.clone(), GenerationSessionImpl::new(GenerationSessionParams {
+-			id: session_id.clone(),
+-			self_node_id: self.self_node_id.clone(),
+-			key_storage: Some(self.key_storage.clone()),
+-			cluster: cluster,
+-		}));
+-		if self.make_faulty_generation_sessions.load(Ordering::Relaxed) {
+-			session.simulate_faulty_behaviour();
+-		}
+-
+-		Ok(session)
++		// check that there's no active encryption session with the same id
++		self.generation_sessions.insert(master, session_id, cluster.clone(), move ||
++			Ok(GenerationSessionImpl::new(GenerationSessionParams {
++				id: session_id.clone(),
++				self_node_id: self.self_node_id.clone(),
++				key_storage: Some(self.key_storage.clone()),
++				cluster: cluster,
++			})))
++			.map(|session| {
++				if self.make_faulty_generation_sessions.load(Ordering::Relaxed) {
++					session.simulate_faulty_behaviour();
++				}
++				session
++			})
+ 	}
+ 
+ 	/// Send generation session error.
+@@ -195,10 +193,6 @@ impl ClusterSessions {
+ 
+ 	/// Create new encryption session.
+ 	pub fn new_encryption_session(&self, master: NodeId, session_id: SessionId, cluster: Arc<ClusterView>) -> Result<Arc<EncryptionSessionImpl>, Error> {
+-		if self.encryption_sessions.contains(&session_id) {
+-			return Err(Error::DuplicateSessionId);
+-		}
+-
+ 		// some of nodes, which were generating the key may be down
+ 		// => do not use these in encryption session
+ 		let mut encrypted_data = self.key_storage.get(&session_id).map_err(|e| Error::KeyStorage(e.into()))?;
+@@ -208,13 +202,13 @@ impl ClusterSessions {
+ 			encrypted_data.id_numbers.remove(&disconnected_node);
+ 		}
+ 
+-		Ok(self.encryption_sessions.insert(master, session_id, cluster.clone(), EncryptionSessionImpl::new(EncryptionSessionParams {
++		self.encryption_sessions.insert(master, session_id, cluster.clone(), move || EncryptionSessionImpl::new(EncryptionSessionParams {
+ 			id: session_id.clone(),
+ 			self_node_id: self.self_node_id.clone(),
+ 			encrypted_data: encrypted_data,
+ 			key_storage: self.key_storage.clone(),
+ 			cluster: cluster,
+-		})?))
++		}))
+ 	}
+ 
+ 	/// Send encryption session error.
+@@ -232,9 +226,6 @@ impl ClusterSessions {
+ 	/// Create new decryption session.
+ 	pub fn new_decryption_session(&self, master: NodeId, session_id: SessionId, sub_session_id: Secret, cluster: Arc<ClusterView>) -> Result<Arc<DecryptionSessionImpl>, Error> {
+ 		let session_id = DecryptionSessionId::new(session_id, sub_session_id);
+-		if self.decryption_sessions.contains(&session_id) {
+-			return Err(Error::DuplicateSessionId);
+-		}
+ 
+ 		// some of nodes, which were encrypting secret may be down
+ 		// => do not use these in decryption session
+@@ -245,14 +236,14 @@ impl ClusterSessions {
+ 			encrypted_data.id_numbers.remove(&disconnected_node);
+ 		}
+ 
+-		Ok(self.decryption_sessions.insert(master, session_id.clone(), cluster.clone(), DecryptionSessionImpl::new(DecryptionSessionParams {
++		self.decryption_sessions.insert(master, session_id.clone(), cluster.clone(), move || DecryptionSessionImpl::new(DecryptionSessionParams {
+ 			id: session_id.id,
+ 			access_key: session_id.access_key,
+ 			self_node_id: self.self_node_id.clone(),
+ 			encrypted_data: encrypted_data,
+ 			acl_storage: self.acl_storage.clone(),
+ 			cluster: cluster,
+-		})?))
++		}))
+ 	}
+ 
+ 	/// Send decryption session error.
+@@ -276,10 +267,6 @@ impl ClusterSessions {
+ 	/// Create new signing session.
+ 	pub fn new_signing_session(&self, master: NodeId, session_id: SessionId, sub_session_id: Secret, cluster: Arc<ClusterView>) -> Result<Arc<SigningSessionImpl>, Error> {
+ 		let session_id = SigningSessionId::new(session_id, sub_session_id);
+-		if self.signing_sessions.contains(&session_id) {
+-			return Err(Error::DuplicateSessionId);
+-		}
+-
+ 		// some of nodes, which were encrypting secret may be down
+ 		// => do not use these in signing session
+ 		let mut encrypted_data = self.key_storage.get(&session_id.id).map_err(|e| Error::KeyStorage(e.into()))?;
+@@ -289,14 +276,14 @@ impl ClusterSessions {
+ 			encrypted_data.id_numbers.remove(&disconnected_node);
+ 		}
+ 
+-		Ok(self.signing_sessions.insert(master, session_id.clone(), cluster.clone(), SigningSessionImpl::new(SigningSessionParams {
++		self.signing_sessions.insert(master, session_id.clone(), cluster.clone(), move || SigningSessionImpl::new(SigningSessionParams {
+ 			id: session_id.id,
+ 			access_key: session_id.access_key,
+ 			self_node_id: self.self_node_id.clone(),
+ 			encrypted_data: encrypted_data,
+ 			acl_storage: self.acl_storage.clone(),
+ 			cluster: cluster,
+-		})?))
++		}))
+ 	}
+ 
+ 	/// Send signing session error.
+@@ -341,16 +328,17 @@ impl<K, V, M> ClusterSessionsContainer<K, V, M> where K: Clone + Ord, V: Cluster
+ 		}
+ 	}
+ 
+-	pub fn contains(&self, session_id: &K) -> bool {
+-		self.sessions.read().contains_key(session_id)
+-	}
+-
+ 	pub fn get(&self, session_id: &K) -> Option<Arc<V>> {
+ 		self.sessions.read().get(session_id).map(|s| s.session.clone())
+ 	}
+ 
+-	pub fn insert(&self, master: NodeId, session_id: K, cluster: Arc<ClusterView>, session: V) -> Arc<V> {
+-		let session = Arc::new(session);
++	pub fn insert<F: FnOnce() -> Result<V, Error>>(&self, master: NodeId, session_id: K, cluster: Arc<ClusterView>, session: F) -> Result<Arc<V>, Error> {
++		let mut sessions = self.sessions.write();
++		if sessions.contains_key(&session_id) {
++			return Err(Error::DuplicateSessionId);
++		}
++
++		let session = Arc::new(session()?);
+ 		let queued_session = QueuedSession {
+ 			master: master,
+ 			cluster_view: cluster,
+@@ -358,8 +346,8 @@ impl<K, V, M> ClusterSessionsContainer<K, V, M> where K: Clone + Ord, V: Cluster
+ 			session: session.clone(),
+ 			queue: VecDeque::new(),
+ 		};
+-		self.sessions.write().insert(session_id, queued_session);
+-		session
++		sessions.insert(session_id, queued_session);
++		Ok(session)
+ 	}
+ 
+ 	pub fn remove(&self, session_id: &K) {
+diff --git a/secret_store/src/key_server_cluster/decryption_session.rs b/secret_store/src/key_server_cluster/decryption_session.rs
+index 5006594cd6c..8a2ca404136 100644
+--- a/secret_store/src/key_server_cluster/decryption_session.rs
++++ b/secret_store/src/key_server_cluster/decryption_session.rs
+@@ -465,7 +465,7 @@ impl SessionImpl {
+ 			cluster.send(node, Message::Decryption(DecryptionMessage::RequestPartialDecryption(RequestPartialDecryption {
+ 				session: session_id.clone().into(),
+ 				sub_session: access_key.clone().into(),
+-				is_shadow_decryption: data.is_shadow_decryption.expect("TODO"),
++				is_shadow_decryption: data.is_shadow_decryption.expect("is_shadow_decryption on master node is filled in initialization; we are on master node; qed"),
+ 				nodes: confirmed_nodes.iter().cloned().map(Into::into).collect(),
+ 			})))?;
+ 		}
+@@ -487,7 +487,9 @@ impl SessionImpl {
+ 
+ 	fn do_decryption(access_key: Secret, encrypted_data: &DocumentKeyShare, data: &mut SessionData) -> Result<(), Error> {
+ 		// decrypt the secret using shadow points
+-		let job_responses = data.consensus.as_ref().expect("TODO").job_responses()?;
++		let job_responses = data.consensus.as_ref()
++			.expect("consesus is filled in initialization phase; decryption phase follows initialization phase")
++			.job_responses()?;
+ 		let joint_shadow_point = math::compute_joint_shadow_point(job_responses.values().map(|s| &s.shadow_point))?;
+ 		let encrypted_point = encrypted_data.encrypted_point.as_ref().expect("checked at the beginning of the session; immutable; qed");
+ 		let common_point = encrypted_data.common_point.as_ref().expect("checked at the beginning of the session; immutable; qed");
+diff --git a/secret_store/src/key_server_cluster/message.rs b/secret_store/src/key_server_cluster/message.rs
+index e4ae27b2ee5..ba033b2c443 100644
+--- a/secret_store/src/key_server_cluster/message.rs
++++ b/secret_store/src/key_server_cluster/message.rs
+@@ -298,7 +298,7 @@ pub struct RequestPartialSignature {
+ 	pub sub_session: SerializableSecret,
+ 	/// Message hash.
+ 	pub message_hash: SerializableMessageHash,
+-	/// Selected nodes. TODO: this information is known from generation session - reuse
++	/// Selected nodes.
+ 	pub nodes: BTreeSet<MessageNodeId>,
+ }
+ 
+diff --git a/secret_store/src/key_server_cluster/mod.rs b/secret_store/src/key_server_cluster/mod.rs
+index 6b0e54e43a4..3ba285946ec 100644
+--- a/secret_store/src/key_server_cluster/mod.rs
++++ b/secret_store/src/key_server_cluster/mod.rs
+@@ -66,7 +66,7 @@ pub enum Error {
+ 	/// Current state of encryption/decryption session does not allow to proceed request.
+ 	/// This means that either there is some comm-failure or node is misbehaving/cheating.
+ 	InvalidStateForRequest,
+-	/// TODO
++	/// Request cannot be sent/received from this node.
+ 	InvalidNodeForRequest,
+ 	/// Message or some data in the message was recognized as invalid.
+ 	/// This means that node is misbehaving/cheating.
+@@ -119,7 +119,7 @@ impl fmt::Display for Error {
+ 			Error::InvalidThreshold => write!(f, "invalid threshold value has been passed"),
+ 			Error::TooEarlyForRequest => write!(f, "session is not yet ready to process this request"),
+ 			Error::InvalidStateForRequest => write!(f, "session is in invalid state for processing this request"),
+-			Error::InvalidNodeForRequest => write!(f, "node cannot respond to this request"),
++			Error::InvalidNodeForRequest => write!(f, "invalid node for this request"),
+ 			Error::InvalidMessage => write!(f, "invalid message is received"),
+ 			Error::NodeDisconnected => write!(f, "node required for this operation is currently disconnected"),
+ 			Error::EthKey(ref e) => write!(f, "cryptographic error {}", e),

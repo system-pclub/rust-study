@@ -1,0 +1,533 @@
+diff --git a/src/components/gfx/render_task.rs b/src/components/gfx/render_task.rs
+index 00c30a519585..88da24cc396b 100644
+--- a/src/components/gfx/render_task.rs
++++ b/src/components/gfx/render_task.rs
+@@ -136,47 +136,52 @@ impl<C: RenderListener + Send,T:Send+Freeze> RenderTask<C,T> {
+                   compositor: C,
+                   constellation_chan: ConstellationChan,
+                   opts: Opts,
+-                  profiler_chan: ProfilerChan) {
+-        do spawn_with((port, compositor, constellation_chan, opts, profiler_chan))
+-            |(port, compositor, constellation_chan, opts, profiler_chan)| {
+-
+-            let native_graphics_context = compositor.get_graphics_metadata().map(
+-                |md| NativePaintingGraphicsContext::from_metadata(&md));
+-            let cpu_painting = opts.cpu_painting;
+-
+-            // FIXME: rust/#5967
+-            let mut render_task = RenderTask {
+-                id: id,
+-                port: port,
+-                compositor: compositor,
+-                constellation_chan: constellation_chan,
+-                font_ctx: ~FontContext::new(opts.render_backend.clone(),
+-                                                false,
+-                                                profiler_chan.clone()),
+-                opts: opts,
+-                profiler_chan: profiler_chan,
+-
+-                graphics_context: if cpu_painting {
+-                    CpuGraphicsContext
+-                } else {
+-                    GpuGraphicsContext
+-                },
+-
+-                native_graphics_context: native_graphics_context,
+-
+-                render_layer: None,
+-
+-                paint_permission: false,
+-                epoch: Epoch(0),
+-                buffer_map: BufferMap::new(10000000),
+-            };
++                  profiler_chan: ProfilerChan,
++                  shutdown_chan: Chan<()>) {
++        do spawn_with((port, compositor, constellation_chan, opts, profiler_chan, shutdown_chan))
++            |(port, compositor, constellation_chan, opts, profiler_chan, shutdown_chan)| {
++
++            { // Ensures RenderTask and graphics context are destroyed before shutdown msg
++                let native_graphics_context = compositor.get_graphics_metadata().map(
++                    |md| NativePaintingGraphicsContext::from_metadata(&md));
++                let cpu_painting = opts.cpu_painting;
++
++                // FIXME: rust/#5967
++                let mut render_task = RenderTask {
++                    id: id,
++                    port: port,
++                    compositor: compositor,
++                    constellation_chan: constellation_chan,
++                    font_ctx: ~FontContext::new(opts.render_backend.clone(),
++                                                    false,
++                                                    profiler_chan.clone()),
++                    opts: opts,
++                    profiler_chan: profiler_chan,
++
++                    graphics_context: if cpu_painting {
++                        CpuGraphicsContext
++                    } else {
++                        GpuGraphicsContext
++                    },
++
++                    native_graphics_context: native_graphics_context,
++
++                    render_layer: None,
+ 
+-            render_task.start();
++                    paint_permission: false,
++                    epoch: Epoch(0),
++                    buffer_map: BufferMap::new(10000000),
++                };
++
++                render_task.start();
++
++                // Destroy all the buffers.
++                render_task.native_graphics_context.as_ref().map(|ctx|
++                    render_task.buffer_map.clear(ctx)
++                );
++            }
+ 
+-            // Destroy all the buffers.
+-            render_task.native_graphics_context.as_ref().map(|ctx|
+-                render_task.buffer_map.clear(ctx)
+-            );
++            shutdown_chan.send(());
+         }
+     }
+ 
+diff --git a/src/components/main/compositing/compositor_layer.rs b/src/components/main/compositing/compositor_layer.rs
+index 02169abeea75..b1599d5460ce 100644
+--- a/src/components/main/compositing/compositor_layer.rs
++++ b/src/components/main/compositing/compositor_layer.rs
+@@ -15,7 +15,7 @@ use layers::layers::TextureLayerKind;
+ use layers::platform::surface::{NativeCompositingGraphicsContext, NativeSurfaceMethods};
+ use layers::texturegl::{Texture, TextureTarget};
+ #[cfg(target_os="macos")] use layers::texturegl::TextureTargetRectangle;
+-use pipeline::Pipeline;
++use pipeline::CompositionPipeline;
+ use script::dom::event::{ClickEvent, MouseDownEvent, MouseUpEvent};
+ use script::script_task::SendEventMsg;
+ use servo_msg::compositor_msg::{LayerBuffer, LayerBufferSet, Epoch, Tile};
+@@ -34,7 +34,7 @@ use layers::texturegl::TextureTarget2D;
+ /// Each layer can also have child layers.
+ pub struct CompositorLayer {
+     /// This layer's pipeline. BufferRequests and mouse events will be sent through this.
+-    pipeline: Pipeline,
++    pipeline: CompositionPipeline,
+ 
+     /// The size of the underlying page in page coordinates. This is an option
+     /// because we may not know the size of the page until layout is finished completely.
+@@ -104,7 +104,7 @@ enum ScrollBehavior {
+ impl CompositorLayer {
+     /// Creates a new CompositorLayer with an optional page size. If no page size is given,
+     /// the layer is initially hidden and initialized without a quadtree.
+-    pub fn new(pipeline: Pipeline,
++    pub fn new(pipeline: CompositionPipeline,
+                page_size: Option<Size2D<f32>>,
+                tile_size: uint,
+                max_mem: Option<uint>,
+@@ -669,7 +669,7 @@ impl CompositorLayer {
+     }
+     
+     // Adds a child.
+-    pub fn add_child(&mut self, pipeline: Pipeline, page_size: Option<Size2D<f32>>, tile_size: uint,
++    pub fn add_child(&mut self, pipeline: CompositionPipeline, page_size: Option<Size2D<f32>>, tile_size: uint,
+                      max_mem: Option<uint>, clipping_rect: Rect<f32>) {
+         let container = @mut ContainerLayer();
+         container.scissor = Some(clipping_rect);
+diff --git a/src/components/main/compositing/mod.rs b/src/components/main/compositing/mod.rs
+index 9cf6df5f2aaf..6d7ab4afa3b2 100644
+--- a/src/components/main/compositing/mod.rs
++++ b/src/components/main/compositing/mod.rs
+@@ -5,7 +5,8 @@
+ pub use windowing;
+ 
+ use constellation::SendableFrameTree;
+-use windowing::WindowMethods;
++use windowing::{ApplicationMethods, WindowMethods};
++use platform::Application;
+ 
+ use azure::azure_hl::{SourceSurfaceMethods, Color};
+ use geom::point::Point2D;
+@@ -145,27 +146,38 @@ pub enum Msg {
+     SetUnRenderedColor(PipelineId, Color),
+ }
+ 
++pub enum CompositorMode {
++    Windowed(Application),
++    Headless
++}
++
+ pub struct CompositorTask {
++    mode: CompositorMode,
+     opts: Opts,
+     port: Port<Msg>,
+     constellation_chan: ConstellationChan,
+     profiler_chan: ProfilerChan,
+-    shutdown_chan: SharedChan<()>,
+ }
+ 
+ impl CompositorTask {
+     pub fn new(opts: Opts,
+                port: Port<Msg>,
+                constellation_chan: ConstellationChan,
+-               profiler_chan: ProfilerChan,
+-               shutdown_chan: Chan<()>)
++               profiler_chan: ProfilerChan)
+                -> CompositorTask {
++
++        let mode: CompositorMode = if opts.headless {
++            Headless
++        } else {
++            Windowed(ApplicationMethods::new())
++        };
++
+         CompositorTask {
++            mode: mode,
+             opts: opts,
+             port: port,
+             constellation_chan: constellation_chan,
+-            profiler_chan: profiler_chan,
+-            shutdown_chan: SharedChan::new(shutdown_chan),
++            profiler_chan: profiler_chan
+         }
+     }
+ 
+@@ -182,10 +194,9 @@ impl CompositorTask {
+     }
+ 
+     pub fn run(&self) {
+-        if self.opts.headless {
+-            run_headless::run_compositor(self);
+-        } else {
+-            run::run_compositor(self);
++        match self.mode {
++            Windowed(ref app) => run::run_compositor(self, app),
++            Headless => run_headless::run_compositor(self),
+         }
+     }
+ }
+diff --git a/src/components/main/compositing/run.rs b/src/components/main/compositing/run.rs
+index 4e841239f196..83707141ea56 100644
+--- a/src/components/main/compositing/run.rs
++++ b/src/components/main/compositing/run.rs
+@@ -4,8 +4,10 @@
+ 
+ use compositing::compositor_layer::CompositorLayer;
+ use compositing::*;
++
+ use platform::{Application, Window};
+-use windowing::{ApplicationMethods, WindowEvent, WindowMethods};
++
++use windowing::{WindowEvent, WindowMethods};
+ use windowing::{IdleWindowEvent, ResizeWindowEvent, LoadUrlWindowEvent, MouseWindowEventClass};
+ use windowing::{ScrollWindowEvent, ZoomWindowEvent, NavigationWindowEvent, FinishedWindowEvent};
+ use windowing::{QuitWindowEvent, MouseWindowClickEvent, MouseWindowMouseDownEvent, MouseWindowMouseUpEvent};
+@@ -34,9 +36,8 @@ use std::rt::io::timer::Timer;
+ use std::vec;
+ 
+ /// Starts the compositor, which listens for messages on the specified port.
+-pub fn run_compositor(compositor: &CompositorTask) {
+-    let app: Application = ApplicationMethods::new();
+-    let window: @mut Window = WindowMethods::new(&app);
++pub fn run_compositor(compositor: &CompositorTask, app: &Application) {
++    let window: @mut Window = WindowMethods::new(app);
+ 
+     // Create an initial layer tree.
+     //
+@@ -419,8 +420,6 @@ pub fn run_compositor(compositor: &CompositorTask) {
+ 
+     }
+ 
+-    compositor.shutdown_chan.send(());
+-
+     // Clear out the compositor layers so that painting tasks can destroy the buffers.
+     match compositor_layer {
+         None => {}
+diff --git a/src/components/main/compositing/run_headless.rs b/src/components/main/compositing/run_headless.rs
+index 9c7b8c3482d6..ed5f23d3e2e2 100644
+--- a/src/components/main/compositing/run_headless.rs
++++ b/src/components/main/compositing/run_headless.rs
+@@ -37,5 +37,4 @@ pub fn run_compositor(compositor: &CompositorTask) {
+                 => ()
+         }
+     }
+-    compositor.shutdown_chan.send(())
+ }
+diff --git a/src/components/main/constellation.rs b/src/components/main/constellation.rs
+index aa63afb6fc2d..f444e54c086b 100644
+--- a/src/components/main/constellation.rs
++++ b/src/components/main/constellation.rs
+@@ -8,7 +8,7 @@ use extra::url::Url;
+ use geom::rect::Rect;
+ use geom::size::Size2D;
+ use gfx::opts::Opts;
+-use pipeline::Pipeline;
++use pipeline::{Pipeline, CompositionPipeline};
+ use script::script_task::{ResizeMsg, ResizeInactiveMsg};
+ use servo_msg::constellation_msg::{ConstellationChan, ExitMsg, FailureMsg, FrameRectMsg};
+ use servo_msg::constellation_msg::{IFrameSandboxState, IFrameUnsandboxed, InitLoadUrlMsg};
+@@ -81,7 +81,7 @@ impl Clone for ChildFrameTree {
+ }
+ 
+ pub struct SendableFrameTree {
+-    pipeline: Pipeline,
++    pipeline: CompositionPipeline,
+     children: ~[SendableChildFrameTree],
+ }
+ 
+@@ -129,7 +129,7 @@ impl FrameTree {
+ 
+     fn to_sendable(&self) -> SendableFrameTree {
+         let sendable_frame_tree = SendableFrameTree {
+-            pipeline: (*self.pipeline).clone(),
++            pipeline: self.pipeline.to_sendable(),
+             children: self.children.iter().map(|frame_tree| frame_tree.to_sendable()).collect(),
+         };
+         sendable_frame_tree
+diff --git a/src/components/main/layout/layout_task.rs b/src/components/main/layout/layout_task.rs
+index fa813b3b8c45..d6576e89d518 100644
+--- a/src/components/main/layout/layout_task.rs
++++ b/src/components/main/layout/layout_task.rs
+@@ -207,18 +207,23 @@ impl LayoutTask {
+                   render_chan: RenderChan<AbstractNode<()>>,
+                   img_cache_task: ImageCacheTask,
+                   opts: Opts,
+-                  profiler_chan: ProfilerChan) {
++                  profiler_chan: ProfilerChan,
++                  shutdown_chan: Chan<()>) {
+         spawn_with!(task::task(), [port, constellation_chan, script_chan,
+-                                   render_chan, img_cache_task, profiler_chan], {
+-            let mut layout = LayoutTask::new(id,
+-                                             port,
+-                                             constellation_chan,
+-                                             script_chan,
+-                                             render_chan,
+-                                             img_cache_task,
+-                                             &opts,
+-                                             profiler_chan);
+-            layout.start();
++                                   render_chan, img_cache_task, profiler_chan, shutdown_chan], {
++            { // Ensures LayoutTask gets destroyed before we send the shutdown message
++                let mut layout = LayoutTask::new(id,
++                                                 port,
++                                                 constellation_chan,
++                                                 script_chan,
++                                                 render_chan,
++                                                 img_cache_task,
++                                                 &opts,
++                                                 profiler_chan);
++                layout.start();
++            }
++
++            shutdown_chan.send(());
+         });
+     }
+ 
+diff --git a/src/components/main/pipeline.rs b/src/components/main/pipeline.rs
+index e277beccbd92..bd750df03570 100644
+--- a/src/components/main/pipeline.rs
++++ b/src/components/main/pipeline.rs
+@@ -19,19 +19,29 @@ use servo_net::image_cache_task::ImageCacheTask;
+ use servo_net::resource_task::ResourceTask;
+ use servo_util::time::ProfilerChan;
+ use std::task;
++use std::comm;
+ 
+ /// A uniquely-identifiable pipeline of script task, layout task, and render task. 
+-#[deriving(Clone)]
+ pub struct Pipeline {
+     id: PipelineId,
+     subpage_id: Option<SubpageId>,
+     script_chan: ScriptChan,
+     layout_chan: LayoutChan,
+     render_chan: RenderChan<AbstractNode<()>>,
++    layout_shutdown_port: Port<()>,
++    render_shutdown_port: Port<()>,
+     /// The most recently loaded url
+     url: Option<Url>,
+ }
+ 
++/// A subset of the Pipeline nthat is eeded for layer composition
++#[deriving(Clone)]
++pub struct CompositionPipeline {
++    id: PipelineId,
++    script_chan: ScriptChan,
++    render_chan: RenderChan<AbstractNode<()>>,
++}
++
+ impl Pipeline {
+     /// Starts a render task, layout task, and script task. Returns the channels wrapped in a
+     /// struct.
+@@ -46,13 +56,16 @@ impl Pipeline {
+                        -> Pipeline {
+         let (layout_port, layout_chan) = special_stream!(LayoutChan);
+         let (render_port, render_chan) = special_stream!(RenderChan);
++        let (render_shutdown_port, render_shutdown_chan) = comm::stream();
++        let (layout_shutdown_port, layout_shutdown_chan) = comm::stream();
+ 
+         RenderTask::create(id,
+                            render_port,
+                            compositor_chan.clone(),
+                            constellation_chan.clone(),
+                            opts.clone(),
+-                           profiler_chan.clone());
++                           profiler_chan.clone(),
++                           render_shutdown_chan);
+ 
+         LayoutTask::create(id,
+                            layout_port,
+@@ -61,7 +74,8 @@ impl Pipeline {
+                            render_chan.clone(),
+                            image_cache_task.clone(),
+                            opts.clone(),
+-                           profiler_chan);
++                           profiler_chan,
++                           layout_shutdown_chan);
+ 
+         let new_layout_info = NewLayoutInfo {
+             old_id: script_pipeline.id.clone(),
+@@ -75,7 +89,9 @@ impl Pipeline {
+                       subpage_id,
+                       script_pipeline.script_chan.clone(),
+                       layout_chan,
+-                      render_chan)
++                      render_chan,
++                      layout_shutdown_port,
++                      render_shutdown_port)
+     }
+ 
+     pub fn create(id: PipelineId,
+@@ -90,11 +106,15 @@ impl Pipeline {
+         let (script_port, script_chan) = special_stream!(ScriptChan);
+         let (layout_port, layout_chan) = special_stream!(LayoutChan);
+         let (render_port, render_chan) = special_stream!(RenderChan);
++        let (render_shutdown_port, render_shutdown_chan) = comm::stream();
++        let (layout_shutdown_port, layout_shutdown_chan) = comm::stream();
+         let pipeline = Pipeline::new(id,
+                                      subpage_id,
+                                      script_chan.clone(),
+                                      layout_chan.clone(),
+-                                     render_chan.clone());
++                                     render_chan.clone(),
++                                     layout_shutdown_port,
++                                     render_shutdown_port);
+ 
+         // Wrap task creation within a supervised task so that failure will
+         // only tear down those tasks instead of ours.
+@@ -111,7 +131,9 @@ impl Pipeline {
+                     layout_port,
+                     constellation_chan,
+                     image_cache_task,
+-                    profiler_chan
++                    profiler_chan,
++                    layout_shutdown_chan,
++                    render_shutdown_chan
+                 ], {
+             ScriptTask::create(id,
+                                compositor_chan.clone(),
+@@ -127,7 +149,8 @@ impl Pipeline {
+                                compositor_chan.clone(),
+                                constellation_chan.clone(),
+                                opts.clone(),
+-                               profiler_chan.clone());
++                               profiler_chan.clone(),
++                               render_shutdown_chan);
+ 
+             LayoutTask::create(id,
+                                layout_port,
+@@ -136,7 +159,8 @@ impl Pipeline {
+                                render_chan.clone(),
+                                image_cache_task,
+                                opts.clone(),
+-                               profiler_chan);
++                               profiler_chan,
++                               layout_shutdown_chan);
+         });
+ 
+         spawn_with!(task::task(), [failure_chan], {
+@@ -158,7 +182,9 @@ impl Pipeline {
+                subpage_id: Option<SubpageId>,
+                script_chan: ScriptChan,
+                layout_chan: LayoutChan,
+-               render_chan: RenderChan<AbstractNode<()>>)
++               render_chan: RenderChan<AbstractNode<()>>,
++               layout_shutdown_port: Port<()>,
++               render_shutdown_port: Port<()>)
+                -> Pipeline {
+         Pipeline {
+             id: id,
+@@ -166,6 +192,8 @@ impl Pipeline {
+             script_chan: script_chan,
+             layout_chan: layout_chan,
+             render_chan: render_chan,
++            layout_shutdown_port: layout_shutdown_port,
++            render_shutdown_port: render_shutdown_port,
+             url: None,
+         }
+     }
+@@ -192,6 +220,19 @@ impl Pipeline {
+     pub fn exit(&self) {
+         // Script task handles shutting down layout, and layout handles shutting down the renderer.
+         self.script_chan.try_send(script_task::ExitPipelineMsg(self.id));
++
++        // Wait until all slave tasks have terminated and run destructors
++        // NOTE: We don't wait for script task as we don't always own it
++        self.render_shutdown_port.try_recv();
++        self.layout_shutdown_port.try_recv();
++    }
++
++    pub fn to_sendable(&self) -> CompositionPipeline {
++        CompositionPipeline {
++            id: self.id.clone(),
++            script_chan: self.script_chan.clone(),
++            render_chan: self.render_chan.clone(),
++        }
+     }
+ }
+ 
+diff --git a/src/components/main/servo.rc b/src/components/main/servo.rc
+index a19c0ba6dcbb..78b4fea12ecf 100755
+--- a/src/components/main/servo.rc
++++ b/src/components/main/servo.rc
+@@ -124,7 +124,7 @@ fn start(argc: int, argv: **u8) -> int {
+ }
+ 
+ fn run(opts: Opts) {
+-    let (shutdown_port, shutdown_chan) = comm::stream();
++    let (exit_response_from_constellation, exit_chan) = comm::stream();
+     let (profiler_port, profiler_chan) = special_stream!(ProfilerChan);
+     let (compositor_port, compositor_chan) = special_stream!(CompositorChan);
+     let (constellation_port, constellation_chan) = special_stream!(ConstellationChan);
+@@ -158,24 +158,20 @@ fn run(opts: Opts) {
+         for filename in opts.urls.iter() {
+             constellation_chan.send(InitLoadUrlMsg(make_url(filename.clone(), None)))
+         }
+-
+-        // Wait for the compositor to shut down.
+-        shutdown_port.recv();
+-
+-        // Shut the constellation down.
+-        debug!("master: Shut down");
+-        let (exit_response_from_constellation, exit_chan) = comm::stream();
+-        constellation_chan.send(ExitMsg(exit_chan));
+-        exit_response_from_constellation.recv();
+     }
+ 
+     let compositor_task = CompositorTask::new(opts,
+                                               compositor_port,
+-                                              constellation_chan,
+-                                              profiler_chan,
+-                                              shutdown_chan);
++                                              constellation_chan.clone(),
++                                              profiler_chan);
+ 
+     debug!("preparing to enter main loop");
+     compositor_task.run();
++
++    // Constellation has to be shut down before the compositor goes out of
++    // scope, as the compositor manages setup/teardown of global subsystems
++    debug!("shutting down the constellation");
++    constellation_chan.send(ExitMsg(exit_chan));
++    exit_response_from_constellation.recv();
+ }
+ 

@@ -1,0 +1,16 @@
+diff --git a/util/src/network/host.rs b/util/src/network/host.rs
+index 4164c3f1a6c..05ccaa147fa 100644
+--- a/util/src/network/host.rs
++++ b/util/src/network/host.rs
+@@ -442,9 +442,10 @@ impl<Message> Host<Message> where Message: Send + Sync + Clone {
+ 
+ 		if info.config.non_reserved_mode != mode {
+ 			info.config.non_reserved_mode = mode.clone();
++			drop(info);
+ 			if let NonReservedPeerMode::Deny = mode {
+ 				// disconnect all non-reserved peers here.
+-				let reserved = self.reserved_nodes.read().unwrap();
++				let reserved: HashSet<NodeId> = self.reserved_nodes.read().unwrap().clone();
+ 				let mut to_kill = Vec::new();
+ 				for e in self.sessions.write().unwrap().iter_mut() {
+ 					let mut s = e.lock().unwrap();

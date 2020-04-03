@@ -1,0 +1,412 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index bbf757d69362..89e3660c7cc9 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2771,6 +2771,7 @@ dependencies = [
+  "matches 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+  "owning_ref 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+  "parking_lot 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
++ "rayon 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "rustc-serialize 0.3.19 (registry+https://github.com/rust-lang/crates.io-index)",
+  "selectors 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "servo_atoms 0.0.1",
+diff --git a/components/style/rule_tree/mod.rs b/components/style/rule_tree/mod.rs
+index 1e9602428c03..6ade281c3515 100644
+--- a/components/style/rule_tree/mod.rs
++++ b/components/style/rule_tree/mod.rs
+@@ -438,27 +438,58 @@ impl StrongRuleNode {
+         // That's... suspicious, but it's fine if it happens for the rule tree
+         // case, so just don't crash in the case we're doing the final GC in
+         // script.
+-        debug_assert!(!thread_state::get().is_worker() &&
+-                      (thread_state::get().is_layout() ||
+-                       thread_state::get().is_script()));
+-        let current = me.next_free.load(Ordering::SeqCst);
++        if !cfg!(feature = "testing") {
++            debug_assert!(!thread_state::get().is_worker() &&
++                          (thread_state::get().is_layout() ||
++                           thread_state::get().is_script()));
++        }
+ 
++        let current = me.next_free.load(Ordering::SeqCst);
+         if current == FREE_LIST_SENTINEL {
+             return None;
+         }
+ 
+-        let current = WeakRuleNode { ptr: current };
++        debug_assert!(!current.is_null(),
++                      "Multiple threads are operating on the free list at the \
++                       same time?");
++        debug_assert!(current != self.ptr,
++                      "How did the root end up in the free list?");
++
++        let next = (*current).next_free.swap(ptr::null_mut(), Ordering::SeqCst);
++
++        debug_assert!(!next.is_null(),
++                      "How did a null pointer end up in the free list?");
+ 
+-        let node = &*current.ptr();
+-        let next = node.next_free.swap(ptr::null_mut(), Ordering::SeqCst);
+         me.next_free.store(next, Ordering::SeqCst);
+ 
+-        debug!("Popping from free list: cur: {:?}, next: {:?}", current.ptr(), next);
++        debug!("Popping from free list: cur: {:?}, next: {:?}", current, next);
+ 
+-        Some(current)
++        Some(WeakRuleNode { ptr: current })
++    }
++
++    unsafe fn assert_free_list_has_no_duplicates_or_null(&self) {
++        assert!(cfg!(debug_assertions));
++
++        let me = &*self.ptr;
++        assert!(me.is_root());
++
++        let mut current = self.ptr;
++        let mut seen = vec![];
++        while current != FREE_LIST_SENTINEL {
++            let next = (*current).next_free.load(Ordering::SeqCst);
++            assert!(!next.is_null());
++            assert!(!seen.contains(&next));
++            seen.push(next);
++
++            current = next;
++        }
+     }
+ 
+     unsafe fn gc(&self) {
++        if cfg!(debug_assertions) {
++            self.assert_free_list_has_no_duplicates_or_null();
++        }
++
+         // NB: This can run from the root node destructor, so we can't use
+         // `get()`, since it asserts the refcount is bigger than zero.
+         let me = &*self.ptr;
+@@ -552,29 +583,41 @@ impl Drop for StrongRuleNode {
+             return;
+         }
+ 
+-        // The node is already in the free list, so do nothing.
++        let root = unsafe { &*node.root.as_ref().unwrap().ptr() };
++        let free_list = &root.next_free;
++
++        // We're sure we're already in the free list, don't spinloop.
+         if node.next_free.load(Ordering::SeqCst) != ptr::null_mut() {
+             return;
+         }
+ 
+-        let root = unsafe { &*node.root.as_ref().unwrap().ptr() };
+-        let free_list = &root.next_free;
++        // Ensure we "lock" the free list head swapping it with a null pointer.
++        let mut old_head = free_list.load(Ordering::SeqCst);
+         loop {
+-            let next_free = free_list.load(Ordering::SeqCst);
+-            debug_assert!(!next_free.is_null());
+-
+-            node.next_free.store(next_free, Ordering::SeqCst);
+-
+-            let existing =
+-                free_list.compare_and_swap(next_free,
+-                                           self.ptr(),
+-                                           Ordering::SeqCst);
+-            if existing == next_free {
+-                // Successfully inserted, yay! Otherwise try again.
+-                root.free_count.fetch_add(1, Ordering::Relaxed);
+-                break;
++            match free_list.compare_exchange_weak(old_head,
++                                                  ptr::null_mut(),
++                                                  Ordering::SeqCst,
++                                                  Ordering::Relaxed) {
++                Ok(..) => {
++                    if old_head != ptr::null_mut() {
++                        break;
++                    }
++                },
++                Err(new) => old_head = new,
+             }
+         }
++
++        // If other thread has raced with use while using the same rule node,
++        // just store the old head again, we're done.
++        if node.next_free.load(Ordering::SeqCst) != ptr::null_mut() {
++            free_list.store(old_head, Ordering::SeqCst);
++            return;
++        }
++
++        // Else store the old head as the next pointer, and store ourselves as
++        // the new head of the free list.
++        node.next_free.store(old_head, Ordering::SeqCst);
++        free_list.store(self.ptr(), Ordering::SeqCst);
+     }
+ }
+ 
+diff --git a/tests/unit/style/Cargo.toml b/tests/unit/style/Cargo.toml
+index 4a7cf616d184..27962330e9b1 100644
+--- a/tests/unit/style/Cargo.toml
++++ b/tests/unit/style/Cargo.toml
+@@ -16,12 +16,13 @@ testing = ["style/testing"]
+ app_units = "0.3"
+ cssparser = {version = "0.7", features = ["heap_size"]}
+ euclid = "0.10.1"
++html5ever-atoms = "0.1"
+ matches = "0.1"
+ owning_ref = "0.2.2"
+ parking_lot = "0.3"
++rayon = "0.5"
+ rustc-serialize = "0.3"
+ selectors = "0.15"
+-html5ever-atoms = "0.1"
+ servo_atoms = {path = "../../../components/atoms"}
+ servo_config = {path = "../../../components/config"}
+ style = {path = "../../../components/style"}
+diff --git a/tests/unit/style/lib.rs b/tests/unit/style/lib.rs
+index 6b0ed472cbd0..e2c2bbe7e283 100644
+--- a/tests/unit/style/lib.rs
++++ b/tests/unit/style/lib.rs
+@@ -3,8 +3,7 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ #![cfg(test)]
+-#![feature(core_intrinsics)]
+-#![feature(plugin)]
++#![feature(core_intrinsics, plugin, test)]
+ 
+ extern crate app_units;
+ extern crate cssparser;
+@@ -13,6 +12,7 @@ extern crate euclid;
+ #[macro_use] #[allow(unused_extern_crates)] extern crate matches;
+ extern crate owning_ref;
+ extern crate parking_lot;
++extern crate rayon;
+ extern crate rustc_serialize;
+ extern crate selectors;
+ #[macro_use] extern crate servo_atoms;
+@@ -20,6 +20,7 @@ extern crate servo_config;
+ extern crate servo_url;
+ extern crate style;
+ extern crate style_traits;
++extern crate test;
+ 
+ mod atomic_refcell;
+ mod attr;
+@@ -29,6 +30,7 @@ mod media_queries;
+ mod owning_handle;
+ mod parsing;
+ mod properties;
++mod rule_tree;
+ mod str;
+ mod stylesheets;
+ mod stylist;
+diff --git a/tests/unit/style/rule_tree/bench.rs b/tests/unit/style/rule_tree/bench.rs
+new file mode 100644
+index 000000000000..2504c6f2893a
+--- /dev/null
++++ b/tests/unit/style/rule_tree/bench.rs
+@@ -0,0 +1,196 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++use cssparser::{Parser, SourcePosition};
++use parking_lot::RwLock;
++use rayon;
++use servo_url::ServoUrl;
++use std::sync::Arc;
++use style::error_reporting::ParseErrorReporter;
++use style::media_queries::MediaList;
++use style::parser::ParserContextExtraData;
++use style::properties::{longhands, DeclaredValue, Importance, PropertyDeclaration, PropertyDeclarationBlock};
++use style::rule_tree::{RuleTree, StrongRuleNode, StyleSource};
++use style::stylesheets::{Origin, Stylesheet, CssRule};
++use test::{self, Bencher};
++
++struct ErrorringErrorReporter;
++impl ParseErrorReporter for ErrorringErrorReporter {
++    fn report_error(&self, _: &mut Parser, position: SourcePosition, message: &str) {
++        panic!("CSS error: {:?} {}", position, message);
++    }
++
++    fn clone(&self) -> Box<ParseErrorReporter + Send + Sync> {
++        Box::new(ErrorringErrorReporter)
++    }
++}
++
++struct AutoGCRuleTree<'a>(&'a RuleTree);
++
++impl<'a> AutoGCRuleTree<'a> {
++    fn new(r: &'a RuleTree) -> Self {
++        AutoGCRuleTree(r)
++    }
++}
++
++impl<'a> Drop for AutoGCRuleTree<'a> {
++    fn drop(&mut self) {
++        unsafe { self.0.gc() }
++    }
++}
++
++fn parse_rules(css: &str) -> Vec<(StyleSource, Importance)> {
++    let s = Stylesheet::from_str(css,
++                                 ServoUrl::parse("http://localhost").unwrap(),
++                                 Origin::Author,
++                                 MediaList {
++                                     media_queries: vec![],
++                                 },
++                                 None,
++                                 Box::new(ErrorringErrorReporter),
++                                 ParserContextExtraData {});
++    let rules = s.rules.read();
++    rules.0.iter().filter_map(|rule| {
++        match *rule {
++            CssRule::Style(ref style_rule) => Some(style_rule),
++            _ => None,
++        }
++    }).cloned().map(StyleSource::Style).map(|s| {
++        (s, Importance::Normal)
++    }).collect()
++}
++
++fn test_insertion(rule_tree: &RuleTree, rules: Vec<(StyleSource, Importance)>) -> StrongRuleNode {
++    rule_tree.insert_ordered_rules(rules.into_iter())
++}
++
++fn test_insertion_style_attribute(rule_tree: &RuleTree, rules: &[(StyleSource, Importance)]) -> StrongRuleNode {
++    let mut rules = rules.to_vec();
++    rules.push((StyleSource::Declarations(Arc::new(RwLock::new(PropertyDeclarationBlock {
++        declarations: vec![
++            (PropertyDeclaration::Display(DeclaredValue::Value(
++                longhands::display::SpecifiedValue::block)),
++            Importance::Normal),
++        ],
++        important_count: 0,
++    }))), Importance::Normal));
++    test_insertion(rule_tree, rules)
++}
++
++#[bench]
++fn bench_insertion_basic(b: &mut Bencher) {
++    let r = RuleTree::new();
++
++    let rules_matched = parse_rules(
++        ".foo { width: 200px; } \
++         .bar { height: 500px; } \
++         .baz { display: block; }");
++
++    b.iter(|| {
++        let _gc = AutoGCRuleTree::new(&r);
++
++        for _ in 0..(4000 + 400) {
++            test::black_box(test_insertion(&r, rules_matched.clone()));
++        }
++    })
++}
++
++#[bench]
++fn bench_insertion_basic_per_element(b: &mut Bencher) {
++    let r = RuleTree::new();
++
++    let rules_matched = parse_rules(
++        ".foo { width: 200px; } \
++         .bar { height: 500px; } \
++         .baz { display: block; }");
++
++    b.iter(|| {
++        let _gc = AutoGCRuleTree::new(&r);
++
++        test::black_box(test_insertion(&r, rules_matched.clone()));
++    });
++}
++
++#[bench]
++fn bench_expensive_insertion(b: &mut Bencher) {
++    let r = RuleTree::new();
++
++    // This test case tests a case where you style a bunch of siblings
++    // matching the same rules, with a different style attribute each
++    // one.
++    let rules_matched = parse_rules(
++        ".foo { width: 200px; } \
++         .bar { height: 500px; } \
++         .baz { display: block; }");
++
++    b.iter(|| {
++        let _gc = AutoGCRuleTree::new(&r);
++
++        for _ in 0..(4000 + 400) {
++            test::black_box(test_insertion_style_attribute(&r, &rules_matched));
++        }
++    });
++}
++
++#[bench]
++fn bench_insertion_basic_parallel(b: &mut Bencher) {
++    let r = RuleTree::new();
++
++    let rules_matched = parse_rules(
++        ".foo { width: 200px; } \
++         .bar { height: 500px; } \
++         .baz { display: block; }");
++
++    b.iter(|| {
++        let _gc = AutoGCRuleTree::new(&r);
++
++        rayon::scope(|s| {
++            for _ in 0..4 {
++                s.spawn(|s| {
++                    for _ in 0..1000 {
++                        test::black_box(test_insertion(&r,
++                                                       rules_matched.clone()));
++                    }
++                    s.spawn(|_| {
++                        for _ in 0..100 {
++                            test::black_box(test_insertion(&r,
++                                                           rules_matched.clone()));
++                        }
++                    })
++                })
++            }
++        });
++    });
++}
++
++#[bench]
++fn bench_expensive_insersion_parallel(b: &mut Bencher) {
++    let r = RuleTree::new();
++
++    let rules_matched = parse_rules(
++        ".foo { width: 200px; } \
++         .bar { height: 500px; } \
++         .baz { display: block; }");
++
++    b.iter(|| {
++        let _gc = AutoGCRuleTree::new(&r);
++
++        rayon::scope(|s| {
++            for _ in 0..4 {
++                s.spawn(|s| {
++                    for _ in 0..1000 {
++                        test::black_box(test_insertion_style_attribute(&r,
++                                                                       &rules_matched));
++                    }
++                    s.spawn(|_| {
++                        for _ in 0..100 {
++                            test::black_box(test_insertion_style_attribute(&r,
++                                                                           &rules_matched));
++                        }
++                    })
++                })
++            }
++        });
++    });
++}
+diff --git a/tests/unit/style/rule_tree/mod.rs b/tests/unit/style/rule_tree/mod.rs
+new file mode 100644
+index 000000000000..c94054a08816
+--- /dev/null
++++ b/tests/unit/style/rule_tree/mod.rs
+@@ -0,0 +1,5 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++mod bench;

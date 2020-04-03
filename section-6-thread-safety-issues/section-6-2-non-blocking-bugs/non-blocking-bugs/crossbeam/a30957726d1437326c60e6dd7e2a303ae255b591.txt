@@ -1,0 +1,45 @@
+diff --git a/src/mem/epoch/participant.rs b/src/mem/epoch/participant.rs
+index f7a36498..a0e6654a 100644
+--- a/src/mem/epoch/participant.rs
++++ b/src/mem/epoch/participant.rs
+@@ -25,6 +25,10 @@ pub struct Participant {
+     /// is ultimately used to free `Participant` records.
+     pub active: AtomicBool,
+ 
++    /// Has the thread been passed to unlinked() yet?
++    /// Used to avoid a double free when reclaiming participants.
++    pub unlinked: AtomicBool,
++
+     /// The participant list is coded intrusively; here's the `next` pointer.
+     pub next: Atomic<ParticipantNode>,
+ }
+@@ -37,6 +41,7 @@ impl Participant {
+             epoch: AtomicUsize::new(0),
+             in_critical: AtomicUsize::new(0),
+             active: AtomicBool::new(true),
++            unlinked: AtomicBool::new(false),
+             garbage: UnsafeCell::new(garbage::Local::new()),
+             next: Atomic::null(),
+         }
+diff --git a/src/mem/epoch/participants.rs b/src/mem/epoch/participants.rs
+index 9a5dc54d..d1d131ec 100644
+--- a/src/mem/epoch/participants.rs
++++ b/src/mem/epoch/participants.rs
+@@ -107,7 +107,16 @@ impl<'a> Iterator for Iter<'a> {
+                 cur = n.next.load(Relaxed, self.guard);
+                 unsafe {
+                     if self.next.cas_shared(Some(n), cur, Relaxed) {
+-                        self.guard.unlinked(n)
++                        // Having succesfully disconnected n from our
++                        // current node doesn't guarantee that n is
++                        // totally disconnected from the list: the
++                        // node that self.next lies in may have itself
++                        // been disconnected from the list. Thus, do a
++                        // CAS against unlinked to make sure we only
++                        // unlink a node once.
++                        if n.unlinked.compare_and_swap(false, true, Relaxed) {
++                            self.guard.unlinked(n);
++                        }
+                     }
+                 }
+             } else {

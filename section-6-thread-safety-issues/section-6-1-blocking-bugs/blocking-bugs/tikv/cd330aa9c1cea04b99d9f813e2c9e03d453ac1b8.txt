@@ -1,0 +1,13 @@
+diff --git a/src/storage/txn/scheduler.rs b/src/storage/txn/scheduler.rs
+index fb39329a6e..584a7ed577 100644
+--- a/src/storage/txn/scheduler.rs
++++ b/src/storage/txn/scheduler.rs
+@@ -540,6 +540,8 @@ impl Scheduler {
+         } else {
+             execute_callback(cb, pr);
+         }
++
++        self.release_lock(&ctx.lock, cid);
+     }
+ 
+     fn on_write_prepare_failed(&mut self, cid: u64, e: Error) {

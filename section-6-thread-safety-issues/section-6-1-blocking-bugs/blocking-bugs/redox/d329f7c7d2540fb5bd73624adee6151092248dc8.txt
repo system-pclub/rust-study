@@ -1,0 +1,140 @@
+diff --git a/kernel/scheme/root.rs b/kernel/scheme/root.rs
+index 14cf55ead5909f8e509fe6f6d32f39bda8b39cf9..23a9e57f859064e148de71903b17967e97b7c709 100644
+--- a/kernel/scheme/root.rs
++++ b/kernel/scheme/root.rs
+@@ -2,7 +2,6 @@ use alloc::arc::Arc;
+ use alloc::boxed::Box;
+ use collections::BTreeMap;
+ use core::sync::atomic::{AtomicUsize, Ordering};
+-use core::str;
+ use spin::RwLock;
+ 
+ use syscall::{Error, Result};
+@@ -24,7 +23,7 @@ impl RootScheme {
+ }
+ 
+ impl Scheme for RootScheme {
+-    fn open(&self, path: &[u8], flags: usize) -> Result<usize> {
++    fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
+         let inner = {
+             let mut schemes = scheme::schemes_mut();
+             if schemes.get_name(path).is_some() {
+@@ -42,14 +41,14 @@ impl Scheme for RootScheme {
+     }
+ 
+     fn dup(&self, file: usize) -> Result<usize> {
++        let mut handles = self.handles.write();
+         let inner = {
+-            let handles = self.handles.read();
+             let inner = handles.get(&file).ok_or(Error::BadFile)?;
+             inner.clone()
+         };
+ 
+         let id = self.next_id.fetch_add(1, Ordering::SeqCst);
+-        self.handles.write().insert(id, inner);
++        handles.insert(id, inner);
+ 
+         Ok(id)
+     }
+diff --git a/kernel/scheme/user.rs b/kernel/scheme/user.rs
+index 691ae0241cc4bec5170a5e200d410ba6a2a1c1a3..c209ecfb9c3bf153d3b68a3d0eb469644157dc8e 100644
+--- a/kernel/scheme/user.rs
++++ b/kernel/scheme/user.rs
+@@ -48,8 +48,11 @@ impl UserInner {
+         self.todo.lock().push_back(packet);
+ 
+         loop {
+-            if let Some(a) = self.done.lock().remove(&id) {
+-                return convert_to_result(a);
++            {
++                let mut done = self.done.lock();
++                if let Some(a) = done.remove(&id) {
++                    return convert_to_result(a);
++                }
+             }
+ 
+             unsafe { context::switch(); }
+@@ -89,7 +92,6 @@ impl UserInner {
+         while i < len {
+             let packet = unsafe { *(buf.as_ptr() as *const Packet).offset(i as isize) };
+             self.done.lock().insert(packet.id, packet.a);
+-
+             i += 1;
+         }
+ 
+diff --git a/kernel/syscall/mod.rs b/kernel/syscall/mod.rs
+index b76dfbdcac443705e9aa8ff291c79348eafdb86d..9ec87ed607ee510586724a8ab422dc8714168cfa 100644
+--- a/kernel/syscall/mod.rs
++++ b/kernel/syscall/mod.rs
+@@ -25,6 +25,8 @@ mod validate;
+ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize, stack: usize) -> usize {
+     #[inline(always)]
+     fn inner(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize, stack: usize) -> Result<usize> {
++        //println!("{}: {:?}: {} {} {} {}", ::context::context_id(), Call::from(a), a, b, c, d);
++
+         match Call::from(a) {
+             Some(call) => match call {
+                 Call::Exit => exit(b),
+diff --git a/kernel/syscall/process.rs b/kernel/syscall/process.rs
+index 081b5870804e2cdac8653725c5f5f8ceb25d3cd5..44175d7a12154d31f69f0b33b76a7cce2e9bfd43 100644
+--- a/kernel/syscall/process.rs
++++ b/kernel/syscall/process.rs
+@@ -174,31 +174,36 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
+             if flags & CLONE_FILES == CLONE_FILES {
+                 files = context.files.clone();
+             } else {
+-                let mut files_vec = Vec::new();
+-                for (fd, file_option) in context.files.lock().iter().enumerate() {
+-                    if let Some(file) = *file_option {
+-                        let result = {
+-                            let scheme = {
+-                                let schemes = scheme::schemes();
+-                                let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+-                                scheme.clone()
+-                            };
+-                            let result = scheme.dup(file.number);
+-                            result
++                files = Arc::new(Mutex::new(context.files.lock().clone()));
++            }
++        }
++
++        if flags & CLONE_FILES == 0 {
++            for (fd, mut file_option) in files.lock().iter_mut().enumerate() {
++                let new_file_option = if let Some(file) = *file_option {
++                    let result = {
++                        let scheme = {
++                            let schemes = scheme::schemes();
++                            let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
++                            scheme.clone()
+                         };
+-                        match result {
+-                            Ok(new_number) => {
+-                                files_vec.push(Some(context::file::File { scheme: file.scheme, number: new_number }));
+-                            },
+-                            Err(err) => {
+-                                println!("clone: failed to dup {}: {:?}", fd, err);
+-                            }
++                        let result = scheme.dup(file.number);
++                        result
++                    };
++                    match result {
++                        Ok(new_number) => {
++                            Some(context::file::File { scheme: file.scheme, number: new_number })
++                        },
++                        Err(err) => {
++                            println!("clone: failed to dup {}: {:?}", fd, err);
++                            None
+                         }
+-                    } else {
+-                        files_vec.push(None);
+                     }
+-                }
+-                files = Arc::new(Mutex::new(files_vec));
++                } else {
++                    None
++                };
++
++                *file_option = new_file_option;
+             }
+         }
+ 

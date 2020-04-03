@@ -1,0 +1,80 @@
+diff --git a/ethcore/private-tx/src/lib.rs b/ethcore/private-tx/src/lib.rs
+index ce3b2e3a01a..9666eeea57f 100644
+--- a/ethcore/private-tx/src/lib.rs
++++ b/ethcore/private-tx/src/lib.rs
+@@ -591,10 +591,12 @@ impl Importer for Arc<Provider> {
+ 					hash,
+ 					self.pool_client(&nonce_cache),
+ 				)?;
+-				let provider = self.clone();
++				let provider = Arc::downgrade(self);
+ 				self.channel.send(ClientIoMessage::execute(move |_| {
+-					if let Err(e) = provider.process_queue() {
+-						debug!("Unable to process the queue: {}", e);
++					if let Some(provider) = provider.upgrade() {
++						if let Err(e) = provider.process_queue() {
++							debug!("Unable to process the queue: {}", e);
++						}
+ 					}
+ 				})).map_err(|_| ErrorKind::ClientIsMalformed.into())
+ 			}
+diff --git a/ethcore/src/client/ancient_import.rs b/ethcore/src/client/ancient_import.rs
+index ba8f1ecd887..7db76c53054 100644
+--- a/ethcore/src/client/ancient_import.rs
++++ b/ethcore/src/client/ancient_import.rs
+@@ -53,15 +53,24 @@ impl AncientVerifier {
+ 		header: &Header,
+ 		chain: &BlockChain,
+ 	) -> Result<(), ::error::Error> {
+-
+ 		// perform verification
+-		if let Some(ref cur_verifier) = *self.cur_verifier.read() {
++		let verified = if let Some(ref cur_verifier) = *self.cur_verifier.read() {
+ 			match rng.gen::<f32>() <= HEAVY_VERIFY_RATE {
+ 				true => cur_verifier.verify_heavy(header)?,
+ 				false => cur_verifier.verify_light(header)?,
+ 			}
++			true
+ 		} else {
+-			*self.cur_verifier.write() = Some(self.initial_verifier(header, chain)?);
++			false
++		};
++
++		// when there is no verifier initialize it.
++		// We use a bool flag to avoid double locking in the happy case
++		if !verified {
++			let mut cur_verifier = self.cur_verifier.write();
++			if cur_verifier.is_none() {
++				*cur_verifier = Some(self.initial_verifier(header, chain)?);
++			}
+ 			// Call again to verify.
+ 			return self.verify(rng, header, chain);
+ 		}
+diff --git a/ethcore/src/client/client.rs b/ethcore/src/client/client.rs
+index 8c9c7eec54a..a31e49580ae 100644
+--- a/ethcore/src/client/client.rs
++++ b/ethcore/src/client/client.rs
+@@ -1967,7 +1967,6 @@ impl IoClient for Client {
+ 			}
+ 		}
+ 	}
+-	// TODO Move consensus message and possibly other ClientIoMessages
+ }
+ 
+ impl ReopenBlock for Client {
+diff --git a/ethcore/sync/src/api.rs b/ethcore/sync/src/api.rs
+index c921597114f..297131c22f9 100644
+--- a/ethcore/sync/src/api.rs
++++ b/ethcore/sync/src/api.rs
+@@ -395,7 +395,10 @@ impl NetworkProtocolHandler for SyncProtocolHandler {
+ 
+ 	fn disconnected(&self, io: &NetworkContext, peer: &PeerId) {
+ 		trace_time!("sync::disconnected");
+-		if io.subprotocol_name() != WARP_SYNC_PROTOCOL_ID {
++		// If warp protocol is supported only allow warp handshake
++		let warp_protocol = io.protocol_version(WARP_SYNC_PROTOCOL_ID, *peer).unwrap_or(0) != 0;
++		let warp_context = io.subprotocol_name() == WARP_SYNC_PROTOCOL_ID;
++		if warp_protocol == warp_context {
+ 			self.sync.write().on_peer_aborting(&mut NetSyncIo::new(io, &*self.chain, &*self.snapshot_service, &self.overlay), *peer);
+ 		}
+ 	}

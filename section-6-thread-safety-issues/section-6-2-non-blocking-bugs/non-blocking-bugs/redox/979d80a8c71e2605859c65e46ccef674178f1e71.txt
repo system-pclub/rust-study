@@ -1,0 +1,59 @@
+diff --git a/arch/x86_64/src/lib.rs b/arch/x86_64/src/lib.rs
+index 8f9adf19c..d9b5b3ebe 100644
+--- a/arch/x86_64/src/lib.rs
++++ b/arch/x86_64/src/lib.rs
+@@ -19,13 +19,8 @@ extern crate x86;
+ #[macro_export]
+ macro_rules! print {
+     ($($arg:tt)*) => ({
+-        {
+-            use core::fmt::Write;
+-            //TODO: let mut serial_console = $crate::serial::SERIAL_CONSOLE.lock();
+-            let mut serial_console = $crate::serial::SerialConsole::new();
+-            let _ = write!(serial_console, $($arg)*);
+-            drop(serial_console);
+-        }
++        use core::fmt::Write;
++        let _ = write!($crate::serial::SerialConsole, $($arg)*);
+     });
+ }
+ 
+diff --git a/arch/x86_64/src/serial.rs b/arch/x86_64/src/serial.rs
+index a6b8d3121..22030846f 100644
+--- a/arch/x86_64/src/serial.rs
++++ b/arch/x86_64/src/serial.rs
+@@ -3,16 +3,16 @@ use spin::Mutex;
+ 
+ use super::io::{Io, Pio};
+ 
+-pub static SERIAL_CONSOLE: Mutex<SerialConsole> = Mutex::new(SerialConsole::new());
++static SERIAL_PORT: Mutex<SerialPort> = Mutex::new(SerialPort::new());
+ 
+-pub struct SerialConsole {
++struct SerialPort {
+     status: Pio<u8>,
+     data: Pio<u8>
+ }
+ 
+-impl SerialConsole {
+-    pub const fn new() -> SerialConsole {
+-        SerialConsole {
++impl SerialPort {
++    pub const fn new() -> SerialPort {
++        SerialPort {
+             status: Pio::new(0x3F8 + 5),
+             data: Pio::new(0x3F8)
+         }
+@@ -34,9 +34,11 @@ impl SerialConsole {
+     }
+ }
+ 
++pub struct SerialConsole;
++
+ impl fmt::Write for SerialConsole {
+     fn write_str(&mut self, s: &str) -> Result<(), fmt::Error> {
+-        self.write(s.as_bytes());
++        SERIAL_PORT.lock().write(s.as_bytes());
+ 
+         Ok(())
+     }
