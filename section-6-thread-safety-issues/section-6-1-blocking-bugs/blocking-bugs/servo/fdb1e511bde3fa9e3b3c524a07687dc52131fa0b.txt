@@ -1,0 +1,425 @@
+diff --git a/components/constellation/constellation.rs b/components/constellation/constellation.rs
+index 2017f0b4b09f..2006efd3cded 100644
+--- a/components/constellation/constellation.rs
++++ b/components/constellation/constellation.rs
+@@ -54,8 +54,8 @@ use std::iter::once;
+ use std::marker::PhantomData;
+ use std::mem::replace;
+ use std::process;
++use std::sync::Arc;
+ use std::sync::mpsc::{Sender, channel, Receiver};
+-use std::sync::{Arc, Mutex};
+ use std::thread;
+ use std::time::Instant;
+ use style_traits::PagePx;
+@@ -65,6 +65,7 @@ use timer_scheduler::TimerScheduler;
+ use url::Url;
+ use util::opts;
+ use util::prefs::PREFS;
++use util::remutex::ReentrantMutex;
+ use util::thread::spawn_named;
+ use webrender_traits;
+ 
+@@ -314,14 +315,14 @@ enum ExitPipelineMode {
+ #[derive(Clone)]
+ pub struct FromScriptLogger {
+     /// A channel to the constellation
+-    pub constellation_chan: Arc<Mutex<IpcSender<FromScriptMsg>>>,
++    pub constellation_chan: Arc<ReentrantMutex<IpcSender<FromScriptMsg>>>,
+ }
+ 
+ impl FromScriptLogger {
+     /// Create a new constellation logger.
+     pub fn new(constellation_chan: IpcSender<FromScriptMsg>) -> FromScriptLogger {
+         FromScriptLogger {
+-            constellation_chan: Arc::new(Mutex::new(constellation_chan))
++            constellation_chan: Arc::new(ReentrantMutex::new(constellation_chan))
+         }
+     }
+ 
+@@ -352,14 +353,14 @@ impl Log for FromScriptLogger {
+ #[derive(Clone)]
+ pub struct FromCompositorLogger {
+     /// A channel to the constellation
+-    pub constellation_chan: Arc<Mutex<Sender<FromCompositorMsg>>>,
++    pub constellation_chan: Arc<ReentrantMutex<Sender<FromCompositorMsg>>>,
+ }
+ 
+ impl FromCompositorLogger {
+     /// Create a new constellation logger.
+     pub fn new(constellation_chan: Sender<FromCompositorMsg>) -> FromCompositorLogger {
+         FromCompositorLogger {
+-            constellation_chan: Arc::new(Mutex::new(constellation_chan))
++            constellation_chan: Arc::new(ReentrantMutex::new(constellation_chan))
+         }
+     }
+ 
+diff --git a/components/util/Cargo.toml b/components/util/Cargo.toml
+index e5f0bc9b5d35..c0c226a3d449 100644
+--- a/components/util/Cargo.toml
++++ b/components/util/Cargo.toml
+@@ -30,5 +30,8 @@ serde_macros = {version = "0.7.11", optional = true}
+ url = "1.0.0"
+ plugins = {path = "../plugins", optional = true}
+ 
++[dev-dependencies]
++env_logger = "0.3"
++
+ [target.'cfg(all(unix, not(target_os = "macos"), not(target_os = "ios"), not(target_os = "android")))'.dependencies]
+ xdg = "2.0"
+diff --git a/components/util/lib.rs b/components/util/lib.rs
+index c36ec47a4cb8..13e763b9cbc6 100644
+--- a/components/util/lib.rs
++++ b/components/util/lib.rs
+@@ -4,6 +4,7 @@
+ 
+ #![cfg_attr(feature = "servo", feature(custom_derive))]
+ #![cfg_attr(feature = "servo", feature(plugin))]
++#![cfg_attr(feature = "servo", feature(nonzero))]
+ #![cfg_attr(feature = "servo", feature(reflect_marker))]
+ #![cfg_attr(feature = "servo", plugin(serde_macros))]
+ #![cfg_attr(feature = "servo", plugin(plugins))]
+@@ -12,6 +13,7 @@
+ 
+ extern crate app_units;
+ #[allow(unused_extern_crates)] #[macro_use] extern crate bitflags;
++extern crate core;
+ extern crate euclid;
+ extern crate getopts;
+ #[macro_use] extern crate heapsize;
+@@ -30,6 +32,7 @@ pub mod geometry;
+ #[cfg(feature = "servo")] #[allow(unsafe_code)] pub mod ipc;
+ #[allow(unsafe_code)] pub mod opts;
+ pub mod prefs;
++#[cfg(feature = "servo")] pub mod remutex;
+ pub mod resource_files;
+ pub mod thread;
+ pub mod thread_state;
+diff --git a/components/util/remutex.rs b/components/util/remutex.rs
+new file mode 100644
+index 000000000000..ec1c27a3d1aa
+--- /dev/null
++++ b/components/util/remutex.rs
+@@ -0,0 +1,217 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++//! An implementation of re-entrant mutexes.
++//!
++//! Re-entrant mutexes are like mutexes, but where it is expected
++//! that a single thread may own a lock more than once.
++
++//! It provides the same interface as https://github.com/rust-lang/rust/blob/master/src/libstd/sys/common/remutex.rs
++//! so if those types are ever exported, we should be able to replace this implemtation.
++
++use core::nonzero::NonZero;
++use std::cell::{Cell, UnsafeCell};
++use std::mem;
++use std::ops::Deref;
++use std::sync::atomic::{AtomicUsize, Ordering};
++use std::sync::{LockResult, Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult};
++
++/// A type for thread ids.
++
++// TODO: can we use the thread-id crate for this?
++
++#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
++pub struct ThreadId(NonZero<usize>);
++
++lazy_static!{ static ref THREAD_COUNT: AtomicUsize = AtomicUsize::new(1); }
++
++impl ThreadId {
++    #[allow(unsafe_code)]
++    fn new() -> ThreadId {
++        let number = THREAD_COUNT.fetch_add(1, Ordering::SeqCst);
++        ThreadId(unsafe { NonZero::new(number) })
++    }
++    pub fn current() -> ThreadId {
++        THREAD_ID.with(|tls| tls.clone())
++    }
++}
++
++thread_local!{ static THREAD_ID: ThreadId = ThreadId::new() }
++
++/// A type for atomic storage of thread ids.
++#[derive(Debug)]
++pub struct AtomicOptThreadId(AtomicUsize);
++
++impl AtomicOptThreadId {
++    pub fn new() -> AtomicOptThreadId {
++        AtomicOptThreadId(AtomicUsize::new(0))
++    }
++    pub fn store(&self, value: Option<ThreadId>, ordering: Ordering) {
++        let number = value.map(|id| *id.0).unwrap_or(0);
++        self.0.store(number, ordering);
++    }
++    #[allow(unsafe_code)]
++    pub fn load(&self, ordering: Ordering) -> Option<ThreadId> {
++        let number = self.0.load(ordering);
++        if number == 0 { None } else { Some(ThreadId(unsafe { NonZero::new(number) })) }
++    }
++    #[allow(unsafe_code)]
++    pub fn swap(&self, value: Option<ThreadId>, ordering: Ordering) -> Option<ThreadId> {
++        let number = value.map(|id| *id.0).unwrap_or(0);
++        let number = self.0.swap(number, ordering);
++        if number == 0 { None } else { Some(ThreadId(unsafe { NonZero::new(number) })) }
++    }
++}
++
++/// A type for hand-over-hand mutexes.
++///
++/// These support `lock` and `unlock` functions. `lock` blocks waiting to become the
++/// mutex owner. `unlock` can only be called by the lock owner, and panics otherwise.
++/// They have the same happens-before and poisoning semantics as `Mutex`.
++
++// TODO: Can we use `raw_lock` and `raw_unlock` from `parking_lot`'s `Mutex` for this?
++
++pub struct HandOverHandMutex {
++    mutex: Mutex<()>,
++    owner: AtomicOptThreadId,
++    guard: UnsafeCell<Option<MutexGuard<'static, ()>>>,
++}
++
++impl HandOverHandMutex {
++    pub fn new() -> HandOverHandMutex {
++        HandOverHandMutex {
++            mutex: Mutex::new(()),
++            owner: AtomicOptThreadId::new(),
++            guard: UnsafeCell::new(None),
++        }
++    }
++    #[allow(unsafe_code)]
++    pub fn lock(&self) -> LockResult<()> {
++        let (guard, result) = match self.mutex.lock() {
++            Ok(guard) => (guard, Ok(())),
++            Err(err) => (err.into_inner(), Err(PoisonError::new(()))),
++        };
++        unsafe { *self.guard.get().as_mut().unwrap() = mem::transmute(guard) };
++        self.owner.store(Some(ThreadId::current()), Ordering::Relaxed);
++        result
++    }
++    #[allow(unsafe_code)]
++    pub fn try_lock(&self) -> TryLockResult<()> {
++        let (guard, result) = match self.mutex.try_lock() {
++            Ok(guard) => (guard, Ok(())),
++            Err(TryLockError::WouldBlock) => return Err(TryLockError::WouldBlock),
++            Err(TryLockError::Poisoned(err)) => (err.into_inner(), Err(TryLockError::Poisoned(PoisonError::new(())))),
++        };
++        unsafe { *self.guard.get().as_mut().unwrap() = mem::transmute(guard) };
++        self.owner.store(Some(ThreadId::current()), Ordering::Relaxed);
++        result
++    }
++    #[allow(unsafe_code)]
++    pub fn unlock(&self) {
++        assert_eq!(Some(ThreadId::current()), self.owner.load(Ordering::Relaxed));
++        self.owner.store(None, Ordering::Relaxed);
++        unsafe { *self.guard.get().as_mut().unwrap() = None; }
++    }
++    pub fn owner(&self) -> Option<ThreadId> {
++        self.owner.load(Ordering::Relaxed)
++    }
++}
++
++#[allow(unsafe_code)]
++unsafe impl Send for HandOverHandMutex {}
++
++/// A type for re-entrant mutexes.
++///
++/// It provides the same interface as https://github.com/rust-lang/rust/blob/master/src/libstd/sys/common/remutex.rs
++
++pub struct ReentrantMutex<T> {
++    mutex: HandOverHandMutex,
++    count: Cell<usize>,
++    data: T,
++}
++
++#[allow(unsafe_code)]
++unsafe impl<T> Sync for ReentrantMutex<T> where T: Send {}
++
++impl<T> ReentrantMutex<T> {
++    pub fn new(data: T) -> ReentrantMutex<T> {
++        debug!("{:?} Creating new lock.", ThreadId::current());
++        ReentrantMutex {
++            mutex: HandOverHandMutex::new(),
++            count: Cell::new(0),
++            data: data,
++        }
++    }
++
++    pub fn lock(&self) -> LockResult<ReentrantMutexGuard<T>> {
++        debug!("{:?} Locking.", ThreadId::current());
++        if self.mutex.owner() != Some(ThreadId::current()) {
++            debug!("{:?} Becoming owner.", ThreadId::current());
++            if let Err(_) = self.mutex.lock() {
++                debug!("{:?} Poison!", ThreadId::current());
++                return Err(PoisonError::new(self.mk_guard()));
++            }
++            debug!("{:?} Became owner.", ThreadId::current());
++        }
++        Ok(self.mk_guard())
++    }
++
++    pub fn try_lock(&self) -> TryLockResult<ReentrantMutexGuard<T>> {
++        debug!("{:?} Try locking.", ThreadId::current());
++        if self.mutex.owner() != Some(ThreadId::current()) {
++            debug!("{:?} Becoming owner?", ThreadId::current());
++            if let Err(err) = self.mutex.try_lock() {
++                match err {
++                    TryLockError::WouldBlock => {
++                        debug!("{:?} Would block.", ThreadId::current());
++                        return Err(TryLockError::WouldBlock)
++                    },
++                    TryLockError::Poisoned(_) => {
++                        debug!("{:?} Poison!", ThreadId::current());
++                        return Err(TryLockError::Poisoned(PoisonError::new(self.mk_guard())));
++                    },
++                }
++            }
++            debug!("{:?} Became owner.", ThreadId::current());
++        }
++        Ok(self.mk_guard())
++    }
++
++    fn unlock(&self) {
++        debug!("{:?} Unlocking.", ThreadId::current());
++        let count = self.count.get().checked_sub(1).expect("Underflowed lock count.");
++        debug!("{:?} Decrementing count to {}.", ThreadId::current(), count);
++        self.count.set(count);
++        if count == 0 {
++            debug!("{:?} Releasing mutex.", ThreadId::current());
++            self.mutex.unlock();
++        }
++    }
++
++    fn mk_guard(&self) -> ReentrantMutexGuard<T> {
++        let count = self.count.get().checked_add(1).expect("Overflowed lock count.");
++        debug!("{:?} Incrementing count to {}.", ThreadId::current(), count);
++        self.count.set(count);
++        ReentrantMutexGuard { mutex: self }
++    }
++}
++
++#[must_use]
++pub struct ReentrantMutexGuard<'a, T> where T: 'static {
++    mutex: &'a ReentrantMutex<T>,
++}
++
++impl<'a, T> Drop for ReentrantMutexGuard<'a, T> {
++    #[allow(unsafe_code)]
++    fn drop(&mut self) {
++        self.mutex.unlock()
++    }
++}
++
++impl<'a, T> Deref for ReentrantMutexGuard<'a, T> {
++    type Target = T;
++    fn deref(&self) -> &T {
++        &self.mutex.data
++    }
++}
+diff --git a/tests/unit/util/lib.rs b/tests/unit/util/lib.rs
+index 1ad4e55d965f..96506d5973cf 100644
+--- a/tests/unit/util/lib.rs
++++ b/tests/unit/util/lib.rs
+@@ -8,4 +8,5 @@ extern crate util;
+ 
+ mod opts;
+ mod prefs;
++mod remutex;
+ mod thread;
+diff --git a/tests/unit/util/remutex.rs b/tests/unit/util/remutex.rs
+new file mode 100644
+index 000000000000..a005d761d5f2
+--- /dev/null
++++ b/tests/unit/util/remutex.rs
+@@ -0,0 +1,89 @@
++// Copyright 2015 The Rust Project Developers. See the COPYRIGHT
++// file at the top-level directory of this distribution and at
++// http://rust-lang.org/COPYRIGHT.
++//
++// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
++// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
++// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
++// option. This file may not be copied, modified, or distributed
++// except according to those terms.
++
++// These tests came from https://github.com/rust-lang/rust/blob/master/src/libstd/sys/common/remutex.rs
++
++use std::cell::RefCell;
++use std::sync::Arc;
++use std::thread;
++use util::remutex::{ReentrantMutex, ReentrantMutexGuard};
++
++#[test]
++fn smoke() {
++    let m = ReentrantMutex::new(());
++    {
++        let a = m.lock().unwrap();
++        {
++            let b = m.lock().unwrap();
++            {
++                let c = m.lock().unwrap();
++                assert_eq!(*c, ());
++            }
++            assert_eq!(*b, ());
++        }
++        assert_eq!(*a, ());
++    }
++}
++
++#[test]
++fn is_mutex() {
++    let m = Arc::new(ReentrantMutex::new(RefCell::new(0)));
++    let m2 = m.clone();
++    let lock = m.lock().unwrap();
++    let child = thread::spawn(move || {
++        let lock = m2.lock().unwrap();
++        assert_eq!(*lock.borrow(), 4950);
++    });
++    for i in 0..100 {
++        let lock = m.lock().unwrap();
++        *lock.borrow_mut() += i;
++    }
++    drop(lock);
++    child.join().unwrap();
++}
++
++#[test]
++fn trylock_works() {
++    let m = Arc::new(ReentrantMutex::new(()));
++    let m2 = m.clone();
++    let _lock = m.try_lock().unwrap();
++    let _lock2 = m.try_lock().unwrap();
++    thread::spawn(move || {
++        let lock = m2.try_lock();
++        assert!(lock.is_err());
++    }).join().unwrap();
++    let _lock3 = m.try_lock().unwrap();
++}
++
++pub struct Answer<'a>(pub ReentrantMutexGuard<'a, RefCell<u32>>);
++impl<'a> Drop for Answer<'a> {
++    fn drop(&mut self) {
++        *self.0.borrow_mut() = 42;
++    }
++}
++
++#[test]
++fn poison_works() {
++    let m = Arc::new(ReentrantMutex::new(RefCell::new(0)));
++    let mc = m.clone();
++    let result = thread::spawn(move ||{
++        let lock = mc.lock().unwrap();
++        *lock.borrow_mut() = 1;
++        let lock2 = mc.lock().unwrap();
++        *lock.borrow_mut() = 2;
++        let _answer = Answer(lock2);
++        println!("Intentionally panicking.");
++        panic!("What the answer to my lifetimes dilemma is?");
++    }).join();
++    assert!(result.is_err());
++    let r = m.lock().err().unwrap().into_inner();
++    assert_eq!(*r.borrow(), 42);
++}
++

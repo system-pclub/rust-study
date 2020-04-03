@@ -1,0 +1,101 @@
+diff --git a/ethcore/sync/src/light_sync/mod.rs b/ethcore/sync/src/light_sync/mod.rs
+index 32e3a0dbfde..4b67c3a476b 100644
+--- a/ethcore/sync/src/light_sync/mod.rs
++++ b/ethcore/sync/src/light_sync/mod.rs
+@@ -614,6 +614,27 @@ impl<L: AsLightClient> LightSync<L> {
+ 			};
+ 		}
+ 	}
++
++	fn is_major_importing_do_wait(&self, wait: bool) -> bool {
++		const EMPTY_QUEUE: usize = 3;
++
++		if self.client.as_light_client().queue_info().unverified_queue_size > EMPTY_QUEUE {
++			return true;
++		}
++		let mg_state = if wait {
++			self.state.lock()
++		} else {
++			if let Some(mg_state) = self.state.try_lock() {
++				mg_state
++			} else {
++				return false;
++			}
++		};
++		match *mg_state {
++			SyncState::Idle => false,
++			_ => true,
++		}
++	}
+ }
+ 
+ // public API
+@@ -645,6 +666,9 @@ pub trait SyncInfo {
+ 
+ 	/// Whether major sync is underway.
+ 	fn is_major_importing(&self) -> bool;
++
++	/// Whether major sync is underway, skipping some synchronization.
++	fn is_major_importing_no_sync(&self) -> bool;
+ }
+ 
+ impl<L: AsLightClient> SyncInfo for LightSync<L> {
+@@ -657,15 +681,11 @@ impl<L: AsLightClient> SyncInfo for LightSync<L> {
+ 	}
+ 
+ 	fn is_major_importing(&self) -> bool {
+-		const EMPTY_QUEUE: usize = 3;
+-
+-		if self.client.as_light_client().queue_info().unverified_queue_size > EMPTY_QUEUE {
+-			return true;
+-		}
++		self.is_major_importing_do_wait(true)
++	}
+ 
+-		match *self.state.lock() {
+-			SyncState::Idle => false,
+-			_ => true,
+-		}
++	fn is_major_importing_no_sync(&self) -> bool {
++		self.is_major_importing_do_wait(false)
+ 	}
++
+ }
+diff --git a/parity/informant.rs b/parity/informant.rs
+index d3489a52f3b..ddc19146a8a 100644
+--- a/parity/informant.rs
++++ b/parity/informant.rs
+@@ -184,7 +184,7 @@ impl InformantData for LightNodeInformantData {
+ 	fn executes_transactions(&self) -> bool { false }
+ 
+ 	fn is_major_importing(&self) -> bool {
+-		self.sync.is_major_importing()
++		self.sync.is_major_importing_no_sync()
+ 	}
+ 
+ 	fn report(&self) -> Report {
+@@ -422,15 +422,15 @@ impl LightChainNotify for Informant<LightNodeInformantData> {
+ 		if ripe {
+ 			if let Some(header) = good.last().and_then(|h| client.block_header(BlockId::Hash(*h))) {
+ 				info!(target: "import", "Imported {} {} ({} Mgas){}",
+-					  Colour::White.bold().paint(format!("#{}", header.number())),
+-					  Colour::White.bold().paint(format!("{}", header.hash())),
+-					  Colour::Yellow.bold().paint(format!("{:.2}", header.gas_used().low_u64() as f32  / 1000000f32)),
+-					  if good.len() > 1 {
+-						  format!(" + another {} header(s)",
+-								  Colour::Red.bold().paint(format!("{}", good.len() - 1)))
+-					  } else {
+-						  String::new()
+-					  }
++					Colour::White.bold().paint(format!("#{}", header.number())),
++					Colour::White.bold().paint(format!("{}", header.hash())),
++					Colour::Yellow.bold().paint(format!("{:.2}", header.gas_used().low_u64() as f32 / 1000000f32)),
++					if good.len() > 1 {
++						format!(" + another {} header(s)",
++								Colour::Red.bold().paint(format!("{}", good.len() - 1)))
++					} else {
++						String::new()
++					}
+ 				);
+ 				*last_import = Instant::now();
+ 			}

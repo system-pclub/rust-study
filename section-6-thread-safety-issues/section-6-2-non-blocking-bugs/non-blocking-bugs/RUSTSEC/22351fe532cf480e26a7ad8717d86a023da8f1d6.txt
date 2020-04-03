@@ -1,0 +1,43 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index c49e11c..05fa597 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -22,13 +22,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
+ * Switch to Circle CI Rust 1.34.1 image.
+ 
+ ### Fixed
+-* Fix erroneous doc comments (PR #24).
++* Switch `set_capture_file_comments()` and `trigger_multi_frame_capture()` to
++  take `&mut self` (PR #32).
+ * Unimplement `Clone`, `Send`, and `Sync` for `RenderDoc` struct (PR #29).
+ * Correct default setting in the `get_set_capture_option()` unit test.
+ * Fix improperly designed `launch_replay_ui()` method, update `triangle` example
+   to match.
+ * Set correct RenderDoc library path for Android clients.
+ * Add missing trait re-exports to `prelude` module (PR #31).
++* Fix erroneous doc comments (PR #24).
+ 
+ ## [0.4.0] - 2018-09-16
+ ### Added
+diff --git a/src/api.rs b/src/api.rs
+index ef5e3f3..dcda63b 100644
+--- a/src/api.rs
++++ b/src/api.rs
+@@ -291,7 +291,7 @@ pub trait RenderDocV110: RenderDocV100 {
+     ///
+     /// Data is saved to a capture log file at the location specified via
+     /// `set_log_file_path_template()`.
+-    fn trigger_multi_frame_capture(&self, num_frames: u32) {
++    fn trigger_multi_frame_capture(&mut self, num_frames: u32) {
+         unsafe {
+             (self.entry_v110().TriggerMultiFrameCapture.unwrap())(num_frames);
+         }
+@@ -353,7 +353,7 @@ pub trait RenderDocV120: RenderDocV112 {
+     unsafe fn entry_v120(&self) -> &EntryV120;
+ 
+     #[allow(missing_docs)]
+-    fn set_capture_file_comments<'a, P, C>(&self, path: P, comments: C)
++    fn set_capture_file_comments<'a, P, C>(&mut self, path: P, comments: C)
+     where
+         P: Into<Option<&'a str>>,
+         C: AsRef<str>,

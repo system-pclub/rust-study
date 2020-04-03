@@ -1,0 +1,335 @@
+diff --git a/components/constellation/constellation.rs b/components/constellation/constellation.rs
+index 6af31b0f0a8b..c1cee272d766 100644
+--- a/components/constellation/constellation.rs
++++ b/components/constellation/constellation.rs
+@@ -180,6 +180,9 @@ pub struct Constellation<Message, LTF, STF> {
+     // Webrender interface, if enabled.
+     webrender_api_sender: Option<webrender_traits::RenderApiSender>,
+ 
++    /// Are we shutting down?
++    shutting_down: bool,
++
+     /// Have we seen any panics? Hopefully always false!
+     handled_panic: bool,
+ 
+@@ -366,6 +369,7 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+                 child_processes: Vec::new(),
+                 document_states: HashMap::new(),
+                 webrender_api_sender: state.webrender_api_sender,
++                shutting_down: false,
+                 handled_panic: false,
+                 random_pipeline_closure: opts::get().random_pipeline_closure_probability.map(|prob| {
+                     let seed = opts::get().random_pipeline_closure_seed.unwrap_or_else(random);
+@@ -383,14 +387,13 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+     }
+ 
+     fn run(&mut self) {
+-        loop {
++        while !self.shutting_down || !self.pipelines.is_empty() {
+             // Randomly close a pipeline if --random-pipeline-closure-probability is set
+             // This is for testing the hardening of the constellation.
+             self.maybe_close_random_pipeline();
+-            if !self.handle_request() {
+-                break;
+-            }
++            self.handle_request();
+         }
++        self.handle_shutdown();
+     }
+ 
+     fn next_pipeline_namespace_id(&mut self) -> PipelineNamespaceId {
+@@ -407,6 +410,8 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+                     initial_window_size: Option<TypedSize2D<PagePx, f32>>,
+                     script_channel: Option<IpcSender<ConstellationControlMsg>>,
+                     load_data: LoadData) {
++        if self.shutting_down { return; }
++
+         let result = Pipeline::spawn::<Message, LTF, STF>(InitialPipelineState {
+             id: pipeline_id,
+             parent_info: parent_info,
+@@ -482,12 +487,12 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+ 
+     /// Handles loading pages, navigation, and granting access to the compositor
+     #[allow(unsafe_code)]
+-    fn handle_request(&mut self) -> bool {
++    fn handle_request(&mut self) {
+         enum Request {
+             Script(FromScriptMsg),
+             Compositor(FromCompositorMsg),
+             Layout(FromLayoutMsg),
+-            Panic(PanicMsg)
++            Panic(PanicMsg),
+         }
+ 
+         // Get one incoming request.
+@@ -524,25 +529,21 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+             },
+             Request::Script(message) => {
+                 self.handle_request_from_script(message);
+-                true
+             },
+             Request::Layout(message) => {
+                 self.handle_request_from_layout(message);
+-                true
+             },
+             Request::Panic(message) => {
+                 self.handle_request_from_panic(message);
+-                true
+             },
+         }
+     }
+ 
+-    fn handle_request_from_compositor(&mut self, message: FromCompositorMsg) -> bool {
++    fn handle_request_from_compositor(&mut self, message: FromCompositorMsg) {
+         match message {
+             FromCompositorMsg::Exit => {
+                 debug!("constellation exiting");
+                 self.handle_exit();
+-                return false;
+             }
+             // The compositor discovered the size of a subframe. This needs to be reflected by all
+             // frame trees in the navigation context containing the subframe.
+@@ -606,12 +607,13 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+                 self.handle_webdriver_msg(command);
+             }
+         }
+-
+-        true
+     }
+ 
+     fn handle_request_from_script(&mut self, message: FromScriptMsg) {
+         match message {
++            FromScriptMsg::PipelineExited(pipeline_id) => {
++                self.handle_pipeline_exited(pipeline_id);
++            }
+             FromScriptMsg::ScriptLoadedURLInIFrame(load_info) => {
+                 debug!("constellation got iframe URL load message {:?} {:?} {:?}",
+                        load_info.containing_pipeline_id,
+@@ -817,34 +819,55 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+     }
+ 
+     fn handle_exit(&mut self) {
++        // TODO: add a timer, which forces shutdown if threads aren't responsive.
++        if self.shutting_down { return; }
++        self.shutting_down = true;
++
++        // TODO: exit before the root frame is set?
++        if let Some(root_id) = self.root_frame_id {
++            self.close_frame(root_id, ExitPipelineMode::Normal);
++        }
++    }
++
++    fn handle_shutdown(&mut self) {
++        // At this point, there are no active pipelines,
++        // so we can safely block on other threads, without worrying about deadlock.
+         // Channels to recieve signals when threads are done exiting.
+         let (core_sender, core_receiver) = ipc::channel().expect("Failed to create IPC channel!");
+         let (storage_sender, storage_receiver) = ipc::channel().expect("Failed to create IPC channel!");
+ 
+-        for (_id, ref pipeline) in &self.pipelines {
+-            pipeline.exit();
+-        }
++        debug!("Exiting image cache.");
+         self.image_cache_thread.exit();
++
++        debug!("Exiting core resource threads.");
+         if let Err(e) = self.resource_threads.send(net_traits::CoreResourceMsg::Exit(core_sender)) {
+             warn!("Exit resource thread failed ({})", e);
+         }
++
+         if let Some(ref chan) = self.devtools_chan {
++            debug!("Exiting devtools.");
+             let msg = DevtoolsControlMsg::FromChrome(ChromeToDevtoolsControlMsg::ServerExitMsg);
+             if let Err(e) = chan.send(msg) {
+                 warn!("Exit devtools failed ({})", e);
+             }
+         }
++
++        debug!("Exiting storage resource threads.");
+         if let Err(e) = self.resource_threads.send(StorageThreadMsg::Exit(storage_sender)) {
+             warn!("Exit storage thread failed ({})", e);
+         }
+ 
++        debug!("Exiting file manager resource threads.");
+         if let Err(e) = self.resource_threads.send(FileManagerThreadMsg::Exit) {
+             warn!("Exit storage thread failed ({})", e);
+         }
+ 
++        debug!("Exiting bluetooth thread.");
+         if let Err(e) = self.bluetooth_thread.send(BluetoothMethodMsg::Exit) {
+             warn!("Exit bluetooth thread failed ({})", e);
+         }
++
++        debug!("Exiting font cache thread.");
+         self.font_cache_thread.exit();
+ 
+         // Receive exit signals from threads.
+@@ -855,9 +878,15 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+             warn!("Exit storage thread failed ({})", e);
+         }
+ 
++        debug!("Asking compositor to complete shutdown.");
+         self.compositor_proxy.send(ToCompositorMsg::ShutdownComplete);
+     }
+ 
++    fn handle_pipeline_exited(&mut self, pipeline_id: PipelineId) {
++        debug!("Pipeline {:?} exited.", pipeline_id);
++        self.pipelines.remove(&pipeline_id);
++    }
++
+     fn handle_send_error(&mut self, pipeline_id: PipelineId, err: IOError) {
+         // Treat send error the same as receiving a panic message
+         debug!("Pipeline {:?} send error ({}).", pipeline_id, err);
+@@ -890,6 +919,7 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+             self.trigger_mozbrowsererror(pipeline_id, reason, backtrace);
+ 
+             self.close_pipeline(pipeline_id, ExitPipelineMode::Force);
++            self.pipelines.remove(&pipeline_id);
+ 
+             while let Some(pending_pipeline_id) = self.pending_frames.iter().find(|pending| {
+                 pending.old_pipeline_id == Some(pipeline_id)
+@@ -1417,7 +1447,7 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+         };
+         let (containing_pipeline_id, subpage_id, _) = match parent_info {
+             Some(info) => info,
+-            None => return warn!("Pipeline {:?} focus has no parent.", pipeline_id),
++            None => return debug!("Pipeline {:?} focus has no parent.", pipeline_id),
+         };
+ 
+         // Send a message to the parent of the provided pipeline (if it exists)
+@@ -1908,7 +1938,7 @@ impl<Message, LTF, STF> Constellation<Message, LTF, STF>
+             self.close_frame(*child_frame, exit_mode);
+         }
+ 
+-        let pipeline = match self.pipelines.remove(&pipeline_id) {
++        let pipeline = match self.pipelines.get(&pipeline_id) {
+             Some(pipeline) => pipeline,
+             None => return warn!("Closing pipeline {:?} twice.", pipeline_id),
+         };
+diff --git a/components/constellation/pipeline.rs b/components/constellation/pipeline.rs
+index 3f4abbbbc3ed..7718eb760361 100644
+--- a/components/constellation/pipeline.rs
++++ b/components/constellation/pipeline.rs
+@@ -309,6 +309,8 @@ impl Pipeline {
+         // The compositor wants to know when pipelines shut down too.
+         // It may still have messages to process from these other threads
+         // before they can be safely shut down.
++        // It's OK for the constellation to block on the compositor,
++        // since the compositor never blocks on the constellation.
+         if let Ok((sender, receiver)) = ipc::channel() {
+             self.compositor_proxy.send(CompositorMsg::PipelineExited(self.id, sender));
+             if let Err(e) = receiver.recv() {
+@@ -318,13 +320,8 @@ impl Pipeline {
+ 
+         // Script thread handles shutting down layout, and layout handles shutting down the painter.
+         // For now, if the script thread has failed, we give up on clean shutdown.
+-        if self.script_chan
+-               .send(ConstellationControlMsg::ExitPipeline(self.id))
+-               .is_ok() {
+-            // Wait until all slave threads have terminated and run destructors
+-            // NOTE: We don't wait for script thread as we don't always own it
+-            let _ = self.paint_shutdown_port.recv();
+-            let _ = self.layout_shutdown_port.recv();
++        if let Err(e) = self.script_chan.send(ConstellationControlMsg::ExitPipeline(self.id)) {
++            warn!("Sending script exit message failed ({}).", e);
+         }
+     }
+ 
+diff --git a/components/gfx/paint_thread.rs b/components/gfx/paint_thread.rs
+index 3f86acfb4d61..5bdc42e19b52 100644
+--- a/components/gfx/paint_thread.rs
++++ b/components/gfx/paint_thread.rs
+@@ -436,7 +436,7 @@ impl<C> PaintThread<C> where C: PaintListener + Send + 'static {
+             }
+ 
+             debug!("paint_thread: shutdown_chan send");
+-            shutdown_chan.send(()).unwrap();
++            let _ = shutdown_chan.send(());
+         }, Some(id), panic_chan);
+     }
+ 
+diff --git a/components/script/script_thread.rs b/components/script/script_thread.rs
+index 35ae783f5ff8..ed2b0e03ee8d 100644
+--- a/components/script/script_thread.rs
++++ b/components/script/script_thread.rs
+@@ -1407,6 +1407,7 @@ impl ScriptThread {
+         if window.pipeline() == id {
+             debug!("shutting down layout for root context {:?}", id);
+             shut_down_layout(&context);
++            let _ = self.constellation_chan.send(ConstellationMsg::PipelineExited(id));
+             return true
+         }
+ 
+@@ -1414,6 +1415,7 @@ impl ScriptThread {
+         if let Some(ref mut child_context) = context.remove(id) {
+             shut_down_layout(&child_context);
+         }
++        let _ = self.constellation_chan.send(ConstellationMsg::PipelineExited(id));
+         false
+     }
+ 
+diff --git a/components/script_traits/script_msg.rs b/components/script_traits/script_msg.rs
+index d1f56a6e7900..241833bc13f9 100644
+--- a/components/script_traits/script_msg.rs
++++ b/components/script_traits/script_msg.rs
+@@ -110,6 +110,8 @@ pub enum ScriptMsg {
+     TouchEventProcessed(EventResult),
+     /// Get Scroll Offset
+     GetScrollOffset(PipelineId, LayerId, IpcSender<Point2D<f32>>),
++    /// Notifies the constellation that this pipeline has exited.
++    PipelineExited(PipelineId),
+     /// Requests that the compositor shut down.
+     Exit,
+ }
+diff --git a/tests/wpt/mozilla/meta/MANIFEST.json b/tests/wpt/mozilla/meta/MANIFEST.json
+index d6ff8b8ca641..509172ad1ebd 100644
+--- a/tests/wpt/mozilla/meta/MANIFEST.json
++++ b/tests/wpt/mozilla/meta/MANIFEST.json
+@@ -6466,6 +6466,12 @@
+             "url": "/_mozilla/mozilla/iframe_hierarchy.html"
+           }
+         ],
++        "mozilla/iframe_replacement.html": [
++          {
++            "path": "mozilla/iframe_replacement.html",
++            "url": "/_mozilla/mozilla/iframe_replacement.html"
++          }
++        ],
+         "mozilla/img_width_height.html": [
+           {
+             "path": "mozilla/img_width_height.html",
+diff --git a/tests/wpt/mozilla/tests/mozilla/iframe_replacement.html b/tests/wpt/mozilla/tests/mozilla/iframe_replacement.html
+new file mode 100644
+index 000000000000..175dc3d2859c
+--- /dev/null
++++ b/tests/wpt/mozilla/tests/mozilla/iframe_replacement.html
+@@ -0,0 +1,29 @@
++<html>
++<head>
++<meta charset="utf8" />
++<script src="/resources/testharness.js"></script>
++<script src="/resources/testharnessreport.js"></script>
++<title>Iframe replacement test.</title>
++</head>
++<body>
++    <p>This is a test for https://github.com/servo/servo/issues/11546.</p>
++</body>
++<script>
++    async_test(function(t) {
++	setTimeout(t.step_func(function() {
++	    var frame = document.createElement('iframe');
++	    frame.src = "data:text/html,<p>test</p>";
++	    document.body.appendChild(frame);
++	    setTimeout(t.step_func(function() {
++		document.body.removeChild(frame);
++		frame = document.createElement('iframe');
++		frame.src = "data:text/html,<p>test</p>";
++		document.body.appendChild(frame);
++		setTimeout(t.step_func(function() {
++		    t.done();
++		}), 100);
++	    }), 100);
++	}), 100);
++    });
++</script>
++</html>

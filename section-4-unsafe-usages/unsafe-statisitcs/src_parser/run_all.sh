@@ -117,10 +117,6 @@ function count_dir_fast() {
 
 function parse_libstd() {
     count_dir_fast ${count_dir}/rust/src/libstd/
-    unsafe_fn_tp=15
-    unsafe_region_fp=4
-    let unsafe_fn_num+=unsafe_fn_tp
-    let unsafe_region_num-=unsafe_region_fp
     #echo "URN,UFN,UTN,URLOC,UFLOC,TLOC:"
     #echo "URN,UFN,UTN:"
     #echo ${unsafe_fn_num} ${unsafe_region_num} ${unsafe_trait_num} ${unsafe_region_LOC} ${unsafe_fn_LOC} ${total_LOC}

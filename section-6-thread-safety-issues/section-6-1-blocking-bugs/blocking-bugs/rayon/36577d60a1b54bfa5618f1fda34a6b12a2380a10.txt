@@ -1,0 +1,203 @@
+diff --git a/rayon-core/src/latch.rs b/rayon-core/src/latch.rs
+index 173a771d..17a510c4 100644
+--- a/rayon-core/src/latch.rs
++++ b/rayon-core/src/latch.rs
+@@ -1,5 +1,8 @@
+ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+ use std::sync::{Mutex, Condvar};
++use std::usize;
++
++use sleep::Sleep;
+ 
+ /// We define various kinds of latches, which are all a primitive signaling
+ /// mechanism. A latch starts as false. Eventually someone calls `set()` and
+@@ -146,3 +149,37 @@ impl Latch for CountLatch {
+         self.counter.fetch_sub(1, Ordering::SeqCst);
+     }
+ }
++
++
++/// A tickling latch wraps another latch type, and will also awaken a thread
++/// pool when it is set.  This is useful for jobs injected between thread pools,
++/// so the source pool can continue processing its own work while waiting.
++pub struct TickleLatch<'a, L: Latch> {
++    inner: L,
++    sleep: &'a Sleep,
++}
++
++impl<'a, L: Latch> TickleLatch<'a, L> {
++    #[inline]
++    pub fn new(latch: L, sleep: &'a Sleep) -> Self {
++        Self {
++            inner: latch,
++            sleep: sleep,
++        }
++    }
++}
++
++impl<'a, L: Latch> LatchProbe for TickleLatch<'a, L> {
++    #[inline]
++    fn probe(&self) -> bool {
++        self.inner.probe()
++    }
++}
++
++impl<'a, L: Latch> Latch for TickleLatch<'a, L> {
++    #[inline]
++    fn set(&self) {
++        self.inner.set();
++        self.sleep.tickle(usize::MAX);
++    }
++}
+diff --git a/rayon-core/src/registry.rs b/rayon-core/src/registry.rs
+index 2e52321b..88ea4219 100644
+--- a/rayon-core/src/registry.rs
++++ b/rayon-core/src/registry.rs
+@@ -3,7 +3,7 @@ use coco::deque::{self, Worker, Stealer};
+ use job::{Job, JobRef, StackJob};
+ #[cfg(rayon_unstable)]
+ use internal::task::Task;
+-use latch::{LatchProbe, Latch, CountLatch, LockLatch};
++use latch::{LatchProbe, Latch, CountLatch, LockLatch, SpinLatch, TickleLatch};
+ #[allow(unused_imports)]
+ use log::Event::*;
+ use rand::{self, Rng};
+@@ -335,13 +335,15 @@ impl Registry {
+     {
+         unsafe {
+             let worker_thread = WorkerThread::current();
+-            if !worker_thread.is_null() && (*worker_thread).registry().id() == self.id() {
++            if worker_thread.is_null() {
++                self.in_worker_cold(op)
++            } else if (*worker_thread).registry().id() != self.id() {
++                self.in_worker_cross(&*worker_thread, op)
++            } else {
+                 // Perfectly valid to give them a `&T`: this is the
+                 // current thread, so we know the data structure won't be
+                 // invalidated until we return.
+                 op(&*worker_thread)
+-            } else {
+-                self.in_worker_cold(op)
+             }
+         }
+     }
+@@ -350,12 +352,28 @@ impl Registry {
+     unsafe fn in_worker_cold<OP, R>(&self, op: OP) -> R
+         where OP: FnOnce(&WorkerThread) -> R + Send, R: Send
+     {
++        // This thread isn't a member of *any* thread pool, so just block.
++        debug_assert!(WorkerThread::current().is_null());
+         let job = StackJob::new(|| in_worker(op), LockLatch::new());
+         self.inject(&[job.as_job_ref()]);
+         job.latch.wait();
+         job.into_result()
+     }
+ 
++    #[cold]
++    unsafe fn in_worker_cross<OP, R>(&self, current_thread: &WorkerThread, op: OP) -> R
++        where OP: FnOnce(&WorkerThread) -> R + Send, R: Send
++    {
++        // This thread is a member of a different pool, so let it process
++        // other work while waiting for this `op` to complete.
++        debug_assert_ne!(current_thread.registry().id(), self.id());
++        let latch = TickleLatch::new(SpinLatch::new(), &current_thread.registry().sleep);
++        let job = StackJob::new(|| in_worker(op), latch);
++        self.inject(&[job.as_job_ref()]);
++        current_thread.wait_until(&job.latch);
++        job.into_result()
++    }
++
+     /// Increment the terminate counter. This increment should be
+     /// balanced by a call to `terminate`, which will decrement. This
+     /// is used when spawning asynchronous work, which needs to
+diff --git a/rayon-core/src/thread_pool/mod.rs b/rayon-core/src/thread_pool/mod.rs
+index 57d8f4e7..123565c2 100644
+--- a/rayon-core/src/thread_pool/mod.rs
++++ b/rayon-core/src/thread_pool/mod.rs
+@@ -84,32 +84,6 @@ impl ThreadPool {
+     /// thread-local data from the current thread will not be
+     /// accessible.
+     ///
+-    /// # Warning: inter-pool deadlocks
+-    ///
+-    /// If a thread within a threadpool calls `install()` for some
+-    /// other threadpool, that thread will block, unable to participate
+-    /// in its own pool until that call is done.  If the other pool were
+-    /// to call `install()` back to the first, then they'll both be blocked.
+-    ///
+-    /// ```rust,ignore
+-    ///    # use rayon_core as rayon;
+-    ///    let pool1 = rayon::Configuration::new().num_threads(1).build().unwrap();
+-    ///    let pool2 = rayon::Configuration::new().num_threads(1).build().unwrap();
+-    ///
+-    ///    pool1.install(|| {
+-    ///        // this will block pool1's thread:
+-    ///        pool2.install(|| {
+-    ///            // this will block pool2's thread:
+-    ///            pool1.install(|| {
+-    ///               // there are no threads left to run this!
+-    ///               println!("hello?");
+-    ///            });
+-    ///        });
+-    ///    });
+-    /// ```
+-    ///
+-    /// (Note: Any blocking in rayon threads is generally discouraged.)
+-    ///
+     /// # Panics
+     ///
+     /// If `op` should panic, that panic will be propagated.
+diff --git a/rayon-core/src/thread_pool/test.rs b/rayon-core/src/thread_pool/test.rs
+index 7775049b..483dd063 100644
+--- a/rayon-core/src/thread_pool/test.rs
++++ b/rayon-core/src/thread_pool/test.rs
+@@ -145,3 +145,49 @@ fn self_install() {
+     // If the inner `install` blocks, then nothing will actually run it!
+     assert!(pool.install(|| pool.install(|| true)));
+ }
++
++#[test]
++fn mutual_install() {
++    let pool1 = Configuration::new().num_threads(1).build().unwrap();
++    let pool2 = Configuration::new().num_threads(1).build().unwrap();
++
++    let ok = pool1.install(|| {
++        // This creates a dependency from `pool1` -> `pool2`
++        pool2.install(|| {
++            // This creates a dependency from `pool2` -> `pool1`
++            pool1.install(|| {
++               // If they blocked on inter-pool installs, there would be no
++               // threads left to run this!
++               true
++            })
++        })
++    });
++    assert!(ok);
++}
++
++#[test]
++fn mutual_install_sleepy() {
++    use std::{thread, time};
++
++    let pool1 = Configuration::new().num_threads(1).build().unwrap();
++    let pool2 = Configuration::new().num_threads(1).build().unwrap();
++
++    let ok = pool1.install(|| {
++        // This creates a dependency from `pool1` -> `pool2`
++        pool2.install(|| {
++            // Give `pool1` time to fall asleep.
++            thread::sleep(time::Duration::from_secs(1));
++
++            // This creates a dependency from `pool2` -> `pool1`
++            pool1.install(|| {
++               // Give `pool2` time to fall asleep.
++               thread::sleep(time::Duration::from_secs(1));
++
++               // If they blocked on inter-pool installs, there would be no
++               // threads left to run this!
++               true
++            })
++        })
++    });
++    assert!(ok);
++}

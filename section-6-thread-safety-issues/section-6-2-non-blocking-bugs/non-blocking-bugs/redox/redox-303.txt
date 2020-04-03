@@ -1,0 +1,82 @@
+buggy:
+pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
+    let mut fd = usize::MAX; // (1)
+
+    let reenable: = scheduler::start_no_ints(); // (2)
+
+    if let Some(current) = Context::current() {
+        let path_string =
+            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path))); // (3)
+
+        scheduler::end_no_ints(reenable); // (4)
+
+        let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
+
+        scheduler::start_no_ints();
+
+        if let Some(resource) = resource_option {
+            fd = current.next_fd();
+
+            (*current.files.get()).push(ContextFile {
+                fd: fd,
+                resource: resource,
+            });
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    fd
+}
+
+fix:
+// A macro that turns `Result` into a syscall return value.
+macro_rules! k2u_try {
+    ($res:expr) => {
+        match $res {
+            Ok(v) => v as isize,
+            Err(e) => -(e.0 as isize),
+        }
+    }
+};
+
+pub unsafe fn do_sys_open(path: ConstUserPtr<iovec>, flags: usize) -> isize {
+    k2u_try!(do_sys_open_inner(path, flags))
+}
+
+unsafe fn do_sys_open_inner(path: ConstUserPtr<iovec>,
+                            flags: usize) -> Result<i32, Errno> {
+    let int_guard = scheduler::start_no_ints();
+    // ^ RAII guard. can re-enable interrupts in its destructor
+
+    let context = match Context::current() {
+        Some(c) => c,
+        _ => return Err(errno::NoContext), // thanks to RAII
+    };
+
+    let path: iovec = try!(path.copy()); // safely copies the user iovec. fails if the
+                                         // pointer is invalid.
+
+    if path.size > PATH_MAX { // sanity check
+        return Err(errno::NoMemory);
+    }
+
+    let mut path = try!(path.copy()); // safely copies the user slice. this can fail
+                                      // because of out-of-memory or invalid pointers.
+                                      // allocates said memory
+
+    try!(current.canonicalize(&mut path)); // might swap out the memory use by path
+
+    let resource = try!(int_guard.with_ints(|| (*::session_ptr).open(path, flags)));
+    //                            ^ runs the closure with interrupts (possibly) reenabled.
+    //                              returns the return value of the closure.
+
+    let fd = current.next_fd();
+    (*current.files.get()).push(ContextFile {
+        fd: fd,
+        resource: resource,
+    });
+
+    Ok(fd)
+}
+

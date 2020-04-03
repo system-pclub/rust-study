@@ -1,0 +1,277 @@
+diff --git a/components/script/dom/htmllinkelement.rs b/components/script/dom/htmllinkelement.rs
+index b4f90b89b856..d29a94a11f06 100644
+--- a/components/script/dom/htmllinkelement.rs
++++ b/components/script/dom/htmllinkelement.rs
+@@ -291,9 +291,8 @@ impl HTMLLinkElement {
+         // doesn't match.
+         let loader = StylesheetLoader::for_element(self.upcast());
+         loader.load(StylesheetContextSource::LinkElement {
+-            url: url,
+             media: Some(media),
+-        }, cors_setting, integrity_metadata.to_owned());
++        }, url, cors_setting, integrity_metadata.to_owned());
+     }
+ 
+     fn handle_favicon_url(&self, rel: &str, href: &str, sizes: &Option<String>) {
+diff --git a/components/script/stylesheet_loader.rs b/components/script/stylesheet_loader.rs
+index db21ee795fd9..7f544e42d08e 100644
+--- a/components/script/stylesheet_loader.rs
++++ b/components/script/stylesheet_loader.rs
+@@ -54,32 +54,16 @@ pub trait StylesheetOwner {
+ 
+ pub enum StylesheetContextSource {
+     // NB: `media` is just an option so we avoid cloning it.
+-    LinkElement { media: Option<MediaList>, url: ServoUrl },
++    LinkElement { media: Option<MediaList>, },
+     Import(Arc<StyleLocked<ImportRule>>),
+ }
+ 
+-impl StylesheetContextSource {
+-    fn url(&self, document: &Document) -> ServoUrl {
+-        match *self {
+-            StylesheetContextSource::LinkElement { ref url, .. } => url.clone(),
+-            StylesheetContextSource::Import(ref import) => {
+-                let guard = document.style_shared_lock().read();
+-                let import = import.read_with(&guard);
+-                // Look at the parser in style::stylesheets, where we don't
+-                // trigger a load if the url is invalid.
+-                import.url.url()
+-                    .expect("Invalid urls shouldn't enter the loader")
+-                    .clone()
+-            }
+-        }
+-    }
+-}
+-
+ /// The context required for asynchronously loading an external stylesheet.
+ pub struct StylesheetContext {
+     /// The element that initiated the request.
+     elem: Trusted<HTMLElement>,
+     source: StylesheetContextSource,
++    url: ServoUrl,
+     metadata: Option<Metadata>,
+     /// The response body received to date.
+     data: Vec<u8>,
+@@ -146,7 +130,7 @@ impl FetchResponseListener for StylesheetContext {
+ 
+             let loader = StylesheetLoader::for_element(&elem);
+             match self.source {
+-                StylesheetContextSource::LinkElement { ref mut media, .. } => {
++                StylesheetContextSource::LinkElement { ref mut media } => {
+                     let link = elem.downcast::<HTMLLinkElement>().unwrap();
+                     // We must first check whether the generations of the context and the element match up,
+                     // else we risk applying the wrong stylesheet when responses come out-of-order.
+@@ -209,8 +193,7 @@ impl FetchResponseListener for StylesheetContext {
+             document.decrement_script_blocking_stylesheet_count();
+         }
+ 
+-        let url = self.source.url(&document);
+-        document.finish_load(LoadType::Stylesheet(url));
++        document.finish_load(LoadType::Stylesheet(self.url.clone()));
+ 
+         if let Some(any_failed) = owner.load_finished(successful) {
+             let event = if any_failed { atom!("error") } else { atom!("load") };
+@@ -232,15 +215,16 @@ impl<'a> StylesheetLoader<'a> {
+ }
+ 
+ impl<'a> StylesheetLoader<'a> {
+-    pub fn load(&self, source: StylesheetContextSource, cors_setting: Option<CorsSettings>,
++    pub fn load(&self, source: StylesheetContextSource, url: ServoUrl,
++                cors_setting: Option<CorsSettings>,
+                 integrity_metadata: String) {
+         let document = document_from_node(self.elem);
+-        let url = source.url(&document);
+         let gen = self.elem.downcast::<HTMLLinkElement>()
+                            .map(HTMLLinkElement::get_request_generation_id);
+         let context = Arc::new(Mutex::new(StylesheetContext {
+             elem: Trusted::new(&*self.elem),
+             source: source,
++            url: url.clone(),
+             metadata: None,
+             data: vec![],
+             document: Trusted::new(&*document),
+@@ -297,9 +281,20 @@ impl<'a> StylesheetLoader<'a> {
+ }
+ 
+ impl<'a> StyleStylesheetLoader for StylesheetLoader<'a> {
+-    fn request_stylesheet(&self, import: &Arc<StyleLocked<ImportRule>>) {
++    fn request_stylesheet(
++        &self,
++        media: MediaList,
++        make_import: &mut FnMut(MediaList) -> ImportRule,
++        make_arc: &mut FnMut(ImportRule) -> Arc<StyleLocked<ImportRule>>,
++    ) -> Arc<StyleLocked<ImportRule>> {
++        let import = make_import(media);
++        let url = import.url.url().expect("Invalid urls shouldn't enter the loader").clone();
++        let arc = make_arc(import);
++
+         //TODO (mrnayak) : Whether we should use the original loader's CORS setting?
+         //Fix this when spec has more details.
+-        self.load(StylesheetContextSource::Import(import.clone()), None, "".to_owned())
++        self.load(StylesheetContextSource::Import(arc.clone()), url, None, "".to_owned());
++
++        arc
+     }
+ }
+diff --git a/components/style/stylesheets.rs b/components/style/stylesheets.rs
+index 95104a4df60b..3d572536d7d8 100644
+--- a/components/style/stylesheets.rs
++++ b/components/style/stylesheets.rs
+@@ -743,9 +743,31 @@ pub trait StylesheetLoader {
+     ///
+     /// The called code is responsible to update the `stylesheet` rules field
+     /// when the sheet is done loading.
+-    fn request_stylesheet(&self, import: &Arc<Locked<ImportRule>>);
++    ///
++    /// The convoluted signature allows impls to look at MediaList and ImportRule
++    /// before they’re locked, while keeping the trait object-safe.
++    fn request_stylesheet(
++        &self,
++        media: MediaList,
++        make_import: &mut FnMut(MediaList) -> ImportRule,
++        make_arc: &mut FnMut(ImportRule) -> Arc<Locked<ImportRule>>,
++    ) -> Arc<Locked<ImportRule>>;
++}
++
++struct NoOpLoader;
++
++impl StylesheetLoader for NoOpLoader {
++    fn request_stylesheet(
++        &self,
++        media: MediaList,
++        make_import: &mut FnMut(MediaList) -> ImportRule,
++        make_arc: &mut FnMut(ImportRule) -> Arc<Locked<ImportRule>>,
++    ) -> Arc<Locked<ImportRule>> {
++        make_arc(make_import(media))
++    }
+ }
+ 
++
+ struct TopLevelRuleParser<'a> {
+     stylesheet_origin: Origin,
+     namespaces: &'a mut Namespaces,
+@@ -801,22 +823,26 @@ impl<'a> AtRuleParser for TopLevelRuleParser<'a> {
+             "import" => {
+                 if self.state.get() <= State::Imports {
+                     self.state.set(State::Imports);
+-                    let url = try!(input.expect_url_or_string());
+-                    let url =
+-                        try!(SpecifiedUrl::parse_from_string(url,
+-                                                             &self.context));
++                    let url_string = input.expect_url_or_string()?;
++                    let specified_url = SpecifiedUrl::parse_from_string(url_string, &self.context)?;
+ 
+-                    let media =
+-                        Arc::new(self.shared_lock.wrap(parse_media_query_list(input)));
++                    let media = parse_media_query_list(input);
+ 
+-                    let is_valid_url = url.url().is_some();
++                    let noop_loader = NoOpLoader;
++                    let is_valid_url = specified_url.url().is_some();
++                    let loader = if is_valid_url {
++                        self.loader.expect("Expected a stylesheet loader for @import")
++                    } else {
++                        &noop_loader
++                    };
+ 
+-                    let import_rule = Arc::new(self.shared_lock.wrap(
++                    let mut specified_url = Some(specified_url);
++                    let arc = loader.request_stylesheet(media, &mut |media| {
+                         ImportRule {
+-                            url: url,
++                            url: specified_url.take().unwrap(),
+                             stylesheet: Arc::new(Stylesheet {
+                                 rules: CssRules::new(Vec::new(), self.shared_lock),
+-                                media: media,
++                                media: Arc::new(self.shared_lock.wrap(media)),
+                                 shared_lock: self.shared_lock.clone(),
+                                 origin: self.context.stylesheet_origin,
+                                 base_url: self.context.base_url.clone(),
+@@ -825,15 +851,10 @@ impl<'a> AtRuleParser for TopLevelRuleParser<'a> {
+                                 disabled: AtomicBool::new(false),
+                             })
+                         }
+-                    ));
+-
+-                    if is_valid_url {
+-                        let loader = self.loader
+-                            .expect("Expected a stylesheet loader for @import");
+-                        loader.request_stylesheet(&import_rule);
+-                    }
+-
+-                    return Ok(AtRuleType::WithoutBlock(CssRule::Import(import_rule)))
++                    }, &mut |import_rule| {
++                        Arc::new(self.shared_lock.wrap(import_rule))
++                    });
++                    return Ok(AtRuleType::WithoutBlock(CssRule::Import(arc)))
+                 } else {
+                     self.state.set(State::Invalid);
+                     return Err(())  // "@import must be before any rule but @charset"
+diff --git a/ports/geckolib/stylesheet_loader.rs b/ports/geckolib/stylesheet_loader.rs
+index 5e226ee54c99..d904f1b98707 100644
+--- a/ports/geckolib/stylesheet_loader.rs
++++ b/ports/geckolib/stylesheet_loader.rs
+@@ -3,10 +3,10 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ use std::sync::Arc;
+-use style::gecko::global_style_data::GLOBAL_STYLE_DATA;
+ use style::gecko_bindings::bindings::Gecko_LoadStyleSheet;
+ use style::gecko_bindings::structs::{Loader, ServoStyleSheet};
+ use style::gecko_bindings::sugar::ownership::HasArcFFI;
++use style::media_queries::MediaList;
+ use style::shared_lock::Locked;
+ use style::stylesheets::{ImportRule, StylesheetLoader as StyleStylesheetLoader};
+ use style_traits::ToCss;
+@@ -20,13 +20,12 @@ impl StylesheetLoader {
+ }
+ 
+ impl StyleStylesheetLoader for StylesheetLoader {
+-    fn request_stylesheet(&self, import_rule: &Arc<Locked<ImportRule>>) {
+-        let global_style_data = &*GLOBAL_STYLE_DATA;
+-        let guard = global_style_data.shared_lock.read();
+-        let import = import_rule.read_with(&guard);
+-        let (spec_bytes, spec_len) = import.url.as_slice_components()
+-            .expect("Import only loads valid URLs");
+-
++    fn request_stylesheet(
++        &self,
++        media: MediaList,
++        make_import: &mut FnMut(MediaList) -> ImportRule,
++        make_arc: &mut FnMut(ImportRule) -> Arc<Locked<ImportRule>>,
++    ) -> Arc<Locked<ImportRule>> {
+         // TODO(emilio): We probably want to share media representation with
+         // Gecko in Stylo.
+         //
+@@ -35,16 +34,27 @@ impl StyleStylesheetLoader for StylesheetLoader {
+         // evaluate them on the main thread.
+         //
+         // Meanwhile, this works.
+-        let media = import.stylesheet.media.read_with(&guard).to_css_string();
++        let media_string = media.to_css_string();
++
++        let import = make_import(media);
++
++        // After we get this raw pointer ImportRule will be moved into a lock and Arc
++        // and so the Arc<Url> pointer inside will also move,
++        // but the Url it points to or the allocating backing the String inside that Url won’t,
++        // so this raw pointer will still be valid.
++        let (spec_bytes, spec_len): (*const u8, usize) = import.url.as_slice_components()
++            .expect("Import only loads valid URLs");
+ 
++        let arc = make_arc(import);
+         unsafe {
+             Gecko_LoadStyleSheet(self.0,
+                                  self.1,
+-                                 HasArcFFI::arc_as_borrowed(import_rule),
++                                 HasArcFFI::arc_as_borrowed(&arc),
+                                  spec_bytes,
+                                  spec_len as u32,
+-                                 media.as_bytes().as_ptr(),
+-                                 media.len() as u32);
++                                 media_string.as_bytes().as_ptr(),
++                                 media_string.len() as u32);
+         }
++        arc
+     }
+ }

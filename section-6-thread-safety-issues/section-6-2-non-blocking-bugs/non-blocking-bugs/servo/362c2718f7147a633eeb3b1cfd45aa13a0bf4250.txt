@@ -1,0 +1,15 @@
+diff --git a/src/components/main/css/matching.rs b/src/components/main/css/matching.rs
+index 299147b01a2f..1186ebb17daa 100644
+--- a/src/components/main/css/matching.rs
++++ b/src/components/main/css/matching.rs
+@@ -46,7 +46,9 @@ impl MatchMethods for AbstractNode<LayoutView> {
+         }
+     }
+     fn match_subtree(&self, stylist: RWArc<Stylist>) {
+-        let num_tasks = rt::default_sched_threads() * 2;
++        // FIXME(pcwalton): Racy. Parallel CSS selector matching is disabled.
++        //let num_tasks = rt::default_sched_threads() * 2;
++        let num_tasks = 1;
+         let mut node_count = 0;
+         let mut nodes_per_task = vec::from_elem(num_tasks, ~[]);
+ 

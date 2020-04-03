@@ -1,0 +1,53 @@
+diff --git a/ports/glutin/window.rs b/ports/glutin/window.rs
+index 270cc1adcf24..f463d42483df 100644
+--- a/ports/glutin/window.rs
++++ b/ports/glutin/window.rs
+@@ -27,6 +27,7 @@ use std::num::Float;
+ use std::rc::Rc;
+ use time::{mod, Timespec};
+ use util::geometry::ScreenPx;
++use util::opts;
+ use util::opts::{RenderApi, Mesa, OpenGL};
+ use gleam::gl;
+ use glutin;
+@@ -521,10 +522,23 @@ impl Window {
+         match self.glutin {
+             WindowHandle::Windowed(ref window) => {
+                 let mut close_event = false;
+-                for event in window.wait_events() {
+-                    close_event = self.handle_window_event(event);
+-                    if close_event {
+-                        break;
++
++                // When writing to a file then exiting, use event
++                // polling so that we don't block on a GUI event
++                // such as mouse click.
++                if opts::get().output_file.is_some() {
++                    for event in window.poll_events() {
++                        close_event = self.handle_window_event(event);
++                        if close_event {
++                            break;
++                        }
++                    }
++                } else {
++                    for event in window.wait_events() {
++                        close_event = self.handle_window_event(event);
++                        if close_event {
++                            break;
++                        }
+                     }
+                 }
+ 
+diff --git a/tests/ref/basic.list b/tests/ref/basic.list
+index 9864cb0bfa0c..3a56c0ad94d5 100644
+--- a/tests/ref/basic.list
++++ b/tests/ref/basic.list
+@@ -95,7 +95,7 @@ flaky_cpu == linebreak_simple_a.html linebreak_simple_b.html
+ == overflow_simple_a.html overflow_simple_b.html
+ == noscript.html noscript_ref.html
+ == pseudo_inherit.html pseudo_inherit_ref.html
+-flaky_linux,experimental == vertical-lr-blocks.html vertical-lr-blocks_ref.html
++flaky_cpu,experimental == vertical-lr-blocks.html vertical-lr-blocks_ref.html
+ == float_intrinsic_height.html float_intrinsic_height_ref.html
+ == table_auto_width.html table_auto_width_ref.html
+ == inline_whitespace_b.html inline_whitespace_ref.html

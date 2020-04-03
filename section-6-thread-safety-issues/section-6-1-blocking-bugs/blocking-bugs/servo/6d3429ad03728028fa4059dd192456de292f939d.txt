@@ -1,0 +1,281 @@
+diff --git a/src/components/main/compositing/compositor.rs b/src/components/main/compositing/compositor.rs
+index 3790664b73fe..d65cab22c718 100644
+--- a/src/components/main/compositing/compositor.rs
++++ b/src/components/main/compositing/compositor.rs
+@@ -32,7 +32,7 @@ use layers::scene::Scene;
+ use opengles::gl2;
+ use png;
+ use servo_msg::compositor_msg::{Epoch, IdleRenderState, LayerBufferSet, RenderState};
+-use servo_msg::constellation_msg::{ConstellationChan, NavigateMsg, ResizedWindowMsg, LoadUrlMsg, PipelineId};
++use servo_msg::constellation_msg::{ConstellationChan, ExitMsg, NavigateMsg, ResizedWindowMsg, LoadUrlMsg, PipelineId};
+ use servo_msg::constellation_msg;
+ use servo_util::time::{profile, ProfilerChan, Timer};
+ use servo_util::{time, url};
+@@ -129,7 +129,7 @@ impl IOCompositor {
+             zoom_action: false,
+             zoom_time: 0f64,
+             compositor_layer: None,
+-            constellation_chan: constellation_chan.clone(),
++            constellation_chan: constellation_chan,
+             profiler_chan: profiler_chan,
+             fragment_point: None
+         }
+@@ -202,10 +202,16 @@ impl IOCompositor {
+                 None => break,
+ 
+                 Some(Exit(chan)) => {
+-                    self.done = true;
++                    debug!("shutting down the constellation");
++                    self.constellation_chan.send(ExitMsg);
+                     chan.send(());
+                 }
+ 
++                Some(ShutdownComplete) => {
++                    debug!("constellation completed shutdown");
++                    self.done = true;
++                }
++
+                 Some(ChangeReadyState(ready_state)) => {
+                     self.window.set_ready_state(ready_state);
+                 }
+@@ -496,12 +502,14 @@ impl IOCompositor {
+             FinishedWindowEvent => {
+                 let exit = self.opts.exit_after_load;
+                 if exit {
+-                    self.done = true;
++                    debug!("shutting down the constellation for FinishedWindowEvent");
++                    self.constellation_chan.send(ExitMsg);
+                 }
+             }
+ 
+             QuitWindowEvent => {
+-                self.done = true;
++                debug!("shutting down the constellation for QuitWindowEvent");
++                self.constellation_chan.send(ExitMsg);
+             }
+         }
+     }
+diff --git a/src/components/main/compositing/compositor_task.rs b/src/components/main/compositing/compositor_task.rs
+index 6e01b3d64e3f..87f9a6b90ca6 100644
+--- a/src/components/main/compositing/compositor_task.rs
++++ b/src/components/main/compositing/compositor_task.rs
+@@ -16,7 +16,7 @@ use gfx::opts::Opts;
+ use layers::platform::surface::{NativeCompositingGraphicsContext, NativeGraphicsMetadata};
+ use servo_msg::compositor_msg::{Epoch, RenderListener, LayerBufferSet, RenderState, ReadyState};
+ use servo_msg::compositor_msg::{ScriptListener, Tile};
+-use servo_msg::constellation_msg::{ConstellationChan, PipelineId, ExitMsg};
++use servo_msg::constellation_msg::{ConstellationChan, PipelineId};
+ use servo_util::time::ProfilerChan;
+ use std::comm::{Chan, SharedChan, Port};
+ use std::num::Orderable;
+@@ -112,11 +112,16 @@ impl CompositorChan {
+         self.chan.send(msg);
+     }
+ }
+-
+ /// Messages from the painting task and the constellation task to the compositor task.
+ pub enum Msg {
+     /// Requests that the compositor shut down.
+     Exit(Chan<()>),
++
++    /// Informs the compositor that the constellation has completed shutdown.
++    /// Required because the constellation can have pending calls to make (e.g. SetIds)
++    /// at the time that we send it an ExitMsg.
++    ShutdownComplete,
++
+     /// Requests the compositor's graphics metadata. Graphics metadata is what the renderer needs
+     /// to create surfaces that the compositor can see. On Linux this is the X display; on Mac this
+     /// is the pixel format.
+@@ -185,9 +190,7 @@ impl CompositorTask {
+     pub fn create(opts: Opts,
+                   port: Port<Msg>,
+                   constellation_chan: ConstellationChan,
+-                  profiler_chan: ProfilerChan,
+-                  exit_chan: Chan<()>,
+-                  exit_response_from_constellation: Port<()>) {
++                  profiler_chan: ProfilerChan) {
+ 
+         let compositor = CompositorTask::new(opts.headless);
+ 
+@@ -197,18 +200,12 @@ impl CompositorTask {
+                                                  opts,
+                                                  port,
+                                                  constellation_chan.clone(),
+-                                                 profiler_chan);
++                                                 profiler_chan)
+             }
+             Headless => {
+                 headless::NullCompositor::create(port,
+-                                                 constellation_chan.clone());
++                                                 constellation_chan.clone())
+             }
+-        }
+-
+-        // Constellation has to be shut down before the compositor goes out of
+-        // scope, as the compositor manages setup/teardown of global subsystems
+-        debug!("shutting down the constellation");
+-        constellation_chan.send(ExitMsg(exit_chan));
+-        exit_response_from_constellation.recv();
++        };
+     }
+ }
+diff --git a/src/components/main/compositing/headless.rs b/src/components/main/compositing/headless.rs
+index 07a2e973868f..7cc299fd88df 100644
+--- a/src/components/main/compositing/headless.rs
++++ b/src/components/main/compositing/headless.rs
+@@ -5,7 +5,7 @@
+ use compositing::*;
+ 
+ use geom::size::Size2D;
+-use servo_msg::constellation_msg::{ConstellationChan, ResizedWindowMsg};
++use servo_msg::constellation_msg::{ConstellationChan, ExitMsg, ResizedWindowMsg};
+ use std::comm::Port;
+ 
+ 
+@@ -32,14 +32,20 @@ impl NullCompositor {
+ 
+         // Tell the constellation about the initial fake size.
+         constellation_chan.send(ResizedWindowMsg(Size2D(640u, 480u)));
+-        compositor.handle_message();
++        compositor.handle_message(constellation_chan);
+     }
+ 
+-    fn handle_message(&self) {
++    fn handle_message(&self, constellation_chan: ConstellationChan) {
+         loop {
+             match self.port.recv() {
+                 Exit(chan) => {
++                    debug!("shutting down the constellation");
++                    constellation_chan.send(ExitMsg);
+                     chan.send(());
++                }
++
++                ShutdownComplete => {
++                    debug!("constellation completed shutdown");
+                     break
+                 }
+ 
+diff --git a/src/components/main/constellation.rs b/src/components/main/constellation.rs
+index f2a4b16e2c4a..81e9e8bb4aae 100644
+--- a/src/components/main/constellation.rs
++++ b/src/components/main/constellation.rs
+@@ -2,7 +2,7 @@
+  * License, v. 2.0. If a copy of the MPL was not distributed with this
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+-use compositing::{CompositorChan, SetIds, SetLayerClipRect};
++use compositing::{CompositorChan, SetIds, SetLayerClipRect, ShutdownComplete};
+ 
+ use extra::url::Url;
+ use geom::rect::Rect;
+@@ -315,9 +315,9 @@ impl Constellation {
+     /// Handles loading pages, navigation, and granting access to the compositor
+     fn handle_request(&mut self, request: Msg) -> bool {
+         match request {
+-            ExitMsg(sender) => {
++            ExitMsg => {
+                 debug!("constellation exiting");
+-                self.handle_exit(sender);
++                self.handle_exit();
+                 return false;
+             }
+             FailureMsg(pipeline_id, subpage_id) => {
+@@ -363,14 +363,13 @@ impl Constellation {
+         true
+     }
+ 
+-    fn handle_exit(&self, sender: Chan<()>) {
++    fn handle_exit(&self) {
+         for (_id, ref pipeline) in self.pipelines.iter() {
+             pipeline.exit();
+         }
+         self.image_cache_task.exit();
+         self.resource_task.send(resource_task::Exit);
+-
+-        sender.send(());
++        self.compositor_chan.send(ShutdownComplete);
+     }
+ 
+     fn handle_failure_msg(&mut self, pipeline_id: PipelineId, subpage_id: Option<SubpageId>) {
+@@ -804,6 +803,7 @@ impl Constellation {
+ 
+     fn set_ids(&self, frame_tree: @mut FrameTree) {
+         let (port, chan) = Chan::new();
++        debug!("Constellation sending SetIds");
+         self.compositor_chan.send(SetIds(frame_tree.to_sendable(), chan, self.chan.clone()));
+         match port.recv_opt() {
+             Some(()) => {
+diff --git a/src/components/main/pipeline.rs b/src/components/main/pipeline.rs
+index 8f5aaef929d1..0fee4bdcea35 100644
+--- a/src/components/main/pipeline.rs
++++ b/src/components/main/pipeline.rs
+@@ -181,6 +181,7 @@ impl Pipeline {
+     }
+ 
+     pub fn revoke_paint_permission(&self) {
++        debug!("pipeline revoking render channel paint permission");
+         self.render_chan.send(PaintPermissionRevoked);
+     }
+ 
+diff --git a/src/components/main/servo.rc b/src/components/main/servo.rc
+index 6b1bbe373027..d46c77eabc6c 100755
+--- a/src/components/main/servo.rc
++++ b/src/components/main/servo.rc
+@@ -135,7 +135,6 @@ pub extern "C" fn android_start(argc: int, argv: **u8) -> int {
+ fn run(opts: Opts) {
+     let mut pool = green::SchedPool::new(green::PoolConfig::new());
+ 
+-    let (exit_response_from_constellation, exit_chan) = Chan::new();
+     let (compositor_port, compositor_chan) = CompositorChan::new();
+     let profiler_chan = Profiler::create(opts.profiler_period);
+ 
+@@ -154,13 +153,13 @@ fn run(opts: Opts) {
+                                                       image_cache_task,
+                                                       profiler_chan_clone);
+ 
+-        // Send the constallation Chan as the result
+-        result_chan.send(constellation_chan.clone());
+-
+         // Send the URL command to the constellation.
+         for filename in opts.urls.iter() {
+             constellation_chan.send(InitLoadUrlMsg(make_url(filename.clone(), None)))
+         }
++
++        // Send the constallation Chan as the result
++        result_chan.send(constellation_chan);
+     });
+ 
+     let constellation_chan = result_port.recv();
+@@ -169,9 +168,7 @@ fn run(opts: Opts) {
+     CompositorTask::create(opts,
+                            compositor_port,
+                            constellation_chan,
+-                           profiler_chan,
+-                           exit_chan,
+-                           exit_response_from_constellation);
++                           profiler_chan);
+ 
+     pool.shutdown();
+ }
+diff --git a/src/components/msg/constellation_msg.rs b/src/components/msg/constellation_msg.rs
+index ee8f29147851..0aea8963c92c 100644
+--- a/src/components/msg/constellation_msg.rs
++++ b/src/components/msg/constellation_msg.rs
+@@ -8,7 +8,7 @@
+ use extra::url::Url;
+ use geom::rect::Rect;
+ use geom::size::Size2D;
+-use std::comm::{Chan, SharedChan};
++use std::comm::SharedChan;
+ 
+ #[deriving(Clone)]
+ pub struct ConstellationChan(SharedChan<Msg>);
+@@ -28,7 +28,7 @@ pub enum IFrameSandboxState {
+ 
+ /// Messages from the compositor to the constellation.
+ pub enum Msg {
+-    ExitMsg(Chan<()>),
++    ExitMsg,
+     FailureMsg(PipelineId, Option<SubpageId>),
+     InitLoadUrlMsg(Url),
+     FrameRectMsg(PipelineId, SubpageId, Rect<f32>),

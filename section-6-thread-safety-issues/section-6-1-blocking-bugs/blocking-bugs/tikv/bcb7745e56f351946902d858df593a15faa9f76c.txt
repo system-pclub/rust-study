@@ -1,0 +1,49 @@
+diff --git a/src/pd/async/client.rs b/src/pd/async/client.rs
+index a2eda2cd83..5064815260 100644
+--- a/src/pd/async/client.rs
++++ b/src/pd/async/client.rs
+@@ -202,7 +202,8 @@ fn do_request<F, R>(client: &RpcClient, f: F) -> Result<R>
+             }
+             Err(e) => {
+                 error!("fail to request: {:?}", e);
+-                match try_connect_leader(&client.leader_client.inner.rl().members) {
++                let result = try_connect_leader(&client.leader_client.inner.rl().members);
++                match result {
+                     Ok((cli, mbrs)) => {
+                         let mut inner = client.leader_client.inner.wl();
+                         inner.client = cli;
+diff --git a/src/util/mod.rs b/src/util/mod.rs
+index f52b90231e..c8a261092f 100644
+--- a/src/util/mod.rs
++++ b/src/util/mod.rs
+@@ -553,4 +553,30 @@ mod tests {
+         defer!(assert!(!sp.load(Ordering::SeqCst)));
+         should_panic.store(false, Ordering::SeqCst);
+     }
++
++    #[test]
++    fn test_rwlock_deadlock() {
++        // If the test runs over 60s, then there is a deadlock.
++        let mu = RwLock::new(Some(1));
++        {
++            let _clone = foo(&mu.rl());
++            let mut data = mu.wl();
++            assert!(data.is_some());
++            *data = None;
++        }
++
++        {
++            match foo(&mu.rl()) {
++                Some(_) | None => {
++                    let res = mu.try_write();
++                    assert!(res.is_err());
++                }
++            }
++        }
++
++        #[allow(clone_on_copy)]
++        fn foo(a: &Option<usize>) -> Option<usize> {
++            a.clone()
++        }
++    }
+ }

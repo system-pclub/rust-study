@@ -1,0 +1,2360 @@
+diff --git a/ethcore/res/tendermint.json b/ethcore/res/tendermint.json
+deleted file mode 100644
+index 3c60097a4e4..00000000000
+--- a/ethcore/res/tendermint.json
++++ /dev/null
+@@ -1,58 +0,0 @@
+-{
+-	"name": "TestBFT",
+-	"engine": {
+-		"tendermint": {
+-			"params": {
+-				"validators" : {
+-					"list": [
+-						"0x82a978b3f5962a5b0957d9ee9eef472ee55b42f1",
+-						"0x7d577a597b2742b498cb5cf0c26cdcd726d39e6e"
+-					]
+-				},
+-				"timeoutPropose": 10000,
+-				"timeoutPrevote": 10000,
+-				"timeoutPrecommit": 10000,
+-				"timeoutCommit": 10000
+-			}
+-		}
+-	},
+-	"params": {
+-		"gasLimitBoundDivisor": "0x0400",
+-		"accountStartNonce": "0x0",
+-		"maximumExtraDataSize": "0x20",
+-		"minGasLimit": "0x1388",
+-		"networkID" : "0x2323",
+-		"eip140Transition": "0x0",
+-		"eip211Transition": "0x0",
+-		"eip214Transition": "0x0",
+-		"eip658Transition": "0x0"
+-	},
+-	"genesis": {
+-		"seal": {
+-			"tendermint": {
+-				"round": "0x0",
+-				"proposal": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+-				"precommits": [
+-					"0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+-				]
+-			}
+-		},
+-		"difficulty": "0x20000",
+-		"author": "0x0000000000000000000000000000000000000000",
+-		"timestamp": "0x00",
+-		"parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+-		"extraData": "0x",
+-		"gasLimit": "0x222222"
+-	},
+-	"accounts": {
+-		"0000000000000000000000000000000000000001": { "balance": "1", "builtin": { "name": "ecrecover", "pricing": { "linear": { "base": 3000, "word": 0 } } } },
+-		"0000000000000000000000000000000000000002": { "balance": "1", "builtin": { "name": "sha256", "pricing": { "linear": { "base": 60, "word": 12 } } } },
+-		"0000000000000000000000000000000000000003": { "balance": "1", "builtin": { "name": "ripemd160", "pricing": { "linear": { "base": 600, "word": 120 } } } },
+-		"0000000000000000000000000000000000000004": { "balance": "1", "builtin": { "name": "identity", "pricing": { "linear": { "base": 15, "word": 3 } } } },
+-		"0000000000000000000000000000000000000005": { "balance": "1", "builtin": { "name": "modexp", "activate_at": 0, "pricing": { "modexp": { "divisor": 20 } } } },
+-		"0000000000000000000000000000000000000006": { "balance": "1", "builtin": { "name": "alt_bn128_add", "activate_at": 0, "pricing": { "linear": { "base": 500, "word": 0 } } } },
+-		"0000000000000000000000000000000000000007": { "balance": "1", "builtin": { "name": "alt_bn128_mul", "activate_at": 0, "pricing": { "linear": { "base": 40000, "word": 0 } } } },
+-		"0000000000000000000000000000000000000008": { "balance": "1", "builtin": { "name": "alt_bn128_pairing", "activate_at": 0, "pricing": { "alt_bn128_pairing": { "base": 100000, "pair": 80000 } } } },
+-		"9cce34f7ab185c7aba1b7c8140d620b4bda941d6": { "balance": "1606938044258990275541962092341162602522202993782792835301376" }
+-	}
+-}
+diff --git a/ethcore/src/engines/mod.rs b/ethcore/src/engines/mod.rs
+index 39f3ac20471..2d47002d171 100644
+--- a/ethcore/src/engines/mod.rs
++++ b/ethcore/src/engines/mod.rs
+@@ -21,10 +21,7 @@ mod basic_authority;
+ mod instant_seal;
+ mod null_engine;
+ mod signer;
+-mod tendermint;
+-mod transition;
+ mod validator_set;
+-mod vote_collector;
+ 
+ pub mod block_reward;
+ pub mod epoch;
+@@ -34,7 +31,6 @@ pub use self::basic_authority::BasicAuthority;
+ pub use self::epoch::{EpochVerifier, Transition as EpochTransition};
+ pub use self::instant_seal::{InstantSeal, InstantSealParams};
+ pub use self::null_engine::NullEngine;
+-pub use self::tendermint::Tendermint;
+ 
+ use std::sync::{Weak, Arc};
+ use std::collections::{BTreeMap, HashMap};
+diff --git a/ethcore/src/engines/signer.rs b/ethcore/src/engines/signer.rs
+index 670c0959c81..c28e44451c5 100644
+--- a/ethcore/src/engines/signer.rs
++++ b/ethcore/src/engines/signer.rs
+@@ -57,11 +57,6 @@ impl EngineSigner {
+ 		self.address.clone()
+ 	}
+ 
+-	/// Check if the given address is the signing address.
+-	pub fn is_address(&self, address: &Address) -> bool {
+-		self.address.map_or(false, |a| a == *address)
+-	}
+-
+ 	/// Check if the signing address was set.
+ 	pub fn is_some(&self) -> bool {
+ 		self.address.is_some()
+diff --git a/ethcore/src/engines/tendermint/message.rs b/ethcore/src/engines/tendermint/message.rs
+deleted file mode 100644
+index 137148667de..00000000000
+--- a/ethcore/src/engines/tendermint/message.rs
++++ /dev/null
+@@ -1,298 +0,0 @@
+-// Copyright 2015-2018 Parity Technologies (UK) Ltd.
+-// This file is part of Parity.
+-
+-// Parity is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-
+-// Parity is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-
+-// You should have received a copy of the GNU General Public License
+-// along with Parity.  If not, see <http://www.gnu.org/licenses/>.
+-
+-//! Tendermint message handling.
+-
+-use bytes::Bytes;
+-use error::Error;
+-use ethereum_types::{H256, H520, Address};
+-use ethkey::{recover, public_to_address};
+-use hash::keccak;
+-use header::Header;
+-use rlp::{Rlp, RlpStream, Encodable, Decodable, DecoderError};
+-use std::cmp;
+-use super::{Height, View, BlockHash, Step};
+-use super::super::vote_collector::Message;
+-
+-/// Message transmitted between consensus participants.
+-#[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
+-pub struct ConsensusMessage {
+-	pub vote_step: VoteStep,
+-	pub block_hash: Option<BlockHash>,
+-	pub signature: H520,
+-}
+-
+-/// Complete step of the consensus process.
+-#[derive(Debug, PartialEq, Eq, Clone, Hash)]
+-pub struct VoteStep {
+-	pub height: Height,
+-	pub view: View,
+-	pub step: Step,
+-}
+-
+-impl VoteStep {
+-	pub fn new(height: Height, view: View, step: Step) -> Self {
+-		VoteStep { height: height, view: view, step: step }
+-	}
+-
+-	pub fn is_height(&self, height: Height) -> bool {
+-		self.height == height
+-	}
+-
+-	pub fn is_view(&self, height: Height, view: View) -> bool {
+-		self.height == height && self.view == view
+-	}
+-}
+-
+-/// Header consensus view.
+-pub fn consensus_view(header: &Header) -> Result<View, ::rlp::DecoderError> {
+-	let view_rlp = header.seal().get(0).expect("seal passed basic verification; seal has 3 fields; qed");
+-	Rlp::new(view_rlp.as_slice()).as_val()
+-}
+-
+-/// Proposal signature.
+-pub fn proposal_signature(header: &Header) -> Result<H520, ::rlp::DecoderError> {
+-	Rlp::new(header.seal().get(1).expect("seal passed basic verification; seal has 3 fields; qed").as_slice()).as_val()
+-}
+-
+-impl Message for ConsensusMessage {
+-	type Round = VoteStep;
+-
+-	fn signature(&self) -> H520 { self.signature }
+-
+-	fn block_hash(&self) -> Option<H256> { self.block_hash }
+-
+-	fn round(&self) -> &VoteStep { &self.vote_step }
+-
+-	fn is_broadcastable(&self) -> bool { self.vote_step.step.is_pre() }
+-}
+-
+-impl ConsensusMessage {
+-	pub fn new(signature: H520, height: Height, view: View, step: Step, block_hash: Option<BlockHash>) -> Self {
+-		ConsensusMessage {
+-			signature: signature,
+-			block_hash: block_hash,
+-			vote_step: VoteStep::new(height, view, step),
+-		}
+-	}
+-
+-	pub fn new_proposal(header: &Header) -> Result<Self, ::rlp::DecoderError> {
+-		Ok(ConsensusMessage {
+-			signature: proposal_signature(header)?,
+-			vote_step: VoteStep::new(header.number() as Height, consensus_view(header)?, Step::Propose),
+-			block_hash: Some(header.bare_hash()),
+-		})
+-	}
+-
+-	pub fn verify(&self) -> Result<Address, Error> {
+-		let full_rlp = ::rlp::encode(self);
+-		let block_info = Rlp::new(&full_rlp).at(1)?;
+-		let public_key = recover(&self.signature.into(), &keccak(block_info.as_raw()))?;
+-		Ok(public_to_address(&public_key))
+-	}
+-}
+-
+-impl Default for VoteStep {
+-	fn default() -> Self {
+-		VoteStep::new(0, 0, Step::Propose)
+-	}
+-}
+-
+-impl PartialOrd for VoteStep {
+-	fn partial_cmp(&self, m: &VoteStep) -> Option<cmp::Ordering> {
+-		Some(self.cmp(m))
+-	}
+-}
+-
+-impl Ord for VoteStep {
+-	fn cmp(&self, m: &VoteStep) -> cmp::Ordering {
+-		if self.height != m.height {
+-			self.height.cmp(&m.height)
+-		} else if self.view != m.view {
+-			self.view.cmp(&m.view)
+-		} else {
+-			self.step.number().cmp(&m.step.number())
+-		}
+-	}
+-}
+-
+-impl Step {
+-	fn number(&self) -> u8 {
+-		match *self {
+-			Step::Propose => 0,
+-			Step::Prevote => 1,
+-			Step::Precommit => 2,
+-			Step::Commit => 3,
+-		}
+-	}
+-}
+-
+-impl Decodable for Step {
+-	fn decode(rlp: &Rlp) -> Result<Self, DecoderError> {
+-		match rlp.as_val()? {
+-			0u8 => Ok(Step::Propose),
+-			1 => Ok(Step::Prevote),
+-			2 => Ok(Step::Precommit),
+-			_ => Err(DecoderError::Custom("Invalid step.")),
+-		}
+-	}
+-}
+-
+-impl Encodable for Step {
+-	fn rlp_append(&self, s: &mut RlpStream) {
+-		s.append_internal(&self.number());
+-	}
+-}
+-
+-/// (signature, (height, view, step, block_hash))
+-impl Decodable for ConsensusMessage {
+-	fn decode(rlp: &Rlp) -> Result<Self, DecoderError> {
+-		let m = rlp.at(1)?;
+-		let block_message: H256 = m.val_at(3)?;
+-		Ok(ConsensusMessage {
+-			vote_step: VoteStep::new(m.val_at(0)?, m.val_at(1)?, m.val_at(2)?),
+-			block_hash: match block_message.is_zero() {
+-				true => None,
+-				false => Some(block_message),
+-			},
+-			signature: rlp.val_at(0)?,
+-		})
+-  }
+-}
+-
+-impl Encodable for ConsensusMessage {
+-	fn rlp_append(&self, s: &mut RlpStream) {
+-		let info = message_info_rlp(&self.vote_step, self.block_hash);
+-		s.begin_list(2)
+-			.append(&self.signature)
+-			.append_raw(&info, 1);
+-	}
+-}
+-
+-pub fn message_info_rlp(vote_step: &VoteStep, block_hash: Option<BlockHash>) -> Bytes {
+-	let mut s = RlpStream::new_list(4);
+-	s.append(&vote_step.height).append(&vote_step.view).append(&vote_step.step).append(&block_hash.unwrap_or_else(H256::zero));
+-	s.out()
+-}
+-
+-pub fn message_full_rlp(signature: &H520, vote_info: &Bytes) -> Bytes {
+-	let mut s = RlpStream::new_list(2);
+-	s.append(signature).append_raw(vote_info, 1);
+-	s.out()
+-}
+-
+-pub fn message_hash(vote_step: VoteStep, block_hash: H256) -> H256 {
+-	keccak(message_info_rlp(&vote_step, Some(block_hash)))
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-	use std::sync::Arc;
+-	use hash::keccak;
+-	use rlp::*;
+-	use account_provider::AccountProvider;
+-	use header::Header;
+-	use super::super::Step;
+-	use super::*;
+-
+-	#[test]
+-	fn encode_step() {
+-		let step = Step::Precommit;
+-
+-		let mut s = RlpStream::new_list(2);
+-		s.append(&step);
+-		assert!(!s.is_finished(), "List shouldn't finished yet");
+-		s.append(&step);
+-		assert!(s.is_finished(), "List should be finished now");
+-		s.out();
+-	}
+-
+-	#[test]
+-	fn encode_decode() {
+-		let message = ConsensusMessage {
+-			signature: H520::default(),
+-			vote_step: VoteStep {
+-				height: 10,
+-				view: 123,
+-				step: Step::Precommit,
+-			},
+-			block_hash: Some(keccak("1")),
+-		};
+-		let raw_rlp = ::rlp::encode(&message);
+-		let rlp = Rlp::new(&raw_rlp);
+-		assert_eq!(Ok(message), rlp.as_val());
+-
+-		let message = ConsensusMessage {
+-			signature: H520::default(),
+-			vote_step: VoteStep {
+-				height: 1314,
+-				view: 0,
+-				step: Step::Prevote,
+-			},
+-			block_hash: None
+-		};
+-		let raw_rlp = ::rlp::encode(&message);
+-		let rlp = Rlp::new(&raw_rlp);
+-		assert_eq!(Ok(message), rlp.as_val());
+-	}
+-
+-	#[test]
+-	fn generate_and_verify() {
+-		let tap = Arc::new(AccountProvider::transient_provider());
+-		let addr = tap.insert_account(keccak("0").into(), &"0".into()).unwrap();
+-		tap.unlock_account_permanently(addr, "0".into()).unwrap();
+-
+-		let mi = message_info_rlp(&VoteStep::new(123, 2, Step::Precommit), Some(H256::default()));
+-
+-		let raw_rlp = message_full_rlp(&tap.sign(addr, None, keccak(&mi)).unwrap().into(), &mi);
+-
+-		let rlp = Rlp::new(&raw_rlp);
+-		let message: ConsensusMessage = rlp.as_val().unwrap();
+-		match message.verify() { Ok(a) if a == addr => {}, _ => panic!(), };
+-	}
+-
+-	#[test]
+-	fn proposal_message() {
+-		let mut header = Header::default();
+-		let seal = vec![
+-			::rlp::encode(&0u8),
+-			::rlp::encode(&H520::default()),
+-			Vec::new()
+-		];
+-
+-		header.set_seal(seal);
+-		let message = ConsensusMessage::new_proposal(&header).unwrap();
+-		assert_eq!(
+-			message,
+-			ConsensusMessage {
+-				signature: Default::default(),
+-				vote_step: VoteStep {
+-					height: 0,
+-					view: 0,
+-					step: Step::Propose,
+-				},
+-				block_hash: Some(header.bare_hash())
+-			}
+-		);
+-	}
+-
+-	#[test]
+-	fn step_ordering() {
+-			assert!(VoteStep::new(10, 123, Step::Precommit) < VoteStep::new(11, 123, Step::Precommit));
+-			assert!(VoteStep::new(10, 123, Step::Propose) < VoteStep::new(11, 123, Step::Precommit));
+-			assert!(VoteStep::new(10, 122, Step::Propose) < VoteStep::new(11, 123, Step::Propose));
+-	}
+-}
+diff --git a/ethcore/src/engines/tendermint/mod.rs b/ethcore/src/engines/tendermint/mod.rs
+deleted file mode 100644
+index a3710222ad2..00000000000
+--- a/ethcore/src/engines/tendermint/mod.rs
++++ /dev/null
+@@ -1,1144 +0,0 @@
+-// Copyright 2015-2018 Parity Technologies (UK) Ltd.
+-// This file is part of Parity.
+-
+-// Parity is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-
+-// Parity is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-
+-// You should have received a copy of the GNU General Public License
+-// along with Parity.  If not, see <http://www.gnu.org/licenses/>.
+-
+-/// Tendermint BFT consensus engine with round robin proof-of-authority.
+-/// At each blockchain `Height` there can be multiple `View`s of voting.
+-/// Signatures always sign `Height`, `View`, `Step` and `BlockHash` which is a block hash without seal.
+-/// First a block with `Seal::Proposal` is issued by the designated proposer.
+-/// Next the `View` proceeds through `Prevote` and `Precommit` `Step`s.
+-/// Block is issued when there is enough `Precommit` votes collected on a particular block at the end of a `View`.
+-/// Once enough votes have been gathered the proposer issues that block in the `Commit` step.
+-
+-mod message;
+-mod params;
+-
+-use std::sync::{Weak, Arc};
+-use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
+-use std::collections::HashSet;
+-use hash::keccak;
+-use ethereum_types::{H256, H520, U128, U256, Address};
+-use parking_lot::RwLock;
+-use unexpected::{OutOfBounds, Mismatch};
+-use client::EngineClient;
+-use bytes::Bytes;
+-use error::{Error, BlockError};
+-use header::{Header, BlockNumber, ExtendedHeader};
+-use rlp::Rlp;
+-use ethkey::{self, Password, Message, Signature};
+-use account_provider::AccountProvider;
+-use block::*;
+-use engines::{Engine, Seal, EngineError, ConstructedVerifier};
+-use engines::block_reward::{self, RewardKind};
+-use io::IoService;
+-use super::signer::EngineSigner;
+-use super::validator_set::{ValidatorSet, SimpleList};
+-use super::transition::TransitionHandler;
+-use super::vote_collector::VoteCollector;
+-use self::message::*;
+-use self::params::TendermintParams;
+-use machine::{AuxiliaryData, EthereumMachine};
+-
+-#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+-pub enum Step {
+-	Propose,
+-	Prevote,
+-	Precommit,
+-	Commit
+-}
+-
+-impl Step {
+-	pub fn is_pre(self) -> bool {
+-		match self {
+-			Step::Prevote | Step::Precommit => true,
+-			_ => false,
+-		}
+-	}
+-}
+-
+-pub type Height = usize;
+-pub type View = usize;
+-pub type BlockHash = H256;
+-
+-/// Engine using `Tendermint` consensus algorithm, suitable for EVM chain.
+-pub struct Tendermint {
+-	step_service: IoService<Step>,
+-	client: RwLock<Option<Weak<EngineClient>>>,
+-	/// Blockchain height.
+-	height: AtomicUsize,
+-	/// Consensus view.
+-	view: AtomicUsize,
+-	/// Consensus step.
+-	step: RwLock<Step>,
+-	/// Vote accumulator.
+-	votes: VoteCollector<ConsensusMessage>,
+-	/// Used to sign messages and proposals.
+-	signer: RwLock<EngineSigner>,
+-	/// Message for the last PoLC.
+-	lock_change: RwLock<Option<ConsensusMessage>>,
+-	/// Last lock view.
+-	last_lock: AtomicUsize,
+-	/// Bare hash of the proposed block, used for seal submission.
+-	proposal: RwLock<Option<H256>>,
+-	/// Hash of the proposal parent block.
+-	proposal_parent: RwLock<H256>,
+-	/// Last block proposed by this validator.
+-	last_proposed: RwLock<H256>,
+-	/// Set used to determine the current validators.
+-	validators: Box<ValidatorSet>,
+-	/// Reward per block, in base units.
+-	block_reward: U256,
+-	/// ethereum machine descriptor
+-	machine: EthereumMachine,
+-}
+-
+-struct EpochVerifier<F>
+-	where F: Fn(&Signature, &Message) -> Result<Address, Error> + Send + Sync
+-{
+-	subchain_validators: SimpleList,
+-	recover: F
+-}
+-
+-impl <F> super::EpochVerifier<EthereumMachine> for EpochVerifier<F>
+-	where F: Fn(&Signature, &Message) -> Result<Address, Error> + Send + Sync
+-{
+-	fn verify_light(&self, header: &Header) -> Result<(), Error> {
+-		let message = header.bare_hash();
+-
+-		let mut addresses = HashSet::new();
+-		let ref header_signatures_field = header.seal().get(2).ok_or(BlockError::InvalidSeal)?;
+-		for rlp in Rlp::new(header_signatures_field).iter() {
+-			let signature: H520 = rlp.as_val()?;
+-			let address = (self.recover)(&signature.into(), &message)?;
+-
+-			if !self.subchain_validators.contains(header.parent_hash(), &address) {
+-				return Err(EngineError::NotAuthorized(address.to_owned()).into());
+-			}
+-			addresses.insert(address);
+-		}
+-
+-		let n = addresses.len();
+-		let threshold = self.subchain_validators.len() * 2/3;
+-		if n > threshold {
+-			Ok(())
+-		} else {
+-			Err(EngineError::BadSealFieldSize(OutOfBounds {
+-				min: Some(threshold),
+-				max: None,
+-				found: n
+-			}).into())
+-		}
+-	}
+-
+-	fn check_finality_proof(&self, proof: &[u8]) -> Option<Vec<H256>> {
+-		match ::rlp::decode(proof) {
+-			Ok(header) => self.verify_light(&header).ok().map(|_| vec![header.hash()]),
+-			Err(_) => None
+-		}
+-	}
+-}
+-
+-fn combine_proofs(signal_number: BlockNumber, set_proof: &[u8], finality_proof: &[u8]) -> Vec<u8> {
+-	let mut stream = ::rlp::RlpStream::new_list(3);
+-	stream.append(&signal_number).append(&set_proof).append(&finality_proof);
+-	stream.out()
+-}
+-
+-fn destructure_proofs(combined: &[u8]) -> Result<(BlockNumber, &[u8], &[u8]), Error> {
+-	let rlp = Rlp::new(combined);
+-	Ok((
+-		rlp.at(0)?.as_val()?,
+-		rlp.at(1)?.data()?,
+-		rlp.at(2)?.data()?,
+-	))
+-}
+-
+-impl Tendermint {
+-	/// Create a new instance of Tendermint engine
+-	pub fn new(our_params: TendermintParams, machine: EthereumMachine) -> Result<Arc<Self>, Error> {
+-		let engine = Arc::new(
+-			Tendermint {
+-				client: RwLock::new(None),
+-				step_service: IoService::<Step>::start()?,
+-				height: AtomicUsize::new(1),
+-				view: AtomicUsize::new(0),
+-				step: RwLock::new(Step::Propose),
+-				votes: Default::default(),
+-				signer: Default::default(),
+-				lock_change: RwLock::new(None),
+-				last_lock: AtomicUsize::new(0),
+-				proposal: RwLock::new(None),
+-				proposal_parent: Default::default(),
+-				last_proposed: Default::default(),
+-				validators: our_params.validators,
+-				block_reward: our_params.block_reward,
+-				machine: machine,
+-			});
+-
+-		let handler = TransitionHandler::new(Arc::downgrade(&engine) as Weak<Engine<_>>, Box::new(our_params.timeouts));
+-		engine.step_service.register_handler(Arc::new(handler))?;
+-
+-		Ok(engine)
+-	}
+-
+-	fn update_sealing(&self) {
+-		if let Some(ref weak) = *self.client.read() {
+-			if let Some(c) = weak.upgrade() {
+-				c.update_sealing();
+-			}
+-		}
+-	}
+-
+-	fn submit_seal(&self, block_hash: H256, seal: Vec<Bytes>) {
+-		if let Some(ref weak) = *self.client.read() {
+-			if let Some(c) = weak.upgrade() {
+-				c.submit_seal(block_hash, seal);
+-			}
+-		}
+-	}
+-
+-	fn broadcast_message(&self, message: Bytes) {
+-		if let Some(ref weak) = *self.client.read() {
+-			if let Some(c) = weak.upgrade() {
+-				c.broadcast_consensus_message(message);
+-			}
+-		}
+-	}
+-
+-	fn generate_message(&self, block_hash: Option<BlockHash>) -> Option<Bytes> {
+-		let h = self.height.load(AtomicOrdering::SeqCst);
+-		let r = self.view.load(AtomicOrdering::SeqCst);
+-		let s = *self.step.read();
+-		let vote_info = message_info_rlp(&VoteStep::new(h, r, s), block_hash);
+-		match (self.signer.read().address(), self.sign(keccak(&vote_info)).map(Into::into)) {
+-			(Some(validator), Ok(signature)) => {
+-				let message_rlp = message_full_rlp(&signature, &vote_info);
+-				let message = ConsensusMessage::new(signature, h, r, s, block_hash);
+-				self.votes.vote(message.clone(), validator);
+-				debug!(target: "engine", "Generated {:?} as {}.", message, validator);
+-				self.handle_valid_message(&message);
+-
+-				Some(message_rlp)
+-			},
+-			(None, _) => {
+-				trace!(target: "engine", "No message, since there is no engine signer.");
+-				None
+-			},
+-			(Some(v), Err(e)) => {
+-				trace!(target: "engine", "{} could not sign the message {}", v, e);
+-				None
+-			},
+-		}
+-	}
+-
+-	fn generate_and_broadcast_message(&self, block_hash: Option<BlockHash>) {
+-		if let Some(message) = self.generate_message(block_hash) {
+-			self.broadcast_message(message);
+-		}
+-	}
+-
+-	/// Broadcast all messages since last issued block to get the peers up to speed.
+-	fn broadcast_old_messages(&self) {
+-		for m in self.votes.get_up_to(&VoteStep::new(self.height.load(AtomicOrdering::SeqCst), self.view.load(AtomicOrdering::SeqCst), Step::Precommit)).into_iter() {
+-			self.broadcast_message(m);
+-		}
+-	}
+-
+-	fn to_next_height(&self, height: Height) {
+-		let new_height = height + 1;
+-		debug!(target: "engine", "Received a Commit, transitioning to height {}.", new_height);
+-		self.last_lock.store(0, AtomicOrdering::SeqCst);
+-		self.height.store(new_height, AtomicOrdering::SeqCst);
+-		self.view.store(0, AtomicOrdering::SeqCst);
+-		*self.lock_change.write() = None;
+-		*self.proposal.write() = None;
+-	}
+-
+-	/// Use via step_service to transition steps.
+-	fn to_step(&self, step: Step) {
+-		if let Err(io_err) = self.step_service.send_message(step) {
+-			warn!(target: "engine", "Could not proceed to step {}.", io_err)
+-		}
+-		*self.step.write() = step;
+-		match step {
+-			Step::Propose => {
+-				self.update_sealing()
+-			},
+-			Step::Prevote => {
+-				let block_hash = match *self.lock_change.read() {
+-					Some(ref m) if !self.should_unlock(m.vote_step.view) => m.block_hash,
+-					_ => self.proposal.read().clone(),
+-				};
+-				self.generate_and_broadcast_message(block_hash);
+-			},
+-			Step::Precommit => {
+-				trace!(target: "engine", "to_step: Precommit.");
+-				let block_hash = match *self.lock_change.read() {
+-					Some(ref m) if self.is_view(m) && m.block_hash.is_some() => {
+-						trace!(target: "engine", "Setting last lock: {}", m.vote_step.view);
+-						self.last_lock.store(m.vote_step.view, AtomicOrdering::SeqCst);
+-						m.block_hash
+-					},
+-					_ => None,
+-				};
+-				self.generate_and_broadcast_message(block_hash);
+-			},
+-			Step::Commit => {
+-				trace!(target: "engine", "to_step: Commit.");
+-			},
+-		}
+-	}
+-
+-	fn is_authority(&self, address: &Address) -> bool {
+-		self.validators.contains(&*self.proposal_parent.read(), address)
+-	}
+-
+-	fn check_above_threshold(&self, n: usize) -> Result<(), EngineError> {
+-		let threshold = self.validators.count(&*self.proposal_parent.read()) * 2/3;
+-		if n > threshold {
+-			Ok(())
+-		} else {
+-			Err(EngineError::BadSealFieldSize(OutOfBounds {
+-				min: Some(threshold),
+-				max: None,
+-				found: n
+-			}))
+-		}
+-	}
+-
+-	/// Find the designated for the given view.
+-	fn view_proposer(&self, bh: &H256, height: Height, view: View) -> Address {
+-		let proposer_nonce = height + view;
+-		trace!(target: "engine", "Proposer nonce: {}", proposer_nonce);
+-		self.validators.get(bh, proposer_nonce)
+-	}
+-
+-	/// Check if address is a proposer for given view.
+-	fn check_view_proposer(&self, bh: &H256, height: Height, view: View, address: &Address) -> Result<(), EngineError> {
+-		let proposer = self.view_proposer(bh, height, view);
+-		if proposer == *address {
+-			Ok(())
+-		} else {
+-			Err(EngineError::NotProposer(Mismatch { expected: proposer, found: address.clone() }))
+-		}
+-	}
+-
+-	/// Check if current signer is the current proposer.
+-	fn is_signer_proposer(&self, bh: &H256) -> bool {
+-		let proposer = self.view_proposer(bh, self.height.load(AtomicOrdering::SeqCst), self.view.load(AtomicOrdering::SeqCst));
+-		self.signer.read().is_address(&proposer)
+-	}
+-
+-	fn is_height(&self, message: &ConsensusMessage) -> bool {
+-		message.vote_step.is_height(self.height.load(AtomicOrdering::SeqCst))
+-	}
+-
+-	fn is_view(&self, message: &ConsensusMessage) -> bool {
+-		message.vote_step.is_view(self.height.load(AtomicOrdering::SeqCst), self.view.load(AtomicOrdering::SeqCst))
+-	}
+-
+-	fn increment_view(&self, n: View) {
+-		trace!(target: "engine", "increment_view: New view.");
+-		self.view.fetch_add(n, AtomicOrdering::SeqCst);
+-	}
+-
+-	fn should_unlock(&self, lock_change_view: View) -> bool {
+-		self.last_lock.load(AtomicOrdering::SeqCst) < lock_change_view
+-			&& lock_change_view < self.view.load(AtomicOrdering::SeqCst)
+-	}
+-
+-	fn has_enough_any_votes(&self) -> bool {
+-		let step_votes = self.votes.count_round_votes(&VoteStep::new(self.height.load(AtomicOrdering::SeqCst), self.view.load(AtomicOrdering::SeqCst), *self.step.read()));
+-		self.check_above_threshold(step_votes).is_ok()
+-	}
+-
+-	fn has_enough_future_step_votes(&self, vote_step: &VoteStep) -> bool {
+-		if vote_step.view > self.view.load(AtomicOrdering::SeqCst) {
+-			let step_votes = self.votes.count_round_votes(vote_step);
+-			self.check_above_threshold(step_votes).is_ok()
+-		} else {
+-			false
+-		}
+-	}
+-
+-	fn has_enough_aligned_votes(&self, message: &ConsensusMessage) -> bool {
+-		let aligned_count = self.votes.count_aligned_votes(&message);
+-		self.check_above_threshold(aligned_count).is_ok()
+-	}
+-
+-	fn handle_valid_message(&self, message: &ConsensusMessage) {
+-		let ref vote_step = message.vote_step;
+-		let is_newer_than_lock = match *self.lock_change.read() {
+-			Some(ref lock) => vote_step > &lock.vote_step,
+-			None => true,
+-		};
+-		let lock_change = is_newer_than_lock
+-			&& vote_step.step == Step::Prevote
+-			&& message.block_hash.is_some()
+-			&& self.has_enough_aligned_votes(message);
+-		if lock_change {
+-			trace!(target: "engine", "handle_valid_message: Lock change.");
+-			*self.lock_change.write() = Some(message.clone());
+-		}
+-		// Check if it can affect the step transition.
+-		if self.is_height(message) {
+-			let next_step = match *self.step.read() {
+-				Step::Precommit if message.block_hash.is_none() && self.has_enough_aligned_votes(message) => {
+-					self.increment_view(1);
+-					Some(Step::Propose)
+-				},
+-				Step::Precommit if self.has_enough_aligned_votes(message) => {
+-					let bh = message.block_hash.expect("previous guard ensures is_some; qed");
+-					if *self.last_proposed.read() == bh {
+-						// Commit the block using a complete signature set.
+-						// Generate seal and remove old votes.
+-						let precommits = self.votes.round_signatures(vote_step, &bh);
+-						trace!(target: "engine", "Collected seal: {:?}", precommits);
+-						let seal = vec![
+-							::rlp::encode(&vote_step.view),
+-							::rlp::NULL_RLP.to_vec(),
+-							::rlp::encode_list(&precommits)
+-						];
+-						self.submit_seal(bh, seal);
+-						self.votes.throw_out_old(&vote_step);
+-					}
+-					self.to_next_height(self.height.load(AtomicOrdering::SeqCst));
+-					Some(Step::Commit)
+-				},
+-				Step::Precommit if self.has_enough_future_step_votes(&vote_step) => {
+-					self.increment_view(vote_step.view - self.view.load(AtomicOrdering::SeqCst));
+-					Some(Step::Precommit)
+-				},
+-				// Avoid counting votes twice.
+-				Step::Prevote if lock_change => Some(Step::Precommit),
+-				Step::Prevote if self.has_enough_aligned_votes(message) => Some(Step::Precommit),
+-				Step::Prevote if self.has_enough_future_step_votes(&vote_step) => {
+-					self.increment_view(vote_step.view - self.view.load(AtomicOrdering::SeqCst));
+-					Some(Step::Prevote)
+-				},
+-				_ => None,
+-			};
+-
+-			if let Some(step) = next_step {
+-				trace!(target: "engine", "Transition to {:?} triggered.", step);
+-				self.to_step(step);
+-			}
+-		}
+-	}
+-}
+-
+-impl Engine<EthereumMachine> for Tendermint {
+-	fn name(&self) -> &str { "Tendermint" }
+-
+-	/// (consensus view, proposal signature, authority signatures)
+-	fn seal_fields(&self, _header: &Header) -> usize { 3 }
+-
+-	fn machine(&self) -> &EthereumMachine { &self.machine }
+-
+-	fn maximum_uncle_count(&self, _block: BlockNumber) -> usize { 0 }
+-
+-	fn maximum_uncle_age(&self) -> usize { 0 }
+-
+-	fn populate_from_parent(&self, header: &mut Header, parent: &Header) {
+-		// Chain scoring: total weight is sqrt(U256::max_value())*height - view
+-		let new_difficulty = U256::from(U128::max_value())
+-			+ consensus_view(parent).expect("Header has been verified; qed")
+-			- self.view.load(AtomicOrdering::SeqCst);
+-
+-		header.set_difficulty(new_difficulty);
+-	}
+-
+-	/// Should this node participate.
+-	fn seals_internally(&self) -> Option<bool> {
+-		Some(self.signer.read().is_some())
+-	}
+-
+-	/// Attempt to seal generate a proposal seal.
+-	///
+-	/// This operation is synchronous and may (quite reasonably) not be available, in which case
+-	/// `Seal::None` will be returned.
+-	fn generate_seal(&self, block: &ExecutedBlock, _parent: &Header) -> Seal {
+-		let header = block.header();
+-		let author = header.author();
+-		// Only proposer can generate seal if None was generated.
+-		if !self.is_signer_proposer(header.parent_hash()) || self.proposal.read().is_some() {
+-			return Seal::None;
+-		}
+-
+-		let height = header.number() as Height;
+-		let view = self.view.load(AtomicOrdering::SeqCst);
+-		let bh = Some(header.bare_hash());
+-		let vote_info = message_info_rlp(&VoteStep::new(height, view, Step::Propose), bh.clone());
+-		if let Ok(signature) = self.sign(keccak(&vote_info)).map(Into::into) {
+-			// Insert Propose vote.
+-			debug!(target: "engine", "Submitting proposal {} at height {} view {}.", header.bare_hash(), height, view);
+-			self.votes.vote(ConsensusMessage::new(signature, height, view, Step::Propose, bh), *author);
+-			// Remember the owned block.
+-			*self.last_proposed.write() = header.bare_hash();
+-			// Remember proposal for later seal submission.
+-			*self.proposal.write() = bh;
+-			*self.proposal_parent.write() = header.parent_hash().clone();
+-			Seal::Proposal(vec![
+-				::rlp::encode(&view),
+-				::rlp::encode(&signature),
+-				::rlp::EMPTY_LIST_RLP.to_vec()
+-			])
+-		} else {
+-			warn!(target: "engine", "generate_seal: FAIL: accounts secret key unavailable");
+-			Seal::None
+-		}
+-	}
+-
+-	fn handle_message(&self, rlp: &[u8]) -> Result<(), EngineError> {
+-		fn fmt_err<T: ::std::fmt::Debug>(x: T) -> EngineError {
+-			EngineError::MalformedMessage(format!("{:?}", x))
+-		}
+-
+-		let rlp = Rlp::new(rlp);
+-		let message: ConsensusMessage = rlp.as_val().map_err(fmt_err)?;
+-		if !self.votes.is_old_or_known(&message) {
+-			let msg_hash = keccak(rlp.at(1).map_err(fmt_err)?.as_raw());
+-			let sender = ethkey::public_to_address(
+-				&ethkey::recover(&message.signature.into(), &msg_hash).map_err(fmt_err)?
+-			);
+-
+-			if !self.is_authority(&sender) {
+-				return Err(EngineError::NotAuthorized(sender));
+-			}
+-			self.broadcast_message(rlp.as_raw().to_vec());
+-			if let Some(double) = self.votes.vote(message.clone(), sender) {
+-				let height = message.vote_step.height as BlockNumber;
+-				self.validators.report_malicious(&sender, height, height, ::rlp::encode(&double));
+-				return Err(EngineError::DoubleVote(sender));
+-			}
+-			trace!(target: "engine", "Handling a valid {:?} from {}.", message, sender);
+-			self.handle_valid_message(&message);
+-		}
+-		Ok(())
+-	}
+-
+-	fn on_new_block(&self, block: &mut ExecutedBlock, epoch_begin: bool, _ancestry: &mut Iterator<Item=ExtendedHeader>) -> Result<(), Error> {
+-		if !epoch_begin { return Ok(()) }
+-
+-		// genesis is never a new block, but might as well check.
+-		let header = block.header().clone();
+-		let first = header.number() == 0;
+-
+-		let mut call = |to, data| {
+-			let result = self.machine.execute_as_system(
+-				block,
+-				to,
+-				U256::max_value(), // unbounded gas? maybe make configurable.
+-				Some(data),
+-			);
+-
+-			result.map_err(|e| format!("{}", e))
+-		};
+-
+-		self.validators.on_epoch_begin(first, &header, &mut call)
+-	}
+-
+-	/// Apply the block reward on finalisation of the block.
+-	fn on_close_block(&self, block: &mut ExecutedBlock) -> Result<(), Error>{
+-		let author = *block.header().author();
+-
+-		block_reward::apply_block_rewards(
+-			&[(author, RewardKind::Author, self.block_reward)],
+-			block,
+-			&self.machine,
+-		)
+-	}
+-
+-	fn verify_local_seal(&self, _header: &Header) -> Result<(), Error> {
+-		Ok(())
+-	}
+-
+-	fn verify_block_basic(&self, header: &Header) -> Result<(), Error> {
+-		let seal_length = header.seal().len();
+-		let expected_seal_fields = self.seal_fields(header);
+-		if seal_length == expected_seal_fields {
+-			// Either proposal or commit.
+-			if (header.seal()[1] == ::rlp::NULL_RLP)
+-				!= (header.seal()[2] == ::rlp::EMPTY_LIST_RLP) {
+-				Ok(())
+-			} else {
+-				warn!(target: "engine", "verify_block_basic: Block is neither a Commit nor Proposal.");
+-				Err(BlockError::InvalidSeal.into())
+-			}
+-		} else {
+-			Err(BlockError::InvalidSealArity(
+-				Mismatch { expected: expected_seal_fields, found: seal_length }
+-			).into())
+-		}
+-	}
+-
+-	fn verify_block_external(&self, header: &Header) -> Result<(), Error> {
+-		if let Ok(proposal) = ConsensusMessage::new_proposal(header) {
+-			let proposer = proposal.verify()?;
+-			if !self.is_authority(&proposer) {
+-				return Err(EngineError::NotAuthorized(proposer).into());
+-			}
+-			self.check_view_proposer(
+-				header.parent_hash(),
+-				proposal.vote_step.height,
+-				proposal.vote_step.view,
+-				&proposer
+-			).map_err(Into::into)
+-		} else {
+-			let vote_step = VoteStep::new(header.number() as usize, consensus_view(header)?, Step::Precommit);
+-			let precommit_hash = message_hash(vote_step.clone(), header.bare_hash());
+-			let ref signatures_field = header.seal().get(2).expect("block went through verify_block_basic; block has .seal_fields() fields; qed");
+-			let mut origins = HashSet::new();
+-			for rlp in Rlp::new(signatures_field).iter() {
+-				let precommit = ConsensusMessage {
+-					signature: rlp.as_val()?,
+-					block_hash: Some(header.bare_hash()),
+-					vote_step: vote_step.clone(),
+-				};
+-				let address = match self.votes.get(&precommit) {
+-					Some(a) => a,
+-					None => ethkey::public_to_address(&ethkey::recover(&precommit.signature.into(), &precommit_hash)?),
+-				};
+-				if !self.validators.contains(header.parent_hash(), &address) {
+-					return Err(EngineError::NotAuthorized(address.to_owned()).into());
+-				}
+-
+-				if !origins.insert(address) {
+-					warn!(target: "engine", "verify_block_unordered: Duplicate signature from {} on the seal.", address);
+-					return Err(BlockError::InvalidSeal.into());
+-				}
+-			}
+-
+-			self.check_above_threshold(origins.len()).map_err(Into::into)
+-		}
+-	}
+-
+-	fn signals_epoch_end(&self, header: &Header, aux: AuxiliaryData)
+-		-> super::EpochChange<EthereumMachine>
+-	{
+-		let first = header.number() == 0;
+-		self.validators.signals_epoch_end(first, header, aux)
+-	}
+-
+-	fn is_epoch_end(
+-		&self,
+-		chain_head: &Header,
+-		_finalized: &[H256],
+-		_chain: &super::Headers<Header>,
+-		transition_store: &super::PendingTransitionStore,
+-	) -> Option<Vec<u8>> {
+-		let first = chain_head.number() == 0;
+-
+-		if let Some(change) = self.validators.is_epoch_end(first, chain_head) {
+-			let change = combine_proofs(chain_head.number(), &change, &[]);
+-			return Some(change)
+-		} else if let Some(pending) = transition_store(chain_head.hash()) {
+-			let signal_number = chain_head.number();
+-			let finality_proof = ::rlp::encode(chain_head);
+-			return Some(combine_proofs(signal_number, &pending.proof, &finality_proof))
+-		}
+-
+-		None
+-	}
+-
+-	fn is_epoch_end_light(
+-		&self,
+-		chain_head: &Header,
+-		chain: &super::Headers<Header>,
+-		transition_store: &super::PendingTransitionStore,
+-	) -> Option<Vec<u8>> {
+-		self.is_epoch_end(chain_head, &[], chain, transition_store)
+-	}
+-
+-	fn epoch_verifier<'a>(&self, _header: &Header, proof: &'a [u8]) -> ConstructedVerifier<'a, EthereumMachine> {
+-		let (signal_number, set_proof, finality_proof) = match destructure_proofs(proof) {
+-			Ok(x) => x,
+-			Err(e) => return ConstructedVerifier::Err(e),
+-		};
+-
+-		let first = signal_number == 0;
+-		match self.validators.epoch_set(first, &self.machine, signal_number, set_proof) {
+-			Ok((list, finalize)) => {
+-				let verifier = Box::new(EpochVerifier {
+-					subchain_validators: list,
+-					recover: |signature: &Signature, message: &Message| {
+-						Ok(ethkey::public_to_address(&ethkey::recover(&signature, &message)?))
+-					},
+-				});
+-
+-				match finalize {
+-					Some(finalize) => ConstructedVerifier::Unconfirmed(verifier, finality_proof, finalize),
+-					None => ConstructedVerifier::Trusted(verifier),
+-				}
+-			}
+-			Err(e) => ConstructedVerifier::Err(e),
+-		}
+-	}
+-
+-	fn set_signer(&self, ap: Arc<AccountProvider>, address: Address, password: Password) {
+-		{
+-			self.signer.write().set(ap, address, password);
+-		}
+-		self.to_step(Step::Propose);
+-	}
+-
+-	fn sign(&self, hash: H256) -> Result<Signature, Error> {
+-		Ok(self.signer.read().sign(hash)?)
+-	}
+-
+-	fn snapshot_components(&self) -> Option<Box<::snapshot::SnapshotComponents>> {
+-		Some(Box::new(::snapshot::PoaSnapshot))
+-	}
+-
+-	fn stop(&self) {
+-	}
+-
+-	fn is_proposal(&self, header: &Header) -> bool {
+-		let signatures_len = header.seal()[2].len();
+-		// Signatures have to be an empty list rlp.
+-		if signatures_len != 1 {
+-			// New Commit received, skip to next height.
+-			trace!(target: "engine", "Received a commit: {:?}.", header.number());
+-			self.to_next_height(header.number() as usize);
+-			self.to_step(Step::Commit);
+-			return false;
+-		}
+-		let proposal = ConsensusMessage::new_proposal(header).expect("block went through full verification; this Engine verifies new_proposal creation; qed");
+-		let proposer = proposal.verify().expect("block went through full verification; this Engine tries verify; qed");
+-		debug!(target: "engine", "Received a new proposal {:?} from {}.", proposal.vote_step, proposer);
+-		if self.is_view(&proposal) {
+-			*self.proposal.write() = proposal.block_hash.clone();
+-			*self.proposal_parent.write() = header.parent_hash().clone();
+-		}
+-		self.votes.vote(proposal, proposer);
+-		true
+-	}
+-
+-	/// Equivalent to a timeout: to be used for tests.
+-	fn step(&self) {
+-		let next_step = match *self.step.read() {
+-			Step::Propose => {
+-				trace!(target: "engine", "Propose timeout.");
+-				if self.proposal.read().is_none() {
+-					// Report the proposer if no proposal was received.
+-					let height = self.height.load(AtomicOrdering::SeqCst);
+-					let current_proposer = self.view_proposer(&*self.proposal_parent.read(), height, self.view.load(AtomicOrdering::SeqCst));
+-					self.validators.report_benign(&current_proposer, height as BlockNumber, height as BlockNumber);
+-				}
+-				Step::Prevote
+-			},
+-			Step::Prevote if self.has_enough_any_votes() => {
+-				trace!(target: "engine", "Prevote timeout.");
+-				Step::Precommit
+-			},
+-			Step::Prevote => {
+-				trace!(target: "engine", "Prevote timeout without enough votes.");
+-				self.broadcast_old_messages();
+-				Step::Prevote
+-			},
+-			Step::Precommit if self.has_enough_any_votes() => {
+-				trace!(target: "engine", "Precommit timeout.");
+-				self.increment_view(1);
+-				Step::Propose
+-			},
+-			Step::Precommit => {
+-				trace!(target: "engine", "Precommit timeout without enough votes.");
+-				self.broadcast_old_messages();
+-				Step::Precommit
+-			},
+-			Step::Commit => {
+-				trace!(target: "engine", "Commit timeout.");
+-				Step::Propose
+-			},
+-		};
+-		self.to_step(next_step);
+-	}
+-
+-	fn register_client(&self, client: Weak<EngineClient>) {
+-		if let Some(c) = client.upgrade() {
+-			self.height.store(c.chain_info().best_block_number as usize + 1, AtomicOrdering::SeqCst);
+-		}
+-		*self.client.write() = Some(client.clone());
+-		self.validators.register_client(client);
+-	}
+-
+-	fn fork_choice(&self, new: &ExtendedHeader, current: &ExtendedHeader) -> super::ForkChoice {
+-		super::total_difficulty_fork_choice(new, current)
+-	}
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-	use std::str::FromStr;
+-	use rustc_hex::FromHex;
+-	use ethereum_types::Address;
+-	use bytes::Bytes;
+-	use block::*;
+-	use error::{Error, ErrorKind, BlockError};
+-	use header::Header;
+-	use client::ChainInfo;
+-	use miner::MinerService;
+-	use test_helpers::{
+-		TestNotify, get_temp_state_db, generate_dummy_client,
+-		generate_dummy_client_with_spec_and_accounts
+-	};
+-	use account_provider::AccountProvider;
+-	use spec::Spec;
+-	use engines::{EthEngine, EngineError, Seal};
+-	use engines::epoch::EpochVerifier;
+-	use super::*;
+-
+-	/// Accounts inserted with "0" and "1" are validators. First proposer is "0".
+-	fn setup() -> (Spec, Arc<AccountProvider>) {
+-		let tap = Arc::new(AccountProvider::transient_provider());
+-		let spec = Spec::new_test_tendermint();
+-		(spec, tap)
+-	}
+-
+-	fn propose_default(spec: &Spec, proposer: Address) -> (ClosedBlock, Vec<Bytes>) {
+-		let db = get_temp_state_db();
+-		let db = spec.ensure_db_good(db, &Default::default()).unwrap();
+-		let genesis_header = spec.genesis_header();
+-		let last_hashes = Arc::new(vec![genesis_header.hash()]);
+-		let b = OpenBlock::new(spec.engine.as_ref(), Default::default(), false, db.boxed_clone(), &genesis_header, last_hashes, proposer, (3141562.into(), 31415620.into()), vec![], false, &mut Vec::new().into_iter()).unwrap();
+-		let b = b.close().unwrap();
+-		if let Seal::Proposal(seal) = spec.engine.generate_seal(b.block(), &genesis_header) {
+-			(b, seal)
+-		} else {
+-			panic!()
+-		}
+-	}
+-
+-	fn vote<F>(engine: &EthEngine, signer: F, height: usize, view: usize, step: Step, block_hash: Option<H256>) -> Bytes where F: FnOnce(H256) -> Result<H520, ::account_provider::SignError> {
+-		let mi = message_info_rlp(&VoteStep::new(height, view, step), block_hash);
+-		let m = message_full_rlp(&signer(keccak(&mi)).unwrap().into(), &mi);
+-		engine.handle_message(&m).unwrap();
+-		m
+-	}
+-
+-	fn proposal_seal(tap: &Arc<AccountProvider>, header: &Header, view: View) -> Vec<Bytes> {
+-		let author = header.author();
+-		let vote_info = message_info_rlp(&VoteStep::new(header.number() as Height, view, Step::Propose), Some(header.bare_hash()));
+-		let signature = tap.sign(*author, None, keccak(vote_info)).unwrap();
+-		vec![
+-			::rlp::encode(&view),
+-			::rlp::encode(&H520::from(signature)),
+-			::rlp::EMPTY_LIST_RLP.to_vec()
+-		]
+-	}
+-
+-	fn insert_and_unlock(tap: &Arc<AccountProvider>, acc: &str) -> Address {
+-		let addr = tap.insert_account(keccak(acc).into(), &acc.into()).unwrap();
+-		tap.unlock_account_permanently(addr, acc.into()).unwrap();
+-		addr
+-	}
+-
+-	fn insert_and_register(tap: &Arc<AccountProvider>, engine: &EthEngine, acc: &str) -> Address {
+-		let addr = insert_and_unlock(tap, acc);
+-		engine.set_signer(tap.clone(), addr.clone(), acc.into());
+-		addr
+-	}
+-
+-	#[test]
+-	fn has_valid_metadata() {
+-		let engine = Spec::new_test_tendermint().engine;
+-		assert!(!engine.name().is_empty());
+-	}
+-
+-	#[test]
+-	fn can_return_schedule() {
+-		let engine = Spec::new_test_tendermint().engine;
+-		let schedule = engine.schedule(10000000);
+-
+-		assert!(schedule.stack_limit > 0);
+-	}
+-
+-	#[test]
+-	fn verification_fails_on_short_seal() {
+-		let engine = Spec::new_test_tendermint().engine;
+-		let header = Header::default();
+-
+-		let verify_result = engine.verify_block_basic(&header);
+-
+-		match verify_result {
+-			Err(Error(ErrorKind::Block(BlockError::InvalidSealArity(_)), _)) => {},
+-			Err(_) => { panic!("should be block seal-arity mismatch error (got {:?})", verify_result); },
+-			_ => { panic!("Should be error, got Ok"); },
+-		}
+-	}
+-
+-	#[test]
+-	fn allows_correct_proposer() {
+-		let (spec, tap) = setup();
+-		let engine = spec.engine;
+-
+-		let mut parent_header: Header = Header::default();
+-		parent_header.set_gas_limit(U256::from_str("222222").unwrap());
+-
+-		let mut header = Header::default();
+-		header.set_number(1);
+-		header.set_gas_limit(U256::from_str("222222").unwrap());
+-		let validator = insert_and_unlock(&tap, "1");
+-		header.set_author(validator);
+-		let seal = proposal_seal(&tap, &header, 0);
+-		header.set_seal(seal);
+-		// Good proposer.
+-		assert!(engine.verify_block_external(&header).is_ok());
+-
+-		let validator = insert_and_unlock(&tap, "0");
+-		header.set_author(validator);
+-		let seal = proposal_seal(&tap, &header, 0);
+-		header.set_seal(seal);
+-		// Bad proposer.
+-		match engine.verify_block_external(&header) {
+-			Err(Error(ErrorKind::Engine(EngineError::NotProposer(_)), _)) => {},
+-			_ => panic!(),
+-		}
+-
+-		let random = insert_and_unlock(&tap, "101");
+-		header.set_author(random);
+-		let seal = proposal_seal(&tap, &header, 0);
+-		header.set_seal(seal);
+-		// Not authority.
+-		match engine.verify_block_external(&header) {
+-			Err(Error(ErrorKind::Engine(EngineError::NotAuthorized(_)), _)) => {},
+-			_ => panic!(),
+-		};
+-		engine.stop();
+-	}
+-
+-	#[test]
+-	fn seal_signatures_checking() {
+-		let (spec, tap) = setup();
+-		let engine = spec.engine;
+-
+-		let mut parent_header: Header = Header::default();
+-		parent_header.set_gas_limit(U256::from_str("222222").unwrap());
+-
+-		let mut header = Header::default();
+-		header.set_number(2);
+-		header.set_gas_limit(U256::from_str("222222").unwrap());
+-		let proposer = insert_and_unlock(&tap, "1");
+-		header.set_author(proposer);
+-		let mut seal = proposal_seal(&tap, &header, 0);
+-
+-		let vote_info = message_info_rlp(&VoteStep::new(2, 0, Step::Precommit), Some(header.bare_hash()));
+-		let signature1 = tap.sign(proposer, None, keccak(&vote_info)).unwrap();
+-
+-		seal[1] = ::rlp::NULL_RLP.to_vec();
+-		seal[2] = ::rlp::encode_list(&vec![H520::from(signature1.clone())]);
+-		header.set_seal(seal.clone());
+-
+-		// One good signature is not enough.
+-		match engine.verify_block_external(&header) {
+-			Err(Error(ErrorKind::Engine(EngineError::BadSealFieldSize(_)), _)) => {},
+-			_ => panic!(),
+-		}
+-
+-		let voter = insert_and_unlock(&tap, "0");
+-		let signature0 = tap.sign(voter, None, keccak(&vote_info)).unwrap();
+-
+-		seal[2] = ::rlp::encode_list(&vec![H520::from(signature1.clone()), H520::from(signature0.clone())]);
+-		header.set_seal(seal.clone());
+-
+-		assert!(engine.verify_block_external(&header).is_ok());
+-
+-		let bad_voter = insert_and_unlock(&tap, "101");
+-		let bad_signature = tap.sign(bad_voter, None, keccak(vote_info)).unwrap();
+-
+-		seal[2] = ::rlp::encode_list(&vec![H520::from(signature1), H520::from(bad_signature)]);
+-		header.set_seal(seal);
+-
+-		// One good and one bad signature.
+-		match engine.verify_block_external(&header) {
+-			Err(Error(ErrorKind::Engine(EngineError::NotAuthorized(_)), _)) => {},
+-			_ => panic!(),
+-		};
+-		engine.stop();
+-	}
+-
+-	#[test]
+-	fn can_generate_seal() {
+-		let (spec, tap) = setup();
+-
+-		let proposer = insert_and_register(&tap, spec.engine.as_ref(), "1");
+-
+-		let (b, seal) = propose_default(&spec, proposer);
+-		assert!(b.lock().try_seal(spec.engine.as_ref(), seal).is_ok());
+-	}
+-
+-	#[test]
+-	fn can_recognize_proposal() {
+-		let (spec, tap) = setup();
+-
+-		let proposer = insert_and_register(&tap, spec.engine.as_ref(), "1");
+-
+-		let (b, seal) = propose_default(&spec, proposer);
+-		let sealed = b.lock().seal(spec.engine.as_ref(), seal).unwrap();
+-		assert!(spec.engine.is_proposal(sealed.header()));
+-	}
+-
+-	#[test]
+-	fn relays_messages() {
+-		let (spec, tap) = setup();
+-		let engine = spec.engine.clone();
+-
+-		let v0 = insert_and_unlock(&tap, "0");
+-		let v1 = insert_and_register(&tap, engine.as_ref(), "1");
+-
+-		let h = 1;
+-		let r = 0;
+-
+-		// Propose
+-		let (b, _) = propose_default(&spec, v1.clone());
+-		let proposal = Some(b.header().bare_hash());
+-
+-		let client = generate_dummy_client(0);
+-		let notify = Arc::new(TestNotify::default());
+-		client.add_notify(notify.clone());
+-		engine.register_client(Arc::downgrade(&client) as _);
+-
+-		let prevote_current = vote(engine.as_ref(), |mh| tap.sign(v0, None, mh).map(H520::from), h, r, Step::Prevote, proposal);
+-
+-		let precommit_current = vote(engine.as_ref(), |mh| tap.sign(v0, None, mh).map(H520::from), h, r, Step::Precommit, proposal);
+-
+-		let prevote_future = vote(engine.as_ref(), |mh| tap.sign(v0, None, mh).map(H520::from), h + 1, r, Step::Prevote, proposal);
+-
+-		// Relays all valid present and future messages.
+-		assert!(notify.messages.read().contains(&prevote_current));
+-		assert!(notify.messages.read().contains(&precommit_current));
+-		assert!(notify.messages.read().contains(&prevote_future));
+-	}
+-
+-	#[test]
+-	fn seal_submission() {
+-		use ethkey::{Generator, Random};
+-		use transaction::{Transaction, Action};
+-
+-		let tap = Arc::new(AccountProvider::transient_provider());
+-		// Accounts for signing votes.
+-		let v0 = insert_and_unlock(&tap, "0");
+-		let v1 = insert_and_unlock(&tap, "1");
+-		let client = generate_dummy_client_with_spec_and_accounts(Spec::new_test_tendermint, Some(tap.clone()));
+-		let engine = client.engine();
+-
+-		client.miner().set_author(v1.clone(), Some("1".into())).unwrap();
+-
+-		let notify = Arc::new(TestNotify::default());
+-		client.add_notify(notify.clone());
+-		engine.register_client(Arc::downgrade(&client) as _);
+-
+-		let keypair = Random.generate().unwrap();
+-		let transaction = Transaction {
+-			action: Action::Create,
+-			value: U256::zero(),
+-			data: "3331600055".from_hex().unwrap(),
+-			gas: U256::from(100_000),
+-			gas_price: U256::zero(),
+-			nonce: U256::zero(),
+-		}.sign(keypair.secret(), None);
+-		client.miner().import_own_transaction(client.as_ref(), transaction.into()).unwrap();
+-
+-		// Propose
+-		let proposal = Some(client.miner().pending_block(0).unwrap().header.bare_hash());
+-		// Propose timeout
+-		engine.step();
+-
+-		let h = 1;
+-		let r = 0;
+-
+-		// Prevote.
+-		vote(engine, |mh| tap.sign(v1, None, mh).map(H520::from), h, r, Step::Prevote, proposal);
+-		vote(engine, |mh| tap.sign(v0, None, mh).map(H520::from), h, r, Step::Prevote, proposal);
+-		vote(engine, |mh| tap.sign(v1, None, mh).map(H520::from), h, r, Step::Precommit, proposal);
+-
+-		assert_eq!(client.chain_info().best_block_number, 0);
+-		// Last precommit.
+-		vote(engine, |mh| tap.sign(v0, None, mh).map(H520::from), h, r, Step::Precommit, proposal);
+-		assert_eq!(client.chain_info().best_block_number, 1);
+-	}
+-
+-	#[test]
+-	fn epoch_verifier_verify_light() {
+-		use ethkey::Error as EthkeyError;
+-
+-		let (spec, tap) = setup();
+-		let engine = spec.engine;
+-
+-		let mut parent_header: Header = Header::default();
+-		parent_header.set_gas_limit(U256::from_str("222222").unwrap());
+-
+-		let mut header = Header::default();
+-		header.set_number(2);
+-		header.set_gas_limit(U256::from_str("222222").unwrap());
+-		let proposer = insert_and_unlock(&tap, "1");
+-		header.set_author(proposer);
+-		let mut seal = proposal_seal(&tap, &header, 0);
+-
+-		let vote_info = message_info_rlp(&VoteStep::new(2, 0, Step::Precommit), Some(header.bare_hash()));
+-		let signature1 = tap.sign(proposer, None, keccak(&vote_info)).unwrap();
+-
+-		let voter = insert_and_unlock(&tap, "0");
+-		let signature0 = tap.sign(voter, None, keccak(&vote_info)).unwrap();
+-
+-		seal[1] = ::rlp::NULL_RLP.to_vec();
+-		seal[2] = ::rlp::encode_list(&vec![H520::from(signature1.clone())]);
+-		header.set_seal(seal.clone());
+-
+-		let epoch_verifier = super::EpochVerifier {
+-			subchain_validators: SimpleList::new(vec![proposer.clone(), voter.clone()]),
+-			recover: {
+-				let signature1 = signature1.clone();
+-				let signature0 = signature0.clone();
+-				let proposer = proposer.clone();
+-				let voter = voter.clone();
+-				move |s: &Signature, _: &Message| {
+-					if *s == signature1 {
+-						Ok(proposer)
+-					} else if *s == signature0 {
+-						Ok(voter)
+-					} else {
+-						Err(ErrorKind::Ethkey(EthkeyError::InvalidSignature).into())
+-					}
+-				}
+-			},
+-		};
+-
+-		// One good signature is not enough.
+-		match epoch_verifier.verify_light(&header) {
+-			Err(Error(ErrorKind::Engine(EngineError::BadSealFieldSize(_)), _)) => {},
+-			_ => panic!(),
+-		}
+-
+-		seal[2] = ::rlp::encode_list(&vec![H520::from(signature1.clone()), H520::from(signature0.clone())]);
+-		header.set_seal(seal.clone());
+-
+-		assert!(epoch_verifier.verify_light(&header).is_ok());
+-
+-		let bad_voter = insert_and_unlock(&tap, "101");
+-		let bad_signature = tap.sign(bad_voter, None, keccak(&vote_info)).unwrap();
+-
+-		seal[2] = ::rlp::encode_list(&vec![H520::from(signature1), H520::from(bad_signature)]);
+-		header.set_seal(seal);
+-
+-		// One good and one bad signature.
+-		match epoch_verifier.verify_light(&header) {
+-			Err(Error(ErrorKind::Ethkey(EthkeyError::InvalidSignature), _)) => {},
+-			_ => panic!(),
+-		};
+-
+-		engine.stop();
+-	}
+-}
+diff --git a/ethcore/src/engines/tendermint/params.rs b/ethcore/src/engines/tendermint/params.rs
+deleted file mode 100644
+index fbd3839cadd..00000000000
+--- a/ethcore/src/engines/tendermint/params.rs
++++ /dev/null
+@@ -1,90 +0,0 @@
+-// Copyright 2015-2018 Parity Technologies (UK) Ltd.
+-// This file is part of Parity.
+-
+-// Parity is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-
+-// Parity is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-
+-// You should have received a copy of the GNU General Public License
+-// along with Parity.  If not, see <http://www.gnu.org/licenses/>.
+-
+-//! Tendermint specific parameters.
+-
+-use ethjson;
+-use std::time::Duration;
+-use ethereum_types::U256;
+-use super::super::validator_set::{ValidatorSet, new_validator_set};
+-use super::super::transition::Timeouts;
+-use super::Step;
+-
+-/// `Tendermint` params.
+-pub struct TendermintParams {
+-	/// List of validators.
+-	pub validators: Box<ValidatorSet>,
+-	/// Timeout durations for different steps.
+-	pub timeouts: TendermintTimeouts,
+-	/// Reward per block in base units.
+-	pub block_reward: U256,
+-}
+-
+-/// Base timeout of each step in ms.
+-#[derive(Debug, Clone)]
+-pub struct TendermintTimeouts {
+-	pub propose: Duration,
+-	pub prevote: Duration,
+-	pub precommit: Duration,
+-	pub commit: Duration,
+-}
+-
+-impl Default for TendermintTimeouts {
+-	fn default() -> Self {
+-		TendermintTimeouts {
+-			propose: Duration::from_millis(1000),
+-			prevote: Duration::from_millis(1000),
+-			precommit: Duration::from_millis(1000),
+-			commit: Duration::from_millis(1000),
+-		}
+-	}
+-}
+-
+-impl Timeouts<Step> for TendermintTimeouts {
+-	fn initial(&self) -> Duration {
+-		self.propose
+-	}
+-
+-	fn timeout(&self, step: &Step) -> Duration {
+-		match *step {
+-			Step::Propose => self.propose,
+-			Step::Prevote => self.prevote,
+-			Step::Precommit => self.precommit,
+-			Step::Commit => self.commit,
+-		}
+-	}
+-}
+-
+-fn to_duration(ms: ethjson::uint::Uint) -> Duration {
+-	let ms: usize = ms.into();
+-	Duration::from_millis(ms as u64)
+-}
+-
+-impl From<ethjson::spec::TendermintParams> for TendermintParams {
+-	fn from(p: ethjson::spec::TendermintParams) -> Self {
+-		let dt = TendermintTimeouts::default();
+-		TendermintParams {
+-			validators: new_validator_set(p.validators),
+-			timeouts: TendermintTimeouts {
+-				propose: p.timeout_propose.map_or(dt.propose, to_duration),
+-				prevote: p.timeout_prevote.map_or(dt.prevote, to_duration),
+-				precommit: p.timeout_precommit.map_or(dt.precommit, to_duration),
+-				commit: p.timeout_commit.map_or(dt.commit, to_duration),
+-			},
+-			block_reward: p.block_reward.map_or(U256::default(), Into::into),
+-		}
+-	}
+-}
+diff --git a/ethcore/src/engines/transition.rs b/ethcore/src/engines/transition.rs
+deleted file mode 100644
+index ddc9a70628f..00000000000
+--- a/ethcore/src/engines/transition.rs
++++ /dev/null
+@@ -1,83 +0,0 @@
+-// Copyright 2015-2018 Parity Technologies (UK) Ltd.
+-// This file is part of Parity.
+-
+-// Parity is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-
+-// Parity is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-
+-// You should have received a copy of the GNU General Public License
+-// along with Parity.  If not, see <http://www.gnu.org/licenses/>.
+-
+-//! Engine timeout transitioning calls `Engine.step()` on timeout.
+-
+-use std::sync::Weak;
+-use std::time::Duration;
+-use io::{IoContext, IoHandler, TimerToken};
+-use engines::Engine;
+-use parity_machine::Machine;
+-
+-/// Timeouts lookup
+-pub trait Timeouts<S: Sync + Send + Clone>: Send + Sync {
+-	/// Return the first timeout.
+-	fn initial(&self) -> Duration;
+-
+-	/// Get a timeout based on step.
+-	fn timeout(&self, step: &S) -> Duration;
+-}
+-
+-/// Timeout transition handling.
+-pub struct TransitionHandler<S: Sync + Send + Clone, M: Machine>  {
+-	engine: Weak<Engine<M>>,
+-	timeouts: Box<Timeouts<S>>,
+-}
+-
+-impl<S, M: Machine> TransitionHandler<S, M> where S: Sync + Send + Clone {
+-	/// New step caller by timeouts.
+-	pub fn new(engine: Weak<Engine<M>>, timeouts: Box<Timeouts<S>>) -> Self {
+-		TransitionHandler {
+-			engine: engine,
+-			timeouts: timeouts,
+-		}
+-	}
+-}
+-
+-/// Timer token representing the consensus step timeouts.
+-pub const ENGINE_TIMEOUT_TOKEN: TimerToken = 23;
+-
+-fn set_timeout<S: Sync + Send + Clone>(io: &IoContext<S>, timeout: Duration) {
+-	io.register_timer_once(ENGINE_TIMEOUT_TOKEN, timeout)
+-		.unwrap_or_else(|e| warn!(target: "engine", "Failed to set consensus step timeout: {}.", e))
+-}
+-
+-impl<S, M> IoHandler<S> for TransitionHandler<S, M>
+-	where S: Sync + Send + Clone + 'static, M: Machine
+-{
+-	fn initialize(&self, io: &IoContext<S>) {
+-		let initial = self.timeouts.initial();
+-		trace!(target: "engine", "Setting the initial timeout to {:?}.", initial);
+-		set_timeout(io, initial);
+-	}
+-
+-	/// Call step after timeout.
+-	fn timeout(&self, _io: &IoContext<S>, timer: TimerToken) {
+-		if timer == ENGINE_TIMEOUT_TOKEN {
+-			if let Some(engine) = self.engine.upgrade() {
+-				engine.step();
+-			}
+-		}
+-	}
+-
+-	/// Set a new timer on message.
+-	fn message(&self, io: &IoContext<S>, next: &S) {
+-		if let Err(io_err) = io.clear_timer(ENGINE_TIMEOUT_TOKEN) {
+-			warn!(target: "engine", "Could not remove consensus timer {}.", io_err)
+-		}
+-		set_timeout(io, self.timeouts.timeout(next));
+-	}
+-}
+diff --git a/ethcore/src/engines/vote_collector.rs b/ethcore/src/engines/vote_collector.rs
+deleted file mode 100644
+index f416d0c3f72..00000000000
+--- a/ethcore/src/engines/vote_collector.rs
++++ /dev/null
+@@ -1,349 +0,0 @@
+-// Copyright 2015-2018 Parity Technologies (UK) Ltd.
+-// This file is part of Parity.
+-
+-// Parity is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-
+-// Parity is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-
+-// You should have received a copy of the GNU General Public License
+-// along with Parity.  If not, see <http://www.gnu.org/licenses/>.
+-
+-//! Collects votes on hashes at each Message::Round.
+-
+-use std::fmt::Debug;
+-use std::collections::{BTreeMap, HashSet, HashMap};
+-use std::hash::Hash;
+-use ethereum_types::{H256, H520, Address};
+-use parking_lot:: RwLock;
+-use bytes::Bytes;
+-use rlp::{Encodable, RlpStream};
+-
+-pub trait Message: Clone + PartialEq + Eq + Hash + Encodable + Debug {
+-	type Round: Clone + PartialEq + Eq + Hash + Default + Debug + Ord;
+-
+-	fn signature(&self) -> H520;
+-
+-	fn block_hash(&self) -> Option<H256>;
+-
+-	fn round(&self) -> &Self::Round;
+-
+-	fn is_broadcastable(&self) -> bool;
+-}
+-
+-/// Storing all Proposals, Prevotes and Precommits.
+-#[derive(Debug)]
+-pub struct VoteCollector<M: Message> {
+-	votes: RwLock<BTreeMap<M::Round, StepCollector<M>>>,
+-}
+-
+-#[derive(Debug, Default)]
+-struct StepCollector<M: Message> {
+-	voted: HashMap<Address, M>,
+-	block_votes: HashMap<Option<H256>, HashMap<H520, Address>>,
+-	messages: HashSet<M>,
+-}
+-
+-#[derive(Debug)]
+-pub struct DoubleVote<M: Message> {
+-	author: Address,
+-	vote_one: M,
+-	vote_two: M,
+-}
+-
+-impl<M: Message> Encodable for DoubleVote<M> {
+-	fn rlp_append(&self, s: &mut RlpStream) {
+-		s.begin_list(2)
+-			.append(&self.vote_one)
+-			.append(&self.vote_two);
+-	}
+-}
+-
+-impl <M: Message> StepCollector<M> {
+-	/// Returns Some(&Address) when validator is double voting.
+-	fn insert(&mut self, message: M, address: Address) -> Option<DoubleVote<M>> {
+-		// Do nothing when message was seen.
+-		if self.messages.insert(message.clone()) {
+-			if let Some(previous) = self.voted.insert(address, message.clone()) {
+-				// Bad validator sent a different message.
+-				return Some(DoubleVote {
+-					author: address,
+-					vote_one: previous,
+-					vote_two: message
+-				});
+-			} else {
+-				self
+-					.block_votes
+-					.entry(message.block_hash())
+-					.or_insert_with(HashMap::new)
+-					.insert(message.signature(), address);
+-			}
+-		}
+-		None
+-	}
+-
+-	/// Count all votes for the given block hash at this round.
+-	fn count_block(&self, block_hash: &Option<H256>) -> usize {
+-		self.block_votes.get(block_hash).map_or(0, HashMap::len)
+-	}
+-
+-	/// Count all votes collected for the given round.
+-	fn count(&self) -> usize {
+-		self.block_votes.values().map(HashMap::len).sum()
+-	}
+-}
+-
+-#[derive(Debug)]
+-pub struct SealSignatures {
+-	pub proposal: H520,
+-	pub votes: Vec<H520>,
+-}
+-
+-impl PartialEq for SealSignatures {
+-	fn eq(&self, other: &SealSignatures) -> bool {
+-		self.proposal == other.proposal
+-			&& self.votes.iter().collect::<HashSet<_>>() == other.votes.iter().collect::<HashSet<_>>()
+-	}
+-}
+-
+-impl Eq for SealSignatures {}
+-
+-impl <M: Message + Default> Default for VoteCollector<M> {
+-	fn default() -> Self {
+-		let mut collector = BTreeMap::new();
+-		// Insert dummy entry to fulfill invariant: "only messages newer than the oldest are inserted".
+-		collector.insert(Default::default(), Default::default());
+-		VoteCollector { votes: RwLock::new(collector) }
+-	}
+-}
+-
+-impl <M: Message + Default + Encodable + Debug> VoteCollector<M> {
+-	/// Insert vote if it is newer than the oldest one.
+-	pub fn vote(&self, message: M, voter: Address) -> Option<DoubleVote<M>> {
+-		self
+-			.votes
+-			.write()
+-			.entry(message.round().clone())
+-			.or_insert_with(Default::default)
+-			.insert(message, voter)
+-	}
+-
+-	/// Checks if the message should be ignored.
+-	pub fn is_old_or_known(&self, message: &M) -> bool {
+-		self
+-			.votes
+-			.read()
+-			.get(&message.round())
+-			.map_or(false, |c| {
+-				let is_known = c.messages.contains(message);
+-				if is_known { trace!(target: "engine", "Known message: {:?}.", message); }
+-				is_known
+-			})
+-		|| {
+-			let guard = self.votes.read();
+-			let is_old = guard.keys().next().map_or(true, |oldest| message.round() <= oldest);
+-			if is_old { trace!(target: "engine", "Old message {:?}.", message); }
+-			is_old
+-		}
+-	}
+-
+-	/// Throws out messages older than message, leaves message as marker for the oldest.
+-	pub fn throw_out_old(&self, vote_round: &M::Round) {
+-		let mut guard = self.votes.write();
+-		let new_collector = guard.split_off(vote_round);
+-		*guard = new_collector;
+-	}
+-
+-	/// Collects the signatures for a given round and hash.
+-	pub fn round_signatures(&self, round: &M::Round, block_hash: &H256) -> Vec<H520> {
+-		let guard = self.votes.read();
+-		guard
+-			.get(round)
+-			.and_then(|c| c.block_votes.get(&Some(*block_hash)))
+-			.map(|votes| votes.keys().cloned().collect())
+-			.unwrap_or_else(Vec::new)
+-	}
+-
+-	/// Count votes which agree with the given message.
+-	pub fn count_aligned_votes(&self, message: &M) -> usize {
+-		self
+-			.votes
+-			.read()
+-			.get(&message.round())
+-			.map_or(0, |m| m.count_block(&message.block_hash()))
+-	}
+-
+-	/// Count all votes collected for a given round.
+-	pub fn count_round_votes(&self, vote_round: &M::Round) -> usize {
+-		self.votes.read().get(vote_round).map_or(0, StepCollector::count)
+-	}
+-
+-	/// Get all messages older than the round.
+-	pub fn get_up_to(&self, round: &M::Round) -> Vec<Bytes> {
+-		let guard = self.votes.read();
+-		guard
+-			.iter()
+-			.take_while(|&(r, _)| r <= round)
+-			.map(|(_, c)| c.messages.iter().filter(|m| m.is_broadcastable()).map(|m| ::rlp::encode(m).to_vec()).collect::<Vec<_>>())
+-			.fold(Vec::new(), |mut acc, mut messages| { acc.append(&mut messages); acc })
+-	}
+-
+-	/// Retrieve address from which the message was sent from cache.
+-	pub fn get(&self, message: &M) -> Option<Address> {
+-		let guard = self.votes.read();
+-		guard.get(&message.round()).and_then(|c| c.block_votes.get(&message.block_hash())).and_then(|origins| origins.get(&message.signature()).cloned())
+-	}
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-	use hash::keccak;
+-	use ethereum_types::{H160, H256};
+-	use rlp::*;
+-	use super::*;
+-
+-	#[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
+-	struct TestMessage {
+-		step: TestStep,
+-		block_hash: Option<H256>,
+-		signature: H520,
+-	}
+-
+-	type TestStep = u64;
+-
+-	impl Message for TestMessage {
+-		type Round = TestStep;
+-
+-		fn signature(&self) -> H520 { self.signature }
+-
+-		fn block_hash(&self) -> Option<H256> { self.block_hash }
+-
+-		fn round(&self) -> &TestStep { &self.step }
+-
+-		fn is_broadcastable(&self) -> bool { true }
+-	}
+-
+-	impl Encodable for TestMessage {
+-		fn rlp_append(&self, s: &mut RlpStream) {
+-			s.begin_list(3)
+-				.append(&self.signature)
+-				.append(&self.step)
+-				.append(&self.block_hash.unwrap_or_else(H256::zero));
+-		}
+-	}
+-
+-	fn random_vote(collector: &VoteCollector<TestMessage>, signature: H520, step: TestStep, block_hash: Option<H256>) -> bool {
+-		full_vote(collector, signature, step, block_hash, H160::random())
+-	}
+-
+-	fn full_vote(collector: &VoteCollector<TestMessage>, signature: H520, step: TestStep, block_hash: Option<H256>, address: Address) -> bool {
+-		collector.vote(TestMessage { signature: signature, step: step, block_hash: block_hash }, address).is_none()
+-	}
+-
+-	#[test]
+-	fn seal_retrieval() {
+-		let collector = VoteCollector::default();
+-		let bh = Some(keccak("1"));
+-		let mut signatures = Vec::new();
+-		for _ in 0..5 {
+-			signatures.push(H520::random());
+-		}
+-		let propose_round = 3;
+-		let commit_round = 5;
+-		// Wrong round.
+-		random_vote(&collector, signatures[4].clone(), 1, bh.clone());
+-		// Good proposal
+-		random_vote(&collector, signatures[0].clone(), propose_round.clone(), bh.clone());
+-		// Wrong block proposal.
+-		random_vote(&collector, signatures[0].clone(), propose_round.clone(), Some(keccak("0")));
+-		// Wrong block commit.
+-		random_vote(&collector, signatures[3].clone(), commit_round.clone(), Some(keccak("0")));
+-		// Wrong round.
+-		random_vote(&collector, signatures[0].clone(), 6, bh.clone());
+-		// Wrong round.
+-		random_vote(&collector, signatures[0].clone(), 4, bh.clone());
+-		// Relevant commit.
+-		random_vote(&collector, signatures[2].clone(), commit_round.clone(), bh.clone());
+-		// Replicated vote.
+-		random_vote(&collector, signatures[2].clone(), commit_round.clone(), bh.clone());
+-		// Wrong round.
+-		random_vote(&collector, signatures[4].clone(), 6, bh.clone());
+-		// Relevant precommit.
+-		random_vote(&collector, signatures[1].clone(), commit_round.clone(), bh.clone());
+-		// Wrong round, same signature.
+-		random_vote(&collector, signatures[1].clone(), 7, bh.clone());
+-
+-		assert_eq!(signatures[0..1].to_vec(), collector.round_signatures(&propose_round, &bh.unwrap()));
+-		assert_eq!(signatures[1..3].iter().collect::<HashSet<_>>(), collector.round_signatures(&commit_round, &bh.unwrap()).iter().collect::<HashSet<_>>());
+-	}
+-
+-	#[test]
+-	fn count_votes() {
+-		let collector = VoteCollector::default();
+-		let round1 = 1;
+-		let round3 = 3;
+-		// good 1
+-		random_vote(&collector, H520::random(), round1, Some(keccak("0")));
+-		random_vote(&collector, H520::random(), 0, Some(keccak("0")));
+-		// good 3
+-		random_vote(&collector, H520::random(), round3, Some(keccak("0")));
+-		random_vote(&collector, H520::random(), 2, Some(keccak("0")));
+-		// good prevote
+-		random_vote(&collector, H520::random(), round1, Some(keccak("1")));
+-		// good prevote
+-		let same_sig = H520::random();
+-		random_vote(&collector, same_sig.clone(), round1, Some(keccak("1")));
+-		random_vote(&collector, same_sig, round1, Some(keccak("1")));
+-		// good precommit
+-		random_vote(&collector, H520::random(), round3, Some(keccak("1")));
+-		// good prevote
+-		random_vote(&collector, H520::random(), round1, Some(keccak("0")));
+-		random_vote(&collector, H520::random(), 4, Some(keccak("2")));
+-
+-		assert_eq!(collector.count_round_votes(&round1), 4);
+-		assert_eq!(collector.count_round_votes(&round3), 2);
+-
+-		let message = TestMessage {
+-			signature: H520::default(),
+-			step: round1,
+-			block_hash: Some(keccak("1"))
+-		};
+-		assert_eq!(collector.count_aligned_votes(&message), 2);
+-	}
+-
+-	#[test]
+-	fn remove_old() {
+-		let collector = VoteCollector::default();
+-		let vote = |round, hash| {
+-			random_vote(&collector, H520::random(), round, hash);
+-		};
+-		vote(6, Some(keccak("0")));
+-		vote(3, Some(keccak("0")));
+-		vote(7, Some(keccak("0")));
+-		vote(8, Some(keccak("1")));
+-		vote(1, Some(keccak("1")));
+-
+-		collector.throw_out_old(&7);
+-		assert_eq!(collector.count_round_votes(&1), 0);
+-		assert_eq!(collector.count_round_votes(&3), 0);
+-		assert_eq!(collector.count_round_votes(&6), 0);
+-		assert_eq!(collector.count_round_votes(&7), 1);
+-		assert_eq!(collector.count_round_votes(&8), 1);
+-	}
+-
+-	#[test]
+-	fn malicious_authority() {
+-		let collector = VoteCollector::default();
+-		let round = 3;
+-		// Vote is inserted fine.
+-		assert!(full_vote(&collector, H520::random(), round, Some(keccak("0")), Address::default()));
+-		// Returns the double voting address.
+-		assert!(!full_vote(&collector, H520::random(), round, Some(keccak("1")), Address::default()));
+-		assert_eq!(collector.count_round_votes(&round), 1);
+-	}
+-}
+diff --git a/ethcore/src/spec/spec.rs b/ethcore/src/spec/spec.rs
+index d2678564edf..2b1804caa15 100644
+--- a/ethcore/src/spec/spec.rs
++++ b/ethcore/src/spec/spec.rs
+@@ -35,7 +35,7 @@ use builtin::Builtin;
+ use encoded;
+ use engines::{
+ 	EthEngine, NullEngine, InstantSeal, InstantSealParams, BasicAuthority,
+-	AuthorityRound, Tendermint, DEFAULT_BLOCKHASH_CONTRACT
++	AuthorityRound, DEFAULT_BLOCKHASH_CONTRACT
+ };
+ use error::Error;
+ use executive::Executive;
+@@ -607,8 +607,6 @@ impl Spec {
+ 			ethjson::spec::Engine::BasicAuthority(basic_authority) => Arc::new(BasicAuthority::new(basic_authority.params.into(), machine)),
+ 			ethjson::spec::Engine::AuthorityRound(authority_round) => AuthorityRound::new(authority_round.params.into(), machine)
+ 				.expect("Failed to start AuthorityRound consensus engine."),
+-			ethjson::spec::Engine::Tendermint(tendermint) => Tendermint::new(tendermint.params.into(), machine)
+-				.expect("Failed to start the Tendermint consensus engine."),
+ 		}
+ 	}
+ 
+@@ -955,14 +953,6 @@ impl Spec {
+ 		load_bundled!("authority_round_block_reward_contract")
+ 	}
+ 
+-	/// Create a new Spec with Tendermint consensus which does internal sealing (not requiring
+-	/// work).
+-	/// Account keccak("0") and keccak("1") are a authorities.
+-	#[cfg(any(test, feature = "test-helpers"))]
+-	pub fn new_test_tendermint() -> Self {
+-		load_bundled!("tendermint")
+-	}
+-
+ 	/// TestList.sol used in both specs: https://github.com/paritytech/contracts/pull/30/files
+ 	/// Accounts with secrets keccak("0") and keccak("1") are initially the validators.
+ 	/// Create a new Spec with BasicAuthority which uses a contract at address 5 to determine
+diff --git a/ethcore/sync/src/tests/consensus.rs b/ethcore/sync/src/tests/consensus.rs
+index 40a4edef394..4a6871d16b3 100644
+--- a/ethcore/sync/src/tests/consensus.rs
++++ b/ethcore/sync/src/tests/consensus.rs
+@@ -125,81 +125,3 @@ fn authority_round() {
+ 	assert_eq!(ci1.best_block_number, 5);
+ 	assert_eq!(ci0.best_block_hash, ci1.best_block_hash);
+ }
+-
+-#[test]
+-fn tendermint() {
+-	let s0 = KeyPair::from_secret_slice(&keccak("1")).unwrap();
+-	let s1 = KeyPair::from_secret_slice(&keccak("0")).unwrap();
+-	let ap = Arc::new(AccountProvider::transient_provider());
+-	ap.insert_account(s0.secret().clone(), &"".into()).unwrap();
+-	ap.insert_account(s1.secret().clone(), &"".into()).unwrap();
+-
+-	let chain_id = Spec::new_test_tendermint().chain_id();
+-	let mut net = TestNet::with_spec_and_accounts(2, SyncConfig::default(), Spec::new_test_tendermint, Some(ap));
+-	let io_handler0: Arc<IoHandler<ClientIoMessage>> = Arc::new(TestIoHandler::new(net.peer(0).chain.clone()));
+-	let io_handler1: Arc<IoHandler<ClientIoMessage>> = Arc::new(TestIoHandler::new(net.peer(1).chain.clone()));
+-	// Push transaction to both clients. Only one of them issues a proposal.
+-	net.peer(0).miner.set_author(s0.address(), Some("".into())).unwrap();
+-	trace!(target: "poa", "Peer 0 is {}.", s0.address());
+-	net.peer(1).miner.set_author(s1.address(), Some("".into())).unwrap();
+-	trace!(target: "poa", "Peer 1 is {}.", s1.address());
+-	net.peer(0).chain.engine().register_client(Arc::downgrade(&net.peer(0).chain) as _);
+-	net.peer(1).chain.engine().register_client(Arc::downgrade(&net.peer(1).chain) as _);
+-	net.peer(0).chain.set_io_channel(IoChannel::to_handler(Arc::downgrade(&io_handler0)));
+-	net.peer(1).chain.set_io_channel(IoChannel::to_handler(Arc::downgrade(&io_handler1)));
+-	// Exhange statuses
+-	net.sync();
+-	// Propose
+-	net.peer(0).miner.import_own_transaction(&*net.peer(0).chain, new_tx(s0.secret(), 0.into(), chain_id)).unwrap();
+-	net.sync();
+-	// Propose timeout, synchronous for now
+-	net.peer(0).chain.engine().step();
+-	net.peer(1).chain.engine().step();
+-	// Prevote, precommit and commit
+-	net.sync();
+-
+-	assert_eq!(net.peer(0).chain.chain_info().best_block_number, 1);
+-	assert_eq!(net.peer(1).chain.chain_info().best_block_number, 1);
+-
+-	net.peer(1).miner.import_own_transaction(&*net.peer(1).chain, new_tx(s1.secret(), 0.into(), chain_id)).unwrap();
+-	// Commit timeout
+-	net.peer(0).chain.engine().step();
+-	net.peer(1).chain.engine().step();
+-	// Propose
+-	net.sync();
+-	// Propose timeout
+-	net.peer(0).chain.engine().step();
+-	net.peer(1).chain.engine().step();
+-	// Prevote, precommit and commit
+-	net.sync();
+-	assert_eq!(net.peer(0).chain.chain_info().best_block_number, 2);
+-	assert_eq!(net.peer(1).chain.chain_info().best_block_number, 2);
+-
+-	net.peer(0).miner.import_own_transaction(&*net.peer(0).chain, new_tx(s0.secret(), 1.into(), chain_id)).unwrap();
+-	net.peer(1).miner.import_own_transaction(&*net.peer(1).chain, new_tx(s1.secret(), 1.into(), chain_id)).unwrap();
+-	// Peers get disconnected.
+-	// Commit
+-	net.peer(0).chain.engine().step();
+-	net.peer(1).chain.engine().step();
+-	// Propose
+-	net.peer(0).chain.engine().step();
+-	net.peer(1).chain.engine().step();
+-	net.peer(0).miner.import_own_transaction(&*net.peer(0).chain, new_tx(s0.secret(), 2.into(), chain_id)).unwrap();
+-	net.peer(1).miner.import_own_transaction(&*net.peer(1).chain, new_tx(s1.secret(), 2.into(), chain_id)).unwrap();
+-	// Send different prevotes
+-	net.sync();
+-	// Prevote timeout
+-	net.peer(0).chain.engine().step();
+-	net.peer(1).chain.engine().step();
+-	// Precommit and commit
+-	net.sync();
+-	// Propose timeout
+-	net.peer(0).chain.engine().step();
+-	net.peer(1).chain.engine().step();
+-	net.sync();
+-	let ci0 = net.peer(0).chain.chain_info();
+-	let ci1 = net.peer(1).chain.chain_info();
+-	assert_eq!(ci0.best_block_number, 3);
+-	assert_eq!(ci1.best_block_number, 3);
+-	assert_eq!(ci0.best_block_hash, ci1.best_block_hash);
+-}
+diff --git a/json/src/spec/engine.rs b/json/src/spec/engine.rs
+index 3ff7c34582b..2c3ff362493 100644
+--- a/json/src/spec/engine.rs
++++ b/json/src/spec/engine.rs
+@@ -16,7 +16,7 @@
+ 
+ //! Engine deserialization.
+ 
+-use super::{Ethash, BasicAuthority, AuthorityRound, Tendermint, NullEngine, InstantSeal};
++use super::{Ethash, BasicAuthority, AuthorityRound, NullEngine, InstantSeal};
+ 
+ /// Engine deserialization.
+ #[derive(Debug, PartialEq, Deserialize)]
+@@ -34,8 +34,6 @@ pub enum Engine {
+ 	BasicAuthority(BasicAuthority),
+ 	/// AuthorityRound engine.
+ 	AuthorityRound(AuthorityRound),
+-	/// Tendermint engine.
+-	Tendermint(Tendermint)
+ }
+ 
+ #[cfg(test)]
+@@ -133,20 +131,5 @@ mod tests {
+ 			Engine::AuthorityRound(_) => {}, // AuthorityRound is unit tested in its own file.
+ 			_ => panic!(),
+ 		};
+-
+-		let s = r#"{
+-			"tendermint": {
+-				"params": {
+-					"validators": {
+-						"list": ["0xc6d9d2cd449a754c494264e1809c50e34d64562b"]
+-					}
+-				}
+-			}
+-		}"#;
+-		let deserialized: Engine = serde_json::from_str(s).unwrap();
+-		match deserialized {
+-			Engine::Tendermint(_) => {}, // Tendermint is unit tested in its own file.
+-			_ => panic!(),
+-		};
+ 	}
+ }
+diff --git a/json/src/spec/mod.rs b/json/src/spec/mod.rs
+index 9e4e672413c..fb08f9bb00e 100644
+--- a/json/src/spec/mod.rs
++++ b/json/src/spec/mod.rs
+@@ -28,7 +28,6 @@ pub mod ethash;
+ pub mod validator_set;
+ pub mod basic_authority;
+ pub mod authority_round;
+-pub mod tendermint;
+ pub mod null_engine;
+ pub mod instant_seal;
+ pub mod hardcoded_sync;
+@@ -45,7 +44,6 @@ pub use self::ethash::{Ethash, EthashParams, BlockReward};
+ pub use self::validator_set::ValidatorSet;
+ pub use self::basic_authority::{BasicAuthority, BasicAuthorityParams};
+ pub use self::authority_round::{AuthorityRound, AuthorityRoundParams};
+-pub use self::tendermint::{Tendermint, TendermintParams};
+ pub use self::null_engine::{NullEngine, NullEngineParams};
+ pub use self::instant_seal::{InstantSeal, InstantSealParams};
+ pub use self::hardcoded_sync::HardcodedSync;
+diff --git a/json/src/spec/tendermint.rs b/json/src/spec/tendermint.rs
+deleted file mode 100644
+index 4cea89edfac..00000000000
+--- a/json/src/spec/tendermint.rs
++++ /dev/null
+@@ -1,71 +0,0 @@
+-// Copyright 2015-2018 Parity Technologies (UK) Ltd.
+-// This file is part of Parity.
+-
+-// Parity is free software: you can redistribute it and/or modify
+-// it under the terms of the GNU General Public License as published by
+-// the Free Software Foundation, either version 3 of the License, or
+-// (at your option) any later version.
+-
+-// Parity is distributed in the hope that it will be useful,
+-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-// GNU General Public License for more details.
+-
+-// You should have received a copy of the GNU General Public License
+-// along with Parity.  If not, see <http://www.gnu.org/licenses/>.
+-
+-//! Tendermint params deserialization.
+-
+-use uint::Uint;
+-use super::ValidatorSet;
+-
+-/// Tendermint params deserialization.
+-#[derive(Debug, PartialEq, Deserialize)]
+-#[serde(deny_unknown_fields)]
+-#[serde(rename_all = "camelCase")]
+-pub struct TendermintParams {
+-	/// Valid validators.
+-	pub validators: ValidatorSet,
+-	/// Propose step timeout in milliseconds.
+-	pub timeout_propose: Option<Uint>,
+-	/// Prevote step timeout in milliseconds.
+-	pub timeout_prevote: Option<Uint>,
+-	/// Precommit step timeout in milliseconds.
+-	pub timeout_precommit: Option<Uint>,
+-	/// Commit step timeout in milliseconds.
+-	pub timeout_commit: Option<Uint>,
+-	/// Reward per block.
+-	pub block_reward: Option<Uint>,
+-}
+-
+-/// Tendermint engine deserialization.
+-#[derive(Debug, PartialEq, Deserialize)]
+-#[serde(deny_unknown_fields)]
+-pub struct Tendermint {
+-	/// Ethash params.
+-	pub params: TendermintParams,
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-	use serde_json;
+-	use ethereum_types::H160;
+-	use hash::Address;
+-	use spec::tendermint::Tendermint;
+-	use spec::validator_set::ValidatorSet;
+-
+-	#[test]
+-	fn tendermint_deserialization() {
+-		let s = r#"{
+-			"params": {
+-				"validators": {
+-					"list": ["0xc6d9d2cd449a754c494264e1809c50e34d64562b"]
+-				}
+-			}
+-		}"#;
+-
+-		let deserialized: Tendermint = serde_json::from_str(s).unwrap();
+-		let vs = ValidatorSet::List(vec![Address(H160::from("0xc6d9d2cd449a754c494264e1809c50e34d64562b"))]);
+-		assert_eq!(deserialized.params.validators, vs);
+-	}
+-}

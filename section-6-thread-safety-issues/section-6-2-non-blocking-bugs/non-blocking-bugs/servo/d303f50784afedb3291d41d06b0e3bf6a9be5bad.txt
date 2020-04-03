@@ -1,0 +1,214 @@
+diff --git a/src/components/main/layout/wrapper.rs b/src/components/main/layout/wrapper.rs
+index 6d891f7b04b4..6c8257c01bf9 100644
+--- a/src/components/main/layout/wrapper.rs
++++ b/src/components/main/layout/wrapper.rs
+@@ -17,9 +17,21 @@
+ //!
+ //! When implementing wrapper functions, be careful that you do not touch the borrow flags, or you
+ //! will race and cause spurious task failure. (Note that I do not believe these races are
+-//! exploitable, but they'll result in brokenness nonetheless.) In general, you must not use the
+-//! `Cast` functions; use explicit checks and `transmute_copy` instead. You must also not use
+-//! `.get()`; instead, use `.unsafe_get()`.
++//! exploitable, but they'll result in brokenness nonetheless.)
++//!
++//! Rules of the road for this file:
++//!
++//! * In general, you must not use the `Cast` functions; use explicit checks and `transmute_copy`
++//!   instead.
++//!
++//! * You must also not use `.get()`; instead, use `.unsafe_get()`.
++//!
++//! * Do not call any methods on DOM nodes without checking to see whether they use borrow flags.
++//!   
++//!   o Instead of `get_attr()`, use `.get_attr_val_for_layout()`.
++//!
++//!   o Instead of `html_element_in_html_document()`, use
++//!     `html_element_in_html_document_for_layout()`.
+ 
+ use extra::url::Url;
+ use script::dom::bindings::codegen::InheritTypes::{ElementDerived, HTMLIFrameElementDerived};
+@@ -222,10 +234,12 @@ impl<'ln> TNode<LayoutElement<'ln>> for LayoutNode<'ln> {
+ 
+     fn match_attr(&self, attr: &AttrSelector, test: |&str| -> bool) -> bool {
+         self.with_element(|element| {
+-            let name = if element.element.html_element_in_html_document() {
+-                attr.lower_name.as_slice()
+-            } else {
+-                attr.name.as_slice()
++            let name = unsafe {
++                if element.element.html_element_in_html_document_for_layout() {
++                    attr.lower_name.as_slice()
++                } else {
++                    attr.name.as_slice()
++                }
+             };
+             match attr.namespace {
+                 SpecificNamespace(ref ns) => {
+@@ -338,7 +352,9 @@ impl<'le> TElement for LayoutElement<'le> {
+     }
+ 
+     fn get_hover_state(&self) -> bool {
+-        self.element.node.get_hover_state()
++        unsafe {
++            self.element.node.get_hover_state_for_layout()
++        }
+     }
+ }
+ 
+diff --git a/src/components/script/dom/element.rs b/src/components/script/dom/element.rs
+index 95e4e7f9af94..45b642e60d30 100644
+--- a/src/components/script/dom/element.rs
++++ b/src/components/script/dom/element.rs
+@@ -156,6 +156,17 @@ impl Element {
+         self.node.owner_doc().get().is_html_document
+     }
+ 
++    pub unsafe fn html_element_in_html_document_for_layout(&self) -> bool {
++        if self.namespace != namespace::HTML {
++            return false
++        }
++        let owner_doc: *JS<Document> = self.node.owner_doc();
++        let owner_doc: **Document = cast::transmute::<*JS<Document>,
++                                                      **Document>(
++                                                      owner_doc);
++        (**owner_doc).is_html_document
++    }
++
+     pub fn get_attribute(&self,
+                          namespace: Namespace,
+                          name: &str) -> Option<JS<Attr>> {
+@@ -249,7 +260,7 @@ impl Element {
+                 if self_node.is_in_doc() {
+                     // XXX: this dual declaration are workaround to avoid the compile error:
+                     // "borrowed value does not live long enough"
+-                    let mut doc = self.node.owner_doc();
++                    let mut doc = self.node.owner_doc().clone();
+                     let doc = doc.get_mut();
+                     doc.register_named_element(abstract_self, value.clone());
+                 }
+@@ -318,7 +329,7 @@ impl Element {
+                 if self_node.is_in_doc() {
+                     // XXX: this dual declaration are workaround to avoid the compile error:
+                     // "borrowed value does not live long enough"
+-                    let mut doc = self.node.owner_doc();
++                    let mut doc = self.node.owner_doc().clone();
+                     let doc = doc.get_mut();
+                     doc.unregister_named_element(old_value);
+                 }
+diff --git a/src/components/script/dom/htmlimageelement.rs b/src/components/script/dom/htmlimageelement.rs
+index 5f2566ed0891..2297d59047b5 100644
+--- a/src/components/script/dom/htmlimageelement.rs
++++ b/src/components/script/dom/htmlimageelement.rs
+@@ -89,7 +89,7 @@ impl HTMLImageElement {
+ 
+     pub fn AfterSetAttr(&mut self, name: DOMString, value: DOMString) {
+         if "src" == name {
+-            let document = self.htmlelement.element.node.owner_doc();
++            let document = self.htmlelement.element.node.owner_doc().clone();
+             let window = document.get().window.get();
+             let url = Some(window.get_url());
+             self.update_image(Some(value), url);
+diff --git a/src/components/script/dom/htmlobjectelement.rs b/src/components/script/dom/htmlobjectelement.rs
+index fba1a979e430..4c6e21012cfd 100644
+--- a/src/components/script/dom/htmlobjectelement.rs
++++ b/src/components/script/dom/htmlobjectelement.rs
+@@ -73,7 +73,7 @@ impl HTMLObjectElement {
+ 
+     pub fn AfterSetAttr(&mut self, name: DOMString, _value: DOMString) {
+         if "data" == name {
+-            let document = self.htmlelement.element.node.owner_doc();
++            let document = self.htmlelement.element.node.owner_doc().clone();
+             let window = document.get().window.clone();
+             let url = Some(window.get().get_url());
+             self.process_data_url(window.get().image_cache_task.clone(), url);
+diff --git a/src/components/script/dom/node.rs b/src/components/script/dom/node.rs
+index 9999503a7582..115f9394ba64 100644
+--- a/src/components/script/dom/node.rs
++++ b/src/components/script/dom/node.rs
+@@ -728,8 +728,8 @@ impl Node {
+         }
+     }
+ 
+-    pub fn owner_doc(&self) -> JS<Document> {
+-        self.owner_doc.clone().unwrap()
++    pub fn owner_doc<'a>(&'a self) -> &'a JS<Document> {
++        self.owner_doc.get_ref()
+     }
+ 
+     pub fn set_owner_doc(&mut self, document: &JS<Document>) {
+@@ -852,7 +852,7 @@ impl Node {
+             TextNodeTypeId |
+             ProcessingInstructionNodeTypeId |
+             DoctypeNodeTypeId |
+-            DocumentFragmentNodeTypeId => Some(self.owner_doc()),
++            DocumentFragmentNodeTypeId => Some(self.owner_doc().clone()),
+             DocumentNodeTypeId => None
+         }
+     }
+@@ -878,7 +878,7 @@ impl Node {
+     pub fn ChildNodes(&mut self, abstract_self: &JS<Node>) -> JS<NodeList> {
+         match self.child_list {
+             None => {
+-                let doc = self.owner_doc();
++                let doc = self.owner_doc().clone();
+                 let doc = doc.get();
+                 let list = NodeList::new_child_list(&doc.window, abstract_self);
+                 self.child_list = Some(list.clone());
+@@ -976,7 +976,7 @@ impl Node {
+                     None
+                 } else {
+                     let document = self.owner_doc();
+-                    Some(NodeCast::from(&document.get().CreateTextNode(&document, value)))
++                    Some(NodeCast::from(&document.get().CreateTextNode(document, value)))
+                 };
+                 // Step 3.
+                 Node::replace_all(node, abstract_self);
+@@ -1558,31 +1558,31 @@ impl Node {
+     //
+ 
+     pub fn set_parent_node(&mut self, new_parent_node: Option<JS<Node>>) {
+-        let doc = self.owner_doc();
++        let doc = self.owner_doc().clone();
+         doc.get().wait_until_safe_to_modify_dom();
+         self.parent_node = new_parent_node
+     }
+ 
+     pub fn set_first_child(&mut self, new_first_child: Option<JS<Node>>) {
+-        let doc = self.owner_doc();
++        let doc = self.owner_doc().clone();
+         doc.get().wait_until_safe_to_modify_dom();
+         self.first_child = new_first_child
+     }
+ 
+     pub fn set_last_child(&mut self, new_last_child: Option<JS<Node>>) {
+-        let doc = self.owner_doc();
++        let doc = self.owner_doc().clone();
+         doc.get().wait_until_safe_to_modify_dom();
+         self.last_child = new_last_child
+     }
+ 
+     pub fn set_prev_sibling(&mut self, new_prev_sibling: Option<JS<Node>>) {
+-        let doc = self.owner_doc();
++        let doc = self.owner_doc().clone();
+         doc.get().wait_until_safe_to_modify_dom();
+         self.prev_sibling = new_prev_sibling
+     }
+ 
+     pub fn set_next_sibling(&mut self, new_next_sibling: Option<JS<Node>>) {
+-        let doc = self.owner_doc();
++        let doc = self.owner_doc().clone();
+         doc.get().wait_until_safe_to_modify_dom();
+         self.next_sibling = new_next_sibling
+     }
+@@ -1619,6 +1619,11 @@ impl Node {
+     pub fn next_sibling_ref<'a>(&'a self) -> Option<&'a JS<Node>> {
+         self.next_sibling.as_ref()
+     }
++
++    pub unsafe fn get_hover_state_for_layout(&self) -> bool {
++        let unsafe_this: *Node = cast::transmute::<&Node,*Node>(self);
++        (*unsafe_this).flags.get_in_hover_state()
++    }
+ }
+ 
+ impl Reflectable for Node {

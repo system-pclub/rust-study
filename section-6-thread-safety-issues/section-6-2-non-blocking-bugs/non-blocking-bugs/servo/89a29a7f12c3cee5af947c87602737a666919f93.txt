@@ -1,0 +1,973 @@
+diff --git a/components/script/Cargo.toml b/components/script/Cargo.toml
+index 00d013c3080a..14ea398964aa 100644
+--- a/components/script/Cargo.toml
++++ b/components/script/Cargo.toml
+@@ -51,6 +51,7 @@ net_traits = {path = "../net_traits"}
+ num-traits = "0.1.32"
+ offscreen_gl_context = "0.4"
+ open = "1.1.1"
++parking_lot = "0.3"
+ phf = "0.7.16"
+ phf_macros = "0.7.16"
+ plugins = {path = "../plugins"}
+diff --git a/components/script/dom/cssstyledeclaration.rs b/components/script/dom/cssstyledeclaration.rs
+index 81a38c22551f..0b8c9d8a062f 100644
+--- a/components/script/dom/cssstyledeclaration.rs
++++ b/components/script/dom/cssstyledeclaration.rs
+@@ -3,7 +3,6 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ use cssparser::ToCss;
+-use dom::bindings::cell::DOMRefCell;
+ use dom::bindings::codegen::Bindings::CSSStyleDeclarationBinding::{self, CSSStyleDeclarationMethods};
+ use dom::bindings::error::{Error, ErrorResult, Fallible};
+ use dom::bindings::global::GlobalRef;
+@@ -14,6 +13,7 @@ use dom::bindings::str::DOMString;
+ use dom::element::Element;
+ use dom::node::{Node, NodeDamage, window_from_node};
+ use dom::window::Window;
++use parking_lot::RwLock;
+ use std::ascii::AsciiExt;
+ use std::sync::Arc;
+ use string_cache::Atom;
+@@ -92,7 +92,7 @@ impl CSSStyleDeclarationMethods for CSSStyleDeclaration {
+     fn Length(&self) -> u32 {
+         let elem = self.owner.upcast::<Element>();
+         let len = match *elem.style_attribute().borrow() {
+-            Some(ref declarations) => declarations.borrow().declarations.len(),
++            Some(ref declarations) => declarations.read().declarations.len(),
+             None => 0,
+         };
+         len as u32
+@@ -120,7 +120,7 @@ impl CSSStyleDeclarationMethods for CSSStyleDeclaration {
+         if let Some(shorthand) = Shorthand::from_name(&property) {
+             let style_attribute = owner.style_attribute().borrow();
+             let style_attribute = if let Some(ref style_attribute) = *style_attribute {
+-                style_attribute.borrow()
++                style_attribute.read()
+             } else {
+                 // shorthand.longhands() is never empty, so with no style attribute
+                 // step 2.2.2 would do this:
+@@ -331,7 +331,7 @@ impl CSSStyleDeclarationMethods for CSSStyleDeclaration {
+         let elem = self.owner.upcast::<Element>();
+         let style_attribute = elem.style_attribute().borrow();
+         style_attribute.as_ref().and_then(|declarations| {
+-            declarations.borrow().declarations.get(index).map(|entry| {
++            declarations.read().declarations.get(index).map(|entry| {
+                 let (ref declaration, importance) = *entry;
+                 let mut css = declaration.to_css_string();
+                 if importance.important() {
+@@ -348,7 +348,7 @@ impl CSSStyleDeclarationMethods for CSSStyleDeclaration {
+         let style_attribute = elem.style_attribute().borrow();
+ 
+         if let Some(declarations) = style_attribute.as_ref() {
+-            DOMString::from(declarations.borrow().to_css_string())
++            DOMString::from(declarations.read().to_css_string())
+         } else {
+             DOMString::new()
+         }
+@@ -370,7 +370,7 @@ impl CSSStyleDeclarationMethods for CSSStyleDeclaration {
+         *element.style_attribute().borrow_mut() = if decl_block.declarations.is_empty() {
+             None // Step 2
+         } else {
+-            Some(Arc::new(DOMRefCell::new(decl_block)))
++            Some(Arc::new(RwLock::new(decl_block)))
+         };
+         element.sync_property_with_attrs_style();
+         let node = element.upcast::<Node>();
+diff --git a/components/script/dom/element.rs b/components/script/dom/element.rs
+index 9f43aa1b8a96..fb26ce913e0c 100644
+--- a/components/script/dom/element.rs
++++ b/components/script/dom/element.rs
+@@ -70,6 +70,7 @@ use html5ever::serialize::SerializeOpts;
+ use html5ever::serialize::TraversalScope;
+ use html5ever::serialize::TraversalScope::{ChildrenOnly, IncludeNode};
+ use html5ever::tree_builder::{LimitedQuirks, NoQuirks, Quirks};
++use parking_lot::RwLock;
+ use selectors::matching::{ElementFlags, MatchingReason, matches};
+ use selectors::matching::{HAS_EDGE_CHILD_SELECTOR, HAS_SLOW_SELECTOR, HAS_SLOW_SELECTOR_LATER_SIBLINGS};
+ use selectors::parser::{AttrSelector, NamespaceConstraint, parse_author_origin_selector_list_from_str};
+@@ -110,7 +111,7 @@ pub struct Element {
+     attrs: DOMRefCell<Vec<JS<Attr>>>,
+     id_attribute: DOMRefCell<Option<Atom>>,
+     #[ignore_heap_size_of = "Arc"]
+-    style_attribute: DOMRefCell<Option<Arc<DOMRefCell<PropertyDeclarationBlock>>>>,
++    style_attribute: DOMRefCell<Option<Arc<RwLock<PropertyDeclarationBlock>>>>,
+     attr_list: MutNullableHeap<JS<NamedNodeMap>>,
+     class_list: MutNullableHeap<JS<DOMTokenList>>,
+     state: Cell<ElementState>,
+@@ -298,7 +299,7 @@ pub trait LayoutElementHelpers {
+     #[allow(unsafe_code)]
+     unsafe fn html_element_in_html_document_for_layout(&self) -> bool;
+     fn id_attribute(&self) -> *const Option<Atom>;
+-    fn style_attribute(&self) -> *const Option<Arc<DOMRefCell<PropertyDeclarationBlock>>>;
++    fn style_attribute(&self) -> *const Option<Arc<RwLock<PropertyDeclarationBlock>>>;
+     fn local_name(&self) -> &Atom;
+     fn namespace(&self) -> &Namespace;
+     fn get_checked_state_for_layout(&self) -> bool;
+@@ -330,7 +331,7 @@ impl LayoutElementHelpers for LayoutJS<Element> {
+         #[inline]
+         fn from_declaration(rule: PropertyDeclaration) -> ApplicableDeclarationBlock {
+             ApplicableDeclarationBlock::from_declarations(
+-                Arc::new(DOMRefCell::new(PropertyDeclarationBlock {
++                Arc::new(RwLock::new(PropertyDeclarationBlock {
+                     declarations: vec![(rule, Importance::Normal)],
+                     important_count: 0,
+                 })),
+@@ -619,7 +620,7 @@ impl LayoutElementHelpers for LayoutJS<Element> {
+     }
+ 
+     #[allow(unsafe_code)]
+-    fn style_attribute(&self) -> *const Option<Arc<DOMRefCell<PropertyDeclarationBlock>>> {
++    fn style_attribute(&self) -> *const Option<Arc<RwLock<PropertyDeclarationBlock>>> {
+         unsafe {
+             (*self.unsafe_get()).style_attribute.borrow_for_layout()
+         }
+@@ -708,7 +709,7 @@ impl Element {
+         self.attrs.borrow()
+     }
+ 
+-    pub fn style_attribute(&self) -> &DOMRefCell<Option<Arc<DOMRefCell<PropertyDeclarationBlock>>>> {
++    pub fn style_attribute(&self) -> &DOMRefCell<Option<Arc<RwLock<PropertyDeclarationBlock>>>> {
+         &self.style_attribute
+     }
+ 
+@@ -738,7 +739,7 @@ impl Element {
+     // therefore, it should not trigger subsequent mutation events
+     pub fn sync_property_with_attrs_style(&self) {
+         let style_str = if let &Some(ref declarations) = &*self.style_attribute().borrow() {
+-            declarations.borrow().to_css_string()
++            declarations.read().to_css_string()
+         } else {
+             String::new()
+         };
+@@ -770,7 +771,7 @@ impl Element {
+             let mut inline_declarations = element.style_attribute.borrow_mut();
+             if let &mut Some(ref mut declarations) = &mut *inline_declarations {
+                 let mut importance = None;
+-                let index = declarations.borrow().declarations.iter().position(|&(ref decl, i)| {
++                let index = declarations.read().declarations.iter().position(|&(ref decl, i)| {
+                     let matching = decl.matches(property);
+                     if matching {
+                         importance = Some(i)
+@@ -778,7 +779,7 @@ impl Element {
+                     matching
+                 });
+                 if let Some(index) = index {
+-                    let mut declarations = Arc::make_mut(declarations).borrow_mut();
++                    let mut declarations = declarations.write();
+                     declarations.declarations.remove(index);
+                     if importance.unwrap().important() {
+                         declarations.important_count -= 1;
+@@ -799,9 +800,7 @@ impl Element {
+             let mut inline_declarations = element.style_attribute().borrow_mut();
+             if let &mut Some(ref mut declaration_block) = &mut *inline_declarations {
+                 {
+-                    // Usually, the reference count will be 1 here. But transitions could make it greater
+-                    // than that.
+-                    let mut declaration_block = Arc::make_mut(declaration_block).borrow_mut();
++                    let mut declaration_block = declaration_block.write();
+                     let declaration_block = &mut *declaration_block;
+                     let existing_declarations = &mut declaration_block.declarations;
+ 
+@@ -836,7 +835,7 @@ impl Element {
+                 0
+             };
+ 
+-            *inline_declarations = Some(Arc::new(DOMRefCell::new(PropertyDeclarationBlock {
++            *inline_declarations = Some(Arc::new(RwLock::new(PropertyDeclarationBlock {
+                 declarations: declarations.into_iter().map(|d| (d, importance)).collect(),
+                 important_count: important_count,
+             })));
+@@ -852,9 +851,7 @@ impl Element {
+         {
+             let mut inline_declarations = self.style_attribute().borrow_mut();
+             if let &mut Some(ref mut block) = &mut *inline_declarations {
+-                // Usually, the reference counts of `from` and `to` will be 1 here. But transitions
+-                // could make them greater than that.
+-                let mut block = Arc::make_mut(block).borrow_mut();
++                let mut block = block.write();
+                 let block = &mut *block;
+                 let declarations = &mut block.declarations;
+                 for &mut (ref declaration, ref mut importance) in declarations {
+@@ -881,7 +878,7 @@ impl Element {
+     where F: FnOnce(Option<&(PropertyDeclaration, Importance)>) -> R {
+         let style_attr = self.style_attribute.borrow();
+         if let Some(ref block) = *style_attr {
+-            let block = block.borrow();
++            let block = block.read();
+             f(block.get(property))
+         } else {
+             f(None)
+@@ -2131,7 +2128,7 @@ impl VirtualMethods for Element {
+                 *self.style_attribute.borrow_mut() =
+                     mutation.new_value(attr).map(|value| {
+                         let win = window_from_node(self);
+-                        Arc::new(DOMRefCell::new(parse_style_attribute(
++                        Arc::new(RwLock::new(parse_style_attribute(
+                             &value,
+                             &doc.base_url(),
+                             win.css_error_reporter(),
+diff --git a/components/script/layout_wrapper.rs b/components/script/layout_wrapper.rs
+index 4111bb49413c..19b00c422e52 100644
+--- a/components/script/layout_wrapper.rs
++++ b/components/script/layout_wrapper.rs
+@@ -30,7 +30,6 @@
+ 
+ #![allow(unsafe_code)]
+ 
+-use dom::bindings::cell::DOMRefCell;
+ use dom::bindings::inheritance::{CharacterDataTypeId, ElementTypeId};
+ use dom::bindings::inheritance::{HTMLElementTypeId, NodeTypeId};
+ use dom::bindings::js::LayoutJS;
+@@ -42,6 +41,7 @@ use dom::node::{LayoutNodeHelpers, Node};
+ use dom::text::Text;
+ use gfx_traits::ByteIndex;
+ use msg::constellation_msg::PipelineId;
++use parking_lot::RwLock;
+ use range::Range;
+ use script_layout_interface::{HTMLCanvasData, LayoutNodeType, TrustedNodeAddress};
+ use script_layout_interface::{OpaqueStyleAndLayoutData, PartialPersistentLayoutData};
+@@ -462,7 +462,7 @@ impl<'le> TElement for ServoLayoutElement<'le> {
+         ServoLayoutNode::from_layout_js(self.element.upcast())
+     }
+ 
+-    fn style_attribute(&self) -> Option<&Arc<DOMRefCell<PropertyDeclarationBlock>>> {
++    fn style_attribute(&self) -> Option<&Arc<RwLock<PropertyDeclarationBlock>>> {
+         unsafe {
+             (*self.element.style_attribute()).as_ref()
+         }
+diff --git a/components/script/lib.rs b/components/script/lib.rs
+index 234f6c0f224a..3b4c6c40a1ee 100644
+--- a/components/script/lib.rs
++++ b/components/script/lib.rs
+@@ -64,6 +64,7 @@ extern crate net_traits;
+ extern crate num_traits;
+ extern crate offscreen_gl_context;
+ extern crate open;
++extern crate parking_lot;
+ extern crate phf;
+ #[macro_use]
+ extern crate profile_traits;
+diff --git a/components/servo/Cargo.lock b/components/servo/Cargo.lock
+index c47d573580d9..de7c74f5af40 100644
+--- a/components/servo/Cargo.lock
++++ b/components/servo/Cargo.lock
+@@ -2017,6 +2017,7 @@ dependencies = [
+  "num-traits 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
+  "offscreen_gl_context 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+  "open 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
++ "parking_lot 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+  "phf 0.7.16 (registry+https://github.com/rust-lang/crates.io-index)",
+  "phf_macros 0.7.16 (registry+https://github.com/rust-lang/crates.io-index)",
+  "plugins 0.0.1",
+@@ -2360,6 +2361,7 @@ dependencies = [
+  "app_units 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "cssparser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "euclid 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
++ "parking_lot 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+  "rustc-serialize 0.3.19 (registry+https://github.com/rust-lang/crates.io-index)",
+  "selectors 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
+  "string_cache 0.2.29 (registry+https://github.com/rust-lang/crates.io-index)",
+diff --git a/components/style/Cargo.toml b/components/style/Cargo.toml
+index db30ca2a3aba..2a208f7ff3df 100644
+--- a/components/style/Cargo.toml
++++ b/components/style/Cargo.toml
+@@ -17,7 +17,7 @@ servo = ["serde/unstable", "serde", "serde_macros", "heapsize_plugin",
+          "style_traits/servo", "app_units/plugins",
+          "cssparser/heap_size", "cssparser/serde-serialization",
+          "selectors/unstable", "string_cache",
+-         "url/heap_size", "plugins"]
++         "url/heap_size", "plugins", "parking_lot/nightly"]
+ testing = []
+ 
+ [dependencies]
+diff --git a/components/style/animation.rs b/components/style/animation.rs
+index c65553a78f48..9e55ca2e52a9 100644
+--- a/components/style/animation.rs
++++ b/components/style/animation.rs
+@@ -383,7 +383,7 @@ fn compute_style_for_animation_step(context: &SharedStyleContext,
+         // TODO: avoiding this spurious clone might involve having to create
+         // an Arc in the below (more common case).
+         KeyframesStepValue::ComputedValues => style_from_cascade.clone(),
+-        KeyframesStepValue::Declarations(ref declarations) => {
++        KeyframesStepValue::Declarations { block: ref declarations } => {
+             let declaration_block = ApplicableDeclarationBlock {
+                 mixed_declarations: declarations.clone(),
+                 importance: Importance::Normal,
+diff --git a/components/style/dom.rs b/components/style/dom.rs
+index 6a90cd7c62b2..1dce89886ba7 100644
+--- a/components/style/dom.rs
++++ b/components/style/dom.rs
+@@ -8,8 +8,8 @@
+ 
+ use atomic_refcell::{AtomicRef, AtomicRefMut};
+ use data::PersistentStyleData;
+-use domrefcell::DOMRefCell;
+ use element_state::ElementState;
++use parking_lot::RwLock;
+ use properties::{ComputedValues, PropertyDeclarationBlock};
+ use restyle_hints::{RESTYLE_DESCENDANTS, RESTYLE_LATER_SIBLINGS, RESTYLE_SELF, RestyleHint};
+ use selector_impl::{ElementExt, PseudoElement};
+@@ -203,7 +203,7 @@ pub trait TElement : PartialEq + Debug + Sized + Copy + Clone + ElementExt + Pre
+ 
+     fn as_node(&self) -> Self::ConcreteNode;
+ 
+-    fn style_attribute(&self) -> Option<&Arc<DOMRefCell<PropertyDeclarationBlock>>>;
++    fn style_attribute(&self) -> Option<&Arc<RwLock<PropertyDeclarationBlock>>>;
+ 
+     fn get_state(&self) -> ElementState;
+ 
+diff --git a/components/style/gecko/wrapper.rs b/components/style/gecko/wrapper.rs
+index 92336364a3d1..9be91c87178e 100644
+--- a/components/style/gecko/wrapper.rs
++++ b/components/style/gecko/wrapper.rs
+@@ -32,6 +32,7 @@ use gecko_bindings::structs::{nsChangeHint, nsIAtom, nsIContent, nsStyleContext}
+ use gecko_bindings::structs::OpaqueStyleData;
+ use gecko_bindings::sugar::ownership::{FFIArcHelpers, HasArcFFI, HasFFI};
+ use libc::uintptr_t;
++use parking_lot::RwLock;
+ use parser::ParserContextExtraData;
+ use properties::{ComputedValues, parse_style_attribute};
+ use properties::PropertyDeclarationBlock;
+@@ -46,7 +47,6 @@ use std::ptr;
+ use std::sync::Arc;
+ use std::sync::atomic::{AtomicBool, AtomicPtr};
+ use string_cache::{Atom, Namespace, WeakAtom, WeakNamespace};
+-use style::domrefcell::DOMRefCell;
+ use url::Url;
+ 
+ pub struct NonOpaqueStyleData(AtomicRefCell<PersistentStyleData>);
+@@ -59,7 +59,7 @@ impl NonOpaqueStyleData {
+ 
+ 
+ pub struct GeckoDeclarationBlock {
+-    pub declarations: Option<Arc<PropertyDeclarationBlock>>,
++    pub declarations: Option<Arc<RwLock<PropertyDeclarationBlock>>>,
+     // XXX The following two fields are made atomic to work around the
+     // ownership system so that they can be changed inside a shared
+     // instance. It wouldn't provide safety as Rust usually promises,
+@@ -469,7 +469,7 @@ impl<'le> TElement for GeckoElement<'le> {
+         unsafe { GeckoNode(&*(self.0 as *const _ as *const RawGeckoNode)) }
+     }
+ 
+-    fn style_attribute(&self) -> Option<&Arc<DOMRefCell<PropertyDeclarationBlock>>> {
++    fn style_attribute(&self) -> Option<&Arc<RwLock<PropertyDeclarationBlock>>> {
+         let declarations = unsafe { Gecko_GetServoDeclarationBlock(self.0) };
+         if declarations.is_null() {
+             None
+diff --git a/components/style/keyframes.rs b/components/style/keyframes.rs
+index 0d59fc5730ea..3283e535fc84 100644
+--- a/components/style/keyframes.rs
++++ b/components/style/keyframes.rs
+@@ -4,7 +4,7 @@
+ 
+ use cssparser::{AtRuleParser, Parser, QualifiedRuleParser, RuleListParser};
+ use cssparser::{DeclarationListParser, DeclarationParser};
+-use domrefcell::DOMRefCell;
++use parking_lot::RwLock;
+ use parser::{ParserContext, log_css_error};
+ use properties::{Importance, PropertyDeclaration, PropertyDeclarationBlock};
+ use properties::PropertyDeclarationParseResult;
+@@ -69,7 +69,7 @@ impl KeyframeSelector {
+ }
+ 
+ /// A keyframe.
+-#[derive(Debug, Clone, PartialEq)]
++#[derive(Debug, Clone)]
+ #[cfg_attr(feature = "servo", derive(HeapSizeOf))]
+ pub struct Keyframe {
+     pub selector: KeyframeSelector,
+@@ -79,23 +79,26 @@ pub struct Keyframe {
+     /// But including them enables `compute_style_for_animation_step` to create a `ApplicableDeclarationBlock`
+     /// by cloning an `Arc<_>` (incrementing a reference count) rather than re-creating a `Vec<_>`.
+     #[cfg_attr(feature = "servo", ignore_heap_size_of = "Arc")]
+-    pub block: Arc<DOMRefCell<PropertyDeclarationBlock>>,
++    pub block: Arc<RwLock<PropertyDeclarationBlock>>,
+ }
+ 
+ /// A keyframes step value. This can be a synthetised keyframes animation, that
+ /// is, one autogenerated from the current computed values, or a list of
+ /// declarations to apply.
+ // TODO: Find a better name for this?
+-#[derive(Debug, Clone, PartialEq)]
++#[derive(Debug, Clone)]
+ #[cfg_attr(feature = "servo", derive(HeapSizeOf))]
+ pub enum KeyframesStepValue {
+     /// See `Keyframe::declarations`’s docs about the presence of `Importance`.
+-    Declarations(Arc<DOMRefCell<PropertyDeclarationBlock>>),
++    Declarations {
++        #[cfg_attr(feature = "servo", ignore_heap_size_of = "Arc")]
++        block: Arc<RwLock<PropertyDeclarationBlock>>
++    },
+     ComputedValues,
+ }
+ 
+ /// A single step from a keyframe animation.
+-#[derive(Debug, Clone, PartialEq)]
++#[derive(Debug, Clone)]
+ #[cfg_attr(feature = "servo", derive(HeapSizeOf))]
+ pub struct KeyframesStep {
+     /// The percentage of the animation duration when this step starts.
+@@ -116,9 +119,8 @@ impl KeyframesStep {
+     fn new(percentage: KeyframePercentage,
+            value: KeyframesStepValue) -> Self {
+         let declared_timing_function = match value {
+-            KeyframesStepValue::Declarations(ref block) => {
+-                // FIXME: Is this thread-safe?
+-                unsafe { block.borrow_for_layout() }.declarations.iter().any(|&(ref prop_decl, _)| {
++            KeyframesStepValue::Declarations { ref block } => {
++                block.read().declarations.iter().any(|&(ref prop_decl, _)| {
+                     match *prop_decl {
+                         PropertyDeclaration::AnimationTimingFunction(..) => true,
+                         _ => false,
+@@ -140,7 +142,7 @@ impl KeyframesStep {
+ /// of keyframes, in order.
+ ///
+ /// It only takes into account animable properties.
+-#[derive(Debug, Clone, PartialEq)]
++#[derive(Debug, Clone)]
+ #[cfg_attr(feature = "servo", derive(HeapSizeOf))]
+ pub struct KeyframesAnimation {
+     pub steps: Vec<KeyframesStep>,
+@@ -159,8 +161,7 @@ fn get_animated_properties(keyframe: &Keyframe) -> Vec<TransitionProperty> {
+     let mut ret = vec![];
+     // NB: declarations are already deduplicated, so we don't have to check for
+     // it here.
+-    // FIXME: Is this thread-safe?
+-    for &(ref declaration, _) in unsafe { keyframe.block.borrow_for_layout() }.declarations.iter() {
++    for &(ref declaration, _) in keyframe.block.read().declarations.iter() {
+         if let Some(property) = TransitionProperty::from_declaration(declaration) {
+             ret.push(property);
+         }
+@@ -184,8 +185,9 @@ impl KeyframesAnimation {
+ 
+         for keyframe in keyframes {
+             for percentage in keyframe.selector.0.iter() {
+-                steps.push(KeyframesStep::new(*percentage,
+-                                              KeyframesStepValue::Declarations(keyframe.block.clone())));
++                steps.push(KeyframesStep::new(*percentage, KeyframesStepValue::Declarations {
++                    block: keyframe.block.clone(),
++                }));
+             }
+         }
+ 
+@@ -271,7 +273,7 @@ impl<'a> QualifiedRuleParser for KeyframeListParser<'a> {
+         }
+         Ok(Arc::new(Keyframe {
+             selector: prelude,
+-            block: Arc::new(DOMRefCell::new(PropertyDeclarationBlock {
++            block: Arc::new(RwLock::new(PropertyDeclarationBlock {
+                 declarations: declarations,
+                 important_count: 0,
+             })),
+diff --git a/components/style/matching.rs b/components/style/matching.rs
+index 00660791a258..24334512cf06 100644
+--- a/components/style/matching.rs
++++ b/components/style/matching.rs
+@@ -13,7 +13,7 @@ use cascade_info::CascadeInfo;
+ use context::{SharedStyleContext, StyleContext};
+ use data::PersistentStyleData;
+ use dom::{NodeInfo, TElement, TNode, TRestyleDamage, UnsafeNode};
+-use properties::{ComputedValues, PropertyDeclarationBlock, cascade};
++use properties::{ComputedValues, cascade};
+ use properties::longhands::display::computed_value as display;
+ use selector_impl::{PseudoElement, TheSelectorImpl};
+ use selector_matching::{ApplicableDeclarationBlock, Stylist};
+diff --git a/components/style/properties/properties.mako.rs b/components/style/properties/properties.mako.rs
+index be7fb9ec2fa7..86234b17f20b 100644
+--- a/components/style/properties/properties.mako.rs
++++ b/components/style/properties/properties.mako.rs
+@@ -29,7 +29,7 @@ use computed_values;
+ #[cfg(feature = "servo")] use logical_geometry::{LogicalMargin, PhysicalSide};
+ use logical_geometry::WritingMode;
+ use parser::{ParserContext, ParserContextExtraData, log_css_error};
+-use selector_matching::ApplicableDeclarationBlock;
++use selector_matching::{ApplicableDeclarationBlock, ApplicableDeclarationBlockReadGuard};
+ use stylesheets::Origin;
+ use values::LocalToCss;
+ use values::HasViewportPercentage;
+@@ -1725,7 +1725,7 @@ mod lazy_static_module {
+ #[allow(unused_mut, unused_imports)]
+ fn cascade_with_cached_declarations(
+         viewport_size: Size2D<Au>,
+-        applicable_declarations: &[ApplicableDeclarationBlock],
++        applicable_declarations: &[ApplicableDeclarationBlockReadGuard],
+         shareable: bool,
+         parent_style: &ComputedValues,
+         cached_style: &ComputedValues,
+@@ -1755,8 +1755,8 @@ fn cascade_with_cached_declarations(
+     let mut seen = PropertyBitField::new();
+     // Declaration blocks are stored in increasing precedence order,
+     // we want them in decreasing order here.
+-    for sub_list in applicable_declarations.iter().rev() {
+-        for declaration in sub_list.iter().rev() {
++    for block in applicable_declarations.iter().rev() {
++        for declaration in block.iter().rev() {
+             match *declaration {
+                 % for style_struct in data.active_style_structs():
+                     % for property in style_struct.longhands:
+@@ -1883,15 +1883,20 @@ pub fn cascade(viewport_size: Size2D<Au>,
+         None => (true, initial_values),
+     };
+ 
++    // Aquire locks for at least the lifetime of `specified_custom_properties`.
++    let applicable_declarations = applicable_declarations.iter()
++        .map(|block| block.read())
++        .collect::<Vec<_>>();
++
+     let inherited_custom_properties = inherited_style.custom_properties();
+-    let mut custom_properties = None;
++    let mut specified_custom_properties = None;
+     let mut seen_custom = HashSet::new();
+-    for sub_list in applicable_declarations.iter().rev() {
+-        for declaration in sub_list.iter().rev() {
++    for block in applicable_declarations.iter().rev() {
++        for declaration in block.iter().rev() {
+             match *declaration {
+                 PropertyDeclaration::Custom(ref name, ref value) => {
+                     ::custom_properties::cascade(
+-                        &mut custom_properties, &inherited_custom_properties,
++                        &mut specified_custom_properties, &inherited_custom_properties,
+                         &mut seen_custom, name, value)
+                 }
+                 _ => {}
+@@ -1899,11 +1904,11 @@ pub fn cascade(viewport_size: Size2D<Au>,
+         }
+     }
+     let custom_properties = ::custom_properties::finish_cascade(
+-            custom_properties, &inherited_custom_properties);
++            specified_custom_properties, &inherited_custom_properties);
+ 
+     if let (Some(cached_style), Some(parent_style)) = (cached_style, parent_style) {
+         let style = cascade_with_cached_declarations(viewport_size,
+-                                                     applicable_declarations,
++                                                     &applicable_declarations,
+                                                      shareable,
+                                                      parent_style,
+                                                      cached_style,
+@@ -1944,8 +1949,8 @@ pub fn cascade(viewport_size: Size2D<Au>,
+     // virtual dispatch instead.
+     ComputedValues::do_cascade_property(|cascade_property| {
+         % for category_to_cascade_now in ["early", "other"]:
+-            for sub_list in applicable_declarations.iter().rev() {
+-                for declaration in sub_list.iter().rev() {
++            for block in applicable_declarations.iter().rev() {
++                for declaration in block.iter().rev() {
+                     if let PropertyDeclaration::Custom(..) = *declaration {
+                         continue
+                     }
+diff --git a/components/style/selector_matching.rs b/components/style/selector_matching.rs
+index 56a828d97670..e7a4c47f6a5d 100644
+--- a/components/style/selector_matching.rs
++++ b/components/style/selector_matching.rs
+@@ -5,11 +5,11 @@
+ //! Selector matching.
+ 
+ use dom::PresentationalHintsSynthetizer;
+-use domrefcell::DOMRefCell;
+ use element_state::*;
+ use error_reporting::StdoutErrorReporter;
+ use keyframes::KeyframesAnimation;
+ use media_queries::{Device, MediaType};
++use parking_lot::{RwLock, RwLockReadGuard};
+ use properties::{self, PropertyDeclaration, PropertyDeclarationBlock, ComputedValues, Importance};
+ use quickersort::sort_by;
+ use restyle_hints::{RestyleHint, DependencySet};
+@@ -333,7 +333,7 @@ impl Stylist {
+                                         &self,
+                                         element: &E,
+                                         parent_bf: Option<&BloomFilter>,
+-                                        style_attribute: Option<&Arc<DOMRefCell<PropertyDeclarationBlock>>>,
++                                        style_attribute: Option<&Arc<RwLock<PropertyDeclarationBlock>>>,
+                                         pseudo_element: Option<&PseudoElement>,
+                                         applicable_declarations: &mut V,
+                                         reason: MatchingReason) -> StyleRelations
+@@ -393,8 +393,7 @@ impl Stylist {
+ 
+         // Step 4: Normal style attributes.
+         if let Some(sa) = style_attribute {
+-            // FIXME: Is this thread-safe?
+-            if unsafe { sa.borrow_for_layout() }.any_normal() {
++            if sa.read().any_normal() {
+                 relations |= AFFECTED_BY_STYLE_ATTRIBUTE;
+                 Push::push(
+                     applicable_declarations,
+@@ -416,8 +415,7 @@ impl Stylist {
+ 
+         // Step 6: `!important` style attributes.
+         if let Some(sa) = style_attribute {
+-            // FIXME: Is this thread-safe?
+-            if unsafe { sa.borrow_for_layout() }.any_important() {
++            if sa.read().any_important() {
+                 relations |= AFFECTED_BY_STYLE_ATTRIBUTE;
+                 Push::push(
+                     applicable_declarations,
+@@ -709,8 +707,7 @@ impl SelectorMap {
+         for rule in self.other_rules.iter() {
+             if rule.selector.compound_selector.is_empty() &&
+                rule.selector.next.is_none() {
+-                // FIXME: Is this thread-safe?
+-                let block = unsafe { rule.declarations.borrow_for_layout() };
++                let block = rule.declarations.read();
+                 if block.any_normal() {
+                     matching_rules_list.push(
+                         rule.to_applicable_declaration_block(Importance::Normal));
+@@ -764,8 +761,7 @@ impl SelectorMap {
+               V: VecLike<ApplicableDeclarationBlock>
+     {
+         for rule in rules.iter() {
+-            // FIXME: Is this thread-safe?
+-            let block = unsafe { rule.declarations.borrow_for_layout() };
++            let block = rule.declarations.read();
+             let any_declaration_for_importance = if importance.important() {
+                 block.any_important()
+             } else {
+@@ -853,7 +849,7 @@ pub struct Rule {
+     #[cfg_attr(feature = "servo", ignore_heap_size_of = "Arc")]
+     pub selector: Arc<ComplexSelector<TheSelectorImpl>>,
+     #[cfg_attr(feature = "servo", ignore_heap_size_of = "Arc")]
+-    pub declarations: Arc<DOMRefCell<PropertyDeclarationBlock>>,
++    pub declarations: Arc<RwLock<PropertyDeclarationBlock>>,
+     pub source_order: usize,
+     pub specificity: u32,
+ }
+@@ -878,7 +874,7 @@ pub struct ApplicableDeclarationBlock {
+     /// Contains declarations of either importance, but only those of self.importance are relevant.
+     /// Use ApplicableDeclarationBlock::iter
+     #[cfg_attr(feature = "servo", ignore_heap_size_of = "Arc")]
+-    pub mixed_declarations: Arc<DOMRefCell<PropertyDeclarationBlock>>,
++    pub mixed_declarations: Arc<RwLock<PropertyDeclarationBlock>>,
+     pub importance: Importance,
+     pub source_order: usize,
+     pub specificity: u32,
+@@ -886,7 +882,7 @@ pub struct ApplicableDeclarationBlock {
+ 
+ impl ApplicableDeclarationBlock {
+     #[inline]
+-    pub fn from_declarations(declarations: Arc<DOMRefCell<PropertyDeclarationBlock>>,
++    pub fn from_declarations(declarations: Arc<RwLock<PropertyDeclarationBlock>>,
+                              importance: Importance)
+                              -> Self {
+         ApplicableDeclarationBlock {
+@@ -897,11 +893,24 @@ impl ApplicableDeclarationBlock {
+         }
+     }
+ 
+-    #[allow(unsafe_code)]
++    pub fn read(&self) -> ApplicableDeclarationBlockReadGuard {
++        ApplicableDeclarationBlockReadGuard {
++            guard: self.mixed_declarations.read(),
++            importance: self.importance,
++        }
++    }
++
++}
++
++pub struct ApplicableDeclarationBlockReadGuard<'a> {
++    guard: RwLockReadGuard<'a, PropertyDeclarationBlock>,
++    importance: Importance,
++}
++
++impl<'a> ApplicableDeclarationBlockReadGuard<'a> {
+     pub fn iter(&self) -> ApplicableDeclarationBlockIter {
+         ApplicableDeclarationBlockIter {
+-            // FIXME: Is this thread-safe?
+-            iter: unsafe { self.mixed_declarations.borrow_for_layout() }.declarations.iter(),
++            iter: self.guard.declarations.iter(),
+             importance: self.importance,
+         }
+     }
+diff --git a/components/style/stylesheets.rs b/components/style/stylesheets.rs
+index a1bb692a804a..556d6bbc49d3 100644
+--- a/components/style/stylesheets.rs
++++ b/components/style/stylesheets.rs
+@@ -6,12 +6,12 @@
+ 
+ use cssparser::{AtRuleParser, Parser, QualifiedRuleParser, decode_stylesheet_bytes};
+ use cssparser::{AtRuleType, RuleListParser, Token};
+-use domrefcell::DOMRefCell;
+ use encoding::EncodingRef;
+ use error_reporting::ParseErrorReporter;
+ use font_face::{FontFaceRule, parse_font_face_block};
+ use keyframes::{Keyframe, parse_keyframe_list};
+ use media_queries::{Device, MediaQueryList, parse_media_query_list};
++use parking_lot::RwLock;
+ use parser::{ParserContext, ParserContextExtraData, log_css_error};
+ use properties::{PropertyDeclarationBlock, parse_property_declaration_list};
+ use selector_impl::TheSelectorImpl;
+@@ -43,7 +43,7 @@ pub enum Origin {
+ }
+ 
+ 
+-#[derive(Debug, PartialEq)]
++#[derive(Debug)]
+ pub struct Stylesheet {
+     /// List of rules in the order they were found (important for
+     /// cascading order)
+@@ -62,7 +62,7 @@ pub struct UserAgentStylesheets {
+ }
+ 
+ 
+-#[derive(Debug, PartialEq)]
++#[derive(Debug)]
+ pub enum CSSRule {
+     // No Charset here, CSSCharsetRule has been removed from CSSOM
+     // https://drafts.csswg.org/cssom/#changes-from-5-december-2013
+@@ -84,13 +84,13 @@ pub struct NamespaceRule {
+     pub url: Namespace,
+ }
+ 
+-#[derive(Debug, PartialEq)]
++#[derive(Debug)]
+ pub struct KeyframesRule {
+     pub name: Atom,
+     pub keyframes: Vec<Arc<Keyframe>>,
+ }
+ 
+-#[derive(Debug, PartialEq)]
++#[derive(Debug)]
+ pub struct MediaRule {
+     pub media_queries: Arc<MediaQueryList>,
+     pub rules: Vec<CSSRule>,
+@@ -104,10 +104,10 @@ impl MediaRule {
+     }
+ }
+ 
+-#[derive(Debug, PartialEq)]
++#[derive(Debug)]
+ pub struct StyleRule {
+     pub selectors: Vec<Selector<TheSelectorImpl>>,
+-    pub block: Arc<DOMRefCell<PropertyDeclarationBlock>>,
++    pub block: Arc<RwLock<PropertyDeclarationBlock>>,
+ }
+ 
+ 
+@@ -559,7 +559,7 @@ impl<'a, 'b> QualifiedRuleParser for NestedRuleParser<'a, 'b> {
+                    -> Result<CSSRule, ()> {
+         Ok(CSSRule::Style(Arc::new(StyleRule {
+             selectors: prelude,
+-            block: Arc::new(DOMRefCell::new(parse_property_declaration_list(self.context, input)))
++            block: Arc::new(RwLock::new(parse_property_declaration_list(self.context, input)))
+         })))
+     }
+ }
+diff --git a/ports/cef/Cargo.lock b/ports/cef/Cargo.lock
+index 6a07de589048..a081b0328a58 100644
+--- a/ports/cef/Cargo.lock
++++ b/ports/cef/Cargo.lock
+@@ -1868,6 +1868,7 @@ dependencies = [
+  "num-traits 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
+  "offscreen_gl_context 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+  "open 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
++ "parking_lot 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+  "phf 0.7.16 (registry+https://github.com/rust-lang/crates.io-index)",
+  "phf_macros 0.7.16 (registry+https://github.com/rust-lang/crates.io-index)",
+  "plugins 0.0.1",
+diff --git a/ports/geckolib/Cargo.lock b/ports/geckolib/Cargo.lock
+index 06fd04d12684..ad9fb96bc924 100644
+--- a/ports/geckolib/Cargo.lock
++++ b/ports/geckolib/Cargo.lock
+@@ -9,6 +9,7 @@ dependencies = [
+  "libc 0.2.16 (registry+https://github.com/rust-lang/crates.io-index)",
+  "log 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
+  "num_cpus 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)",
++ "parking_lot 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+  "selectors 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
+  "style 0.0.1",
+  "style_traits 0.0.1",
+diff --git a/ports/geckolib/Cargo.toml b/ports/geckolib/Cargo.toml
+index 63f980f3bb9b..50260374172f 100644
+--- a/ports/geckolib/Cargo.toml
++++ b/ports/geckolib/Cargo.toml
+@@ -17,6 +17,7 @@ lazy_static = "0.2"
+ libc = "0.2"
+ log = {version = "0.3.5", features = ["release_max_level_info"]}
+ num_cpus = "0.2.2"
++parking_lot = "0.3"
+ selectors = "0.13"
+ style = {path = "../../components/style", features = ["gecko"]}
+ style_traits = {path = "../../components/style_traits"}
+diff --git a/ports/geckolib/glue.rs b/ports/geckolib/glue.rs
+index 368b42169828..a2110da4a3f6 100644
+--- a/ports/geckolib/glue.rs
++++ b/ports/geckolib/glue.rs
+@@ -7,6 +7,7 @@
+ use app_units::Au;
+ use env_logger;
+ use euclid::Size2D;
++use parking_lot::RwLock;
+ use std::mem::transmute;
+ use std::ptr;
+ use std::slice;
+@@ -16,7 +17,6 @@ use std::sync::atomic::{AtomicBool, AtomicPtr, Ordering};
+ use style::arc_ptr_eq;
+ use style::context::{LocalStyleContextCreationInfo, ReflowGoal, SharedStyleContext};
+ use style::dom::{NodeInfo, TDocument, TElement, TNode};
+-use style::domrefcell::DOMRefCell;
+ use style::error_reporting::StdoutErrorReporter;
+ use style::gecko::data::{NUM_THREADS, PerDocumentStyleData};
+ use style::gecko::selector_impl::{GeckoSelectorImpl, PseudoElement};
+@@ -346,7 +346,7 @@ pub extern "C" fn Servo_ParseStyleAttribute(bytes: *const u8, length: u32,
+     let value = unsafe { from_utf8_unchecked(slice::from_raw_parts(bytes, length as usize)) };
+     Arc::new(GeckoDeclarationBlock {
+         declarations: GeckoElement::parse_style_attribute(value).map(|block| {
+-            Arc::new(DOMRefCell::new(block))
++            Arc::new(RwLock::new(block))
+         }),
+         cache: AtomicPtr::new(cache),
+         immutable: AtomicBool::new(false),
+diff --git a/ports/geckolib/lib.rs b/ports/geckolib/lib.rs
+index f3925e2fa026..0b6493db278d 100644
+--- a/ports/geckolib/lib.rs
++++ b/ports/geckolib/lib.rs
+@@ -9,6 +9,7 @@ extern crate env_logger;
+ extern crate euclid;
+ extern crate libc;
+ #[macro_use] extern crate log;
++extern crate parking_lot;
+ extern crate url;
+ 
+ #[allow(non_snake_case)]
+diff --git a/tests/unit/style/Cargo.toml b/tests/unit/style/Cargo.toml
+index 94543b52a69d..4dd3dd0e574a 100644
+--- a/tests/unit/style/Cargo.toml
++++ b/tests/unit/style/Cargo.toml
+@@ -13,6 +13,7 @@ doctest = false
+ app_units = "0.3"
+ cssparser = {version = "0.7", features = ["heap_size"]}
+ euclid = "0.10.1"
++parking_lot = "0.3"
+ rustc-serialize = "0.3"
+ selectors = "0.13"
+ string_cache = {version = "0.2.26", features = ["heap_size"]}
+diff --git a/tests/unit/style/lib.rs b/tests/unit/style/lib.rs
+index d394e69e8c6a..ebbd6afa05a0 100644
+--- a/tests/unit/style/lib.rs
++++ b/tests/unit/style/lib.rs
+@@ -9,6 +9,7 @@
+ extern crate app_units;
+ extern crate cssparser;
+ extern crate euclid;
++extern crate parking_lot;
+ extern crate rustc_serialize;
+ extern crate selectors;
+ #[macro_use(atom, ns)] extern crate string_cache;
+diff --git a/tests/unit/style/selector_matching.rs b/tests/unit/style/selector_matching.rs
+index e5fbc156711b..1d5f4f8777f0 100644
+--- a/tests/unit/style/selector_matching.rs
++++ b/tests/unit/style/selector_matching.rs
+@@ -3,10 +3,10 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ use cssparser::Parser;
++use parking_lot::RwLock;
+ use selectors::parser::{LocalName, ParserContext, parse_selector_list};
+ use std::sync::Arc;
+ use string_cache::Atom;
+-use style::domrefcell::DOMRefCell;
+ use style::properties::{PropertyDeclarationBlock, PropertyDeclaration, DeclaredValue};
+ use style::properties::{longhands, Importance};
+ use style::selector_matching::{Rule, SelectorMap};
+@@ -21,7 +21,7 @@ fn get_mock_rules(css_selectors: &[&str]) -> Vec<Vec<Rule>> {
+         .unwrap().into_iter().map(|s| {
+             Rule {
+                 selector: s.complex_selector.clone(),
+-                declarations: Arc::new(DOMRefCell::new(PropertyDeclarationBlock {
++                declarations: Arc::new(RwLock::new(PropertyDeclarationBlock {
+                     declarations: vec![
+                         (PropertyDeclaration::Display(DeclaredValue::Value(
+                             longhands::display::SpecifiedValue::block)),
+diff --git a/tests/unit/style/stylesheets.rs b/tests/unit/style/stylesheets.rs
+index 0845045c99fa..dd1b8eba0942 100644
+--- a/tests/unit/style/stylesheets.rs
++++ b/tests/unit/style/stylesheets.rs
+@@ -4,12 +4,12 @@
+ 
+ use cssparser::{self, Parser, SourcePosition};
+ use media_queries::CSSErrorReporterTest;
++use parking_lot::RwLock;
+ use selectors::parser::*;
+ use std::borrow::ToOwned;
+ use std::sync::Arc;
+ use std::sync::Mutex;
+ use string_cache::{Atom, Namespace as NsAtom};
+-use style::domrefcell::DOMRefCell;
+ use style::error_reporting::ParseErrorReporter;
+ use style::keyframes::{Keyframe, KeyframeSelector, KeyframePercentage};
+ use style::parser::ParserContextExtraData;
+@@ -51,17 +51,7 @@ fn test_parse_stylesheet() {
+     let stylesheet = Stylesheet::from_str(css, url, Origin::UserAgent,
+                                           Box::new(CSSErrorReporterTest),
+                                           ParserContextExtraData::default());
+-    macro_rules! assert_eq {
+-        ($left: expr, $right: expr) => {
+-            let left = $left;
+-            let right = $right;
+-            if left != right {
+-                panic!("{:#?} != {:#?}", left, right)
+-            }
+-        }
+-    }
+-
+-    assert_eq!(stylesheet, Stylesheet {
++    let expected = Stylesheet {
+         origin: Origin::UserAgent,
+         media: None,
+         dirty_on_viewport_size_change: false,
+@@ -98,7 +88,7 @@ fn test_parse_stylesheet() {
+                         specificity: (0 << 20) + (1 << 10) + (1 << 0),
+                     },
+                 ],
+-                block: Arc::new(DOMRefCell::new(PropertyDeclarationBlock {
++                block: Arc::new(RwLock::new(PropertyDeclarationBlock {
+                     declarations: vec![
+                         (PropertyDeclaration::Display(DeclaredValue::Value(
+                             longhands::display::SpecifiedValue::none)),
+@@ -146,7 +136,7 @@ fn test_parse_stylesheet() {
+                         specificity: (0 << 20) + (0 << 10) + (1 << 0),
+                     },
+                 ],
+-                block: Arc::new(DOMRefCell::new(PropertyDeclarationBlock {
++                block: Arc::new(RwLock::new(PropertyDeclarationBlock {
+                     declarations: vec![
+                         (PropertyDeclaration::Display(DeclaredValue::Value(
+                             longhands::display::SpecifiedValue::block)),
+@@ -181,7 +171,7 @@ fn test_parse_stylesheet() {
+                         specificity: (1 << 20) + (1 << 10) + (0 << 0),
+                     },
+                 ],
+-                block: Arc::new(DOMRefCell::new(PropertyDeclarationBlock {
++                block: Arc::new(RwLock::new(PropertyDeclarationBlock {
+                     declarations: vec![
+                         (PropertyDeclaration::BackgroundColor(DeclaredValue::Value(
+                             longhands::background_color::SpecifiedValue {
+@@ -237,7 +227,7 @@ fn test_parse_stylesheet() {
+                     Arc::new(Keyframe {
+                         selector: KeyframeSelector::new_for_unit_testing(
+                                       vec![KeyframePercentage::new(0.)]),
+-                        block: Arc::new(DOMRefCell::new(PropertyDeclarationBlock {
++                        block: Arc::new(RwLock::new(PropertyDeclarationBlock {
+                             declarations: vec![
+                                 (PropertyDeclaration::Width(DeclaredValue::Value(
+                                     LengthOrPercentageOrAuto::Percentage(Percentage(0.)))),
+@@ -249,7 +239,7 @@ fn test_parse_stylesheet() {
+                     Arc::new(Keyframe {
+                         selector: KeyframeSelector::new_for_unit_testing(
+                                       vec![KeyframePercentage::new(1.)]),
+-                        block: Arc::new(DOMRefCell::new(PropertyDeclarationBlock {
++                        block: Arc::new(RwLock::new(PropertyDeclarationBlock {
+                             declarations: vec![
+                                 (PropertyDeclaration::Width(DeclaredValue::Value(
+                                     LengthOrPercentageOrAuto::Percentage(Percentage(1.)))),
+@@ -266,7 +256,9 @@ fn test_parse_stylesheet() {
+             }))
+ 
+         ],
+-    });
++    };
++
++    assert_eq!(format!("{:#?}", stylesheet), format!("{:#?}", expected));
+ }
+ 
+ struct CSSError {

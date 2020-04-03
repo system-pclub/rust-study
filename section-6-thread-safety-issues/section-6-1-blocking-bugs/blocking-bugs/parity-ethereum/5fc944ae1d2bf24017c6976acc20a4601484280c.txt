@@ -1,0 +1,18 @@
+diff --git a/miner/src/miner.rs b/miner/src/miner.rs
+index a45b34f8536..1ee339f64fe 100644
+--- a/miner/src/miner.rs
++++ b/miner/src/miner.rs
+@@ -247,11 +247,11 @@ impl MinerService for Miner {
+ 		match import {
+ 			Ok(ref res) => {
+ 				trace!(target: "own_tx", "Imported transaction to {:?} (hash: {:?})", res, hash);
+-				trace!(target: "own_tx", "Status: {:?}", self.status());
++				trace!(target: "own_tx", "Status: {:?}", self.transaction_queue.status());
+ 			},
+ 			Err(ref e) => {
+ 				trace!(target: "own_tx", "Failed to import transaction {:?} (hash: {:?})", e, hash);
+-				trace!(target: "own_tx", "Status: {:?}", self.status());
++				trace!(target: "own_tx", "Status: {:?}", self.transaction_queue.status());
+ 			},
+ 		}
+ 		import
