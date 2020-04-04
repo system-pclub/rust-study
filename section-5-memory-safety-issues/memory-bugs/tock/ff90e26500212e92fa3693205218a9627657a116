@@ -1,0 +1,53 @@
+diff --git a/kernel/src/container.rs b/kernel/src/container.rs
+index 7dc26785..841d91ea 100644
+--- a/kernel/src/container.rs
++++ b/kernel/src/container.rs
+@@ -117,7 +117,7 @@ impl<T: Default> Container<T> {
+                     } else {
+                         Some(AppliedContainer {
+                             appid: app_id,
+-                            container: *cntr,
++                            container: cntr,
+                             _phantom: PhantomData,
+                         })
+                     }
+@@ -157,9 +157,8 @@ impl<T: Default> Container<T> {
+         unsafe {
+             let itr = process::PROCS.iter_mut().filter_map(|p| p.as_mut());
+             for (app_id, app) in itr.enumerate() {
+-                let ctr_ptr = app.container_for::<T>(self.container_num);
+-                if !ctr_ptr.is_null() {
+-                    let root_ptr = *ctr_ptr;
++                let root_ptr = app.container_for::<T>(self.container_num);
++                if !root_ptr.is_null() {
+                     let mut root = Owned::new(root_ptr, app_id);
+                     fun(&mut root);
+                 }
+diff --git a/kernel/src/process.rs b/kernel/src/process.rs
+index 51c4b04c..bb5f5a64 100644
+--- a/kernel/src/process.rs
++++ b/kernel/src/process.rs
+@@ -349,16 +349,19 @@ impl<'a> Process<'a> {
+ 
+     pub unsafe fn free<T>(&mut self, _: *mut T) {}
+ 
+-    pub unsafe fn container_for<T>(&mut self, container_num: usize) -> *mut *mut T {
++    unsafe fn container_ptr<T>(&self, container_num: usize) -> *mut *mut T {
+         let container_num = container_num as isize;
+-        let ptr = (self.mem_end() as *mut usize).offset(-(container_num + 1));
+-        ptr as *mut *mut T
++        (self.mem_end() as *mut *mut T).offset(-(container_num + 1))
++    }
++
++    pub unsafe fn container_for<T>(&mut self, container_num: usize) -> *mut T {
++        *self.container_ptr(container_num)
+     }
+ 
+     pub unsafe fn container_for_or_alloc<T: Default>(&mut self,
+                                                      container_num: usize)
+                                                      -> Option<*mut T> {
+-        let ctr_ptr = self.container_for::<T>(container_num);
++        let ctr_ptr = self.container_ptr::<T>(container_num);
+         if (*ctr_ptr).is_null() {
+             self.alloc(mem::size_of::<T>()).map(|root_arr| {
+                 let root_ptr = root_arr.as_mut_ptr() as *mut T;

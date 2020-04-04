@@ -1,0 +1,13 @@
+diff --git a/src/sync/ms_queue.rs b/src/sync/ms_queue.rs
+index ff1e6ba..965295b 100644
+--- a/src/sync/ms_queue.rs
++++ b/src/sync/ms_queue.rs
+@@ -63,7 +63,7 @@ impl<T> MsQueue<T> {
+             tail: CachePadded::new(Atomic::null()),
+         };
+         let sentinel = Owned::new(Node {
+-            payload: unsafe { mem::uninitialized() },
++            payload: Payload::Data(unsafe { mem::uninitialized() }),
+             next: Atomic::null(),
+         });
+         let guard = epoch::pin();

@@ -1,0 +1,107 @@
+diff --git a/ethash/src/compute.rs b/ethash/src/compute.rs
+index fa95038d1..69211f244 100644
+--- a/ethash/src/compute.rs
++++ b/ethash/src/compute.rs
+@@ -137,11 +137,11 @@ fn hash_compute(light: &Light, full_size: usize, header_hash: &H256, nonce: u64)
+ 		($n:expr, $value:expr) => {{
+ 			// We use explicit lifetimes to ensure that val's borrow is invalidated until the
+ 			// transmuted val dies.
+-			unsafe fn make_const_array<'a, T, U>(val: &'a mut [T]) -> &'a mut [U; $n] {
++			unsafe fn make_const_array<T, U>(val: &mut [T]) -> &mut [U; $n] {
+ 				use ::std::mem;
+ 
+ 				debug_assert_eq!(val.len() * mem::size_of::<T>(), $n * mem::size_of::<U>());
+-				mem::transmute(val.as_mut_ptr())
++ 				&mut *(val.as_mut_ptr() as *mut [U; $n])
+ 			}
+ 
+ 			make_const_array($value)
+@@ -177,7 +177,7 @@ fn hash_compute(light: &Light, full_size: usize, header_hash: &H256, nonce: u64)
+ 
+ 			ptr::copy_nonoverlapping(header_hash.as_ptr(), out.as_mut_ptr(), header_hash.len());
+ 			ptr::copy_nonoverlapping(
+-				mem::transmute(&nonce),
++				&nonce as *const u64 as *const u8,
+ 				out[header_hash.len()..].as_mut_ptr(),
+ 				mem::size_of::<u64>(),
+ 			);
+@@ -266,18 +266,20 @@ fn hash_compute(light: &Light, full_size: usize, header_hash: &H256, nonce: u64)
+ 
+ 	let mix_hash = buf.compress_bytes;
+ 
+-	let value: H256 = unsafe {
++	let value: H256 = {
+ 		// We can interpret the buffer as an array of `u8`s, since it's `repr(C)`.
+-		let read_ptr: *const u8 = mem::transmute(&buf);
++		let read_ptr: *const u8 = &buf as *const MixBuf as *const u8;
+ 		// We overwrite the second half since `keccak_256` has an internal buffer and so allows
+ 		// overlapping arrays as input.
+-		let write_ptr: *mut u8 = mem::transmute(&mut buf.compress_bytes);
+-		keccak_256::unchecked(
+-			write_ptr,
+-			buf.compress_bytes.len(),
+-			read_ptr,
+-			buf.half_mix.bytes.len() + buf.compress_bytes.len(),
+-		);
++		let write_ptr: *mut u8 = &mut buf.compress_bytes as *mut [u8; 32] as *mut u8;
++		unsafe { 
++			keccak_256::unchecked(
++				write_ptr,
++				buf.compress_bytes.len(),
++				read_ptr,
++				buf.half_mix.bytes.len() + buf.compress_bytes.len(),
++			);
++		}
+ 		buf.compress_bytes
+ 	};
+ 
+diff --git a/util/network-devp2p/src/ip_utils.rs b/util/network-devp2p/src/ip_utils.rs
+index a68fc51f1..cde0c8c6b 100644
+--- a/util/network-devp2p/src/ip_utils.rs
++++ b/util/network-devp2p/src/ip_utils.rs
+@@ -20,8 +20,8 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV
+ use std::io;
+ use igd::{PortMappingProtocol, search_gateway_from_timeout};
+ use std::time::Duration;
+-use node_table::{NodeEndpoint};
+-use ipnetwork::{IpNetwork};
++use node_table::NodeEndpoint;
++use ipnetwork::IpNetwork;
+ 
+ /// Socket address extension for rustc beta. To be replaces with now unstable API
+ pub trait SocketAddrExt {
+@@ -225,28 +225,17 @@ mod getinterfaces {
+ 				let sa: *const sockaddr_in = sa as *const sockaddr_in;
+ 				let sa = unsafe { &*sa };
+ 				let (addr, port) = (sa.sin_addr.s_addr, sa.sin_port);
+-				(IpAddr::V4(Ipv4Addr::new(
+-					(addr & 0x0000_00FF) as u8,
+-					((addr & 0x0000_FF00) >>  8) as u8,
+-					((addr & 0x00FF_0000) >> 16) as u8,
+-					((addr & 0xFF00_0000) >> 24) as u8)),
+-					port)
++				// convert u32 to an `Ipv4 address`, but the u32 must be converted to `host-order`
++				// that's why `from_be` is used!
++				(IpAddr::V4(Ipv4Addr::from(<u32>::from_be(addr))), port)
+ 			},
+ 			AF_INET6 => {
+ 				let sa: *const sockaddr_in6 = sa as *const sockaddr_in6;
+ 				let sa = & unsafe { *sa };
+ 				let (addr, port) = (sa.sin6_addr.s6_addr, sa.sin6_port);
+-				let addr: [u16; 8] = unsafe { mem::transmute(addr) };
+-				(IpAddr::V6(Ipv6Addr::new(
+-					addr[0],
+-					addr[1],
+-					addr[2],
+-					addr[3],
+-					addr[4],
+-					addr[5],
+-					addr[6],
+-					addr[7])),
+-					port)
++				let ip_addr = Ipv6Addr::from(addr);
++				debug_assert!(addr == ip_addr.octets());
++				(IpAddr::V6(ip_addr), port)
+ 			},
+ 			_ => return None,
+ 		};

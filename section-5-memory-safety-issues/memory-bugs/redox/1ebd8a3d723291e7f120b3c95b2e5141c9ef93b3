@@ -1,0 +1,39 @@
+diff --git a/src/header/string/mod.rs b/src/header/string/mod.rs
+index 8c8acb2..c402707 100644
+--- a/src/header/string/mod.rs
++++ b/src/header/string/mod.rs
+@@ -235,8 +235,10 @@ pub unsafe extern "C" fn strerror_r(errnum: c_int, buf: *mut c_char, buflen: siz
+     let len = strlen(msg);
+ 
+     if len >= buflen {
+-        memcpy(buf as *mut c_void, msg as *const c_void, buflen - 1);
+-        *buf.add(buflen - 1) = 0;
++        if buflen != 0 {
++            memcpy(buf as *mut c_void, msg as *const c_void, buflen - 1);
++            *buf.add(buflen - 1) = 0;
++        }
+         return ERANGE as c_int;
+     }
+     memcpy(buf as *mut c_void, msg as *const c_void, len + 1);
+diff --git a/tests/error.c b/tests/error.c
+index bb613b9..5cbe103 100644
+--- a/tests/error.c
++++ b/tests/error.c
+@@ -19,4 +19,8 @@ int main(void) {
+     char buf2[3];
+     int ret2 = strerror_r(err, buf2, 3);
+     printf("errno: %d = %s, return: %d\n", err, buf2, ret2);
++
++    char buf3[256];
++    int ret3 = strerror_r(err, buf3, 0);
++    printf("errno: %d = %s, return: %d\n", err, buf3, ret3);
+ }
+diff --git a/tests/expected/error.stdout b/tests/expected/error.stdout
+index d1c1a21..4e744d1 100644
+--- a/tests/expected/error.stdout
++++ b/tests/expected/error.stdout
+@@ -1,3 +1,4 @@
+ errno: 2 = No such file or directory
+ errno: 2 = No such file or directory, return: 0
+ errno: 2 = No, return: 34
++errno: 2 = , return: 34

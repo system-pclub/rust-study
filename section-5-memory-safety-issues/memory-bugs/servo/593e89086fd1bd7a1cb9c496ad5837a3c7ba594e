@@ -1,0 +1,113 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 9811dc986c..cb09c8d5ba 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1403,7 +1403,9 @@ dependencies = [
+ name = "layout_tests"
+ version = "0.0.1"
+ dependencies = [
++ "atomic_refcell 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "layout 0.0.1",
++ "script_layout_interface 0.0.1",
+ ]
+ 
+ [[package]]
+diff --git a/components/layout/lib.rs b/components/layout/lib.rs
+index abdf6ff04c..1df46c557f 100644
+--- a/components/layout/lib.rs
++++ b/components/layout/lib.rs
+@@ -93,6 +93,7 @@ pub mod wrapper;
+ // For unit tests:
+ pub use fragment::Fragment;
+ pub use fragment::SpecificFragmentInfo;
++pub use self::data::PersistentLayoutData;
+ 
+ /// Returns whether the two arguments point to the same value.
+ ///
+diff --git a/components/script_layout_interface/lib.rs b/components/script_layout_interface/lib.rs
+index 46d9bf2aad..ddeed0d636 100644
+--- a/components/script_layout_interface/lib.rs
++++ b/components/script_layout_interface/lib.rs
+@@ -50,6 +50,7 @@ use servo_url::ServoUrl;
+ use std::sync::atomic::AtomicIsize;
+ use style::data::ElementData;
+ 
++#[repr(C)]
+ pub struct PartialPersistentLayoutData {
+     /// Data that the style system associates with a node. When the
+     /// style system is being used standalone, this is all that hangs
+@@ -59,6 +60,9 @@ pub struct PartialPersistentLayoutData {
+ 
+     /// Information needed during parallel traversals.
+     pub parallel: DomParallelInfo,
++
++    // Required alignment for safe transmutes between PersistentLayoutData and PartialPersistentLayoutData.
++    _align: [u64; 0]
+ }
+ 
+ impl PartialPersistentLayoutData {
+@@ -66,6 +70,7 @@ impl PartialPersistentLayoutData {
+         PartialPersistentLayoutData {
+             style_data: ElementData::new(None),
+             parallel: DomParallelInfo::new(),
++            _align: [],
+         }
+     }
+ }
+diff --git a/tests/unit/layout/Cargo.toml b/tests/unit/layout/Cargo.toml
+index 283964447d..d0c5024a73 100644
+--- a/tests/unit/layout/Cargo.toml
++++ b/tests/unit/layout/Cargo.toml
+@@ -10,4 +10,6 @@ path = "lib.rs"
+ doctest = false
+ 
+ [dependencies]
++atomic_refcell = "0.1"
+ layout = {path = "../../../components/layout"}
++script_layout_interface = {path = "../../../components/script_layout_interface"}
+diff --git a/tests/unit/layout/align_of.rs b/tests/unit/layout/align_of.rs
+new file mode 100644
+index 0000000000..fe13b8fed9
+--- /dev/null
++++ b/tests/unit/layout/align_of.rs
+@@ -0,0 +1,26 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++use atomic_refcell::AtomicRefCell;
++use layout::PersistentLayoutData;
++use script_layout_interface::PartialPersistentLayoutData;
++use std::mem::align_of;
++
++fn check_layout_alignment(expected: usize, current: usize) {
++    if current != expected {
++        panic!("Your changes have altered the mem alignment of the PartialPersistentLayoutData \
++                struct to {}, but it must match the {}-alignment of PersistentLayoutData struct. \
++                Please fix alignment in components/script_layout_interface/lib.rs",
++                current, expected);
++    }
++}
++
++#[test]
++fn test_persistent_layout_data_alignment() {
++    check_layout_alignment(align_of::<PersistentLayoutData>(),
++                           align_of::<PartialPersistentLayoutData>());
++
++    check_layout_alignment(align_of::<AtomicRefCell<PersistentLayoutData>>(),
++                           align_of::<AtomicRefCell<PartialPersistentLayoutData>>());
++}
+diff --git a/tests/unit/layout/lib.rs b/tests/unit/layout/lib.rs
+index 59092bf4d9..12091f920d 100644
+--- a/tests/unit/layout/lib.rs
++++ b/tests/unit/layout/lib.rs
+@@ -2,6 +2,9 @@
+  * License, v. 2.0. If a copy of the MPL was not distributed with this
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
++extern crate atomic_refcell;
+ extern crate layout;
++extern crate script_layout_interface;
+ 
++#[cfg(test)] mod align_of;
+ #[cfg(all(test, target_pointer_width = "64"))] mod size_of;
