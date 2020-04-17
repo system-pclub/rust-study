@@ -1,7 +1,7 @@
 # The dataset, analysis scripts and bug detectors for PLDI 2020 Artifact Evaluation
 
-Version: 1.0\
-Update:  Feb 28, 2020\
+Version: 1.1\
+Update:  April 17, 2020\
 Paper:   Understanding Memory and Thread Safety Practices and Issues in Real-World Rust Programs
 
 This document is to help users make use of the dataset we collected and 
@@ -94,10 +94,10 @@ in column "B" of tab "section-5-memory", column "B" of tab
 ## 4. Unsafe Usages (Section 4)
 
 
-Lines 428 - 434. "We found 12835 unsafe usages in our studied applications in 
-Table 1, including 7061 unsafe code regions, 5727 unsafe functions, 
-and 47 unsafe traits. In Rust’s standard library (Rust std for short), 
-we found 1577 unsafe code regions, 870 unsafe functions, and 12 unsafe traits." 
+Lines 428 - 434. "We found 4990 unsafe usages in our studied applications in 
+Table 1, including 3665 unsafe code regions, 1302 unsafe functions, 
+and 23 unsafe traits. In Rust’s standard library (Rust std for short), 
+we found 1581 unsafe code regions, 861 unsafe functions, and 12 unsafe traits." 
 The detailed numbers are in tab "section-4-stat". They can be generated 
 by executing the following commands in the VM: 
 ```
@@ -152,31 +152,34 @@ cargo bench
 Lines 479 - 483. "One interesting finding is that programmers sometimes mark a 
 function as unsafe just as a warning of possible dangers in using this function, 
 and removing these unsafe will not cause any compile errors (32 or 5% of the 
-unsafe usages we studied)." The detailed labels are in column "X" of tab 
+unsafe usages we studied). 
+For 21 of them, programmer mark a function as unsafe for consistency...
+For the rest, programmers use unsafe to give a warning of possible dangers in using this function."
+The detailed labels are in column "X", column "AD" and column "AE" of tab 
 "section-4.1-usage". 
 
-Lines 484 - 485. "Five unsafe usages in our studied applications and 56 
+Lines 484 - 485. "Five unsafe usages in our studied applications and 50 
 in Rust std are for labeling struct constructors." The detailed labels are 
-in column "AG" of tab "section-4.1-usage". 
+in column "AH" of tab "section-4.1-usage". 
 
 Lines 517 - 519. "We analyzed 108 randomly selected commit logs that 
 contain cases where unsafe is removed (130 cases in total)." The detailed 
 information of sampled removal cases is available in tab "section-4.2-remove".
 
 Lines 519 - 522. "The purposes of these unsafe code removals include improving 
-memory safety (72%), better code structure (19%), improving thread safety (3%), 
+memory safety (61%), better code structure (24%), improving thread safety (10%), 
 bug fixing (3%), and removing unnecessary usages (2%)." The detailed labels 
 about why each case is removed are in columns "G" - "K" of tab 
 "section-4.2-remove".
 
-Lines 523 - 527. "Among our analyzed commit logs, 55 cases completely change 
+Lines 523 - 527. "Among our analyzed commit logs, 43 cases completely change 
 unsafe code to safe code. The remaining cases change unsafe code to interior 
-unsafe code, with 33 interior unsafe functions in Rust std, 28 self-implemented 
-interior unsafe functions, and 14 third-parity interior unsafe functions." 
+unsafe code, with 48 interior unsafe functions in Rust std, 29 self-implemented 
+interior unsafe functions, and 10 third-parity interior unsafe functions." 
 The detailed labels for each case are listed in columns "M" - "P" of tab 
 "section-4.2-remove".
 
-Lines 563 - 565. "For example, 68% of interior unsafe code regions require 
+Lines 563 - 565. "For example, 69% of interior unsafe code regions require 
 valid memory space or valid UTF-8 characters. 15% require conditions in 
 lifetime or ownership." Cases where memory-related checks are conducted 
 are labeled in column "J" of tab "section-4.3-interior-std", and cases 
@@ -215,10 +218,10 @@ All numbers in this section are in tab "section-5-memory".
 Table 2.  The detailed labels for each bug can be found in columns "F" - 
 "T".
 
-Lines 681 - 684. "18 out of 21 bugs in this category follow the same 
+Lines 681 - 684. "17 out of 21 bugs in this category follow the same 
 pattern: an error happens when computing buffer size or index in safe 
 code and an out-of-boundary memory access happens later in unsafe code." 
-There are 18 bugs that are labeled with 1 in both column "H" and column 
+There are 17 bugs that are labeled with 1 in both column "H" and column 
 "N". 
 
 Lines 684 - 690. "For 11 bugs, the effect is inside an interior unsafe 
@@ -229,7 +232,7 @@ three interior functions, their input parameters are used directly
 or indirectly as an index to access a buffer, without any boundary 
 checks." The detailed labels are in columns "AA" - "AC". 
 
-Lines 692 - 694. "In five of them, null pointer dereferencing happens 
+Lines 692 - 694. "In four of them, null pointer dereferencing happens 
 in an interior unsafe function." The detailed labels are in column "AE".
 
 Lines 698 - 701. "Four of them use unsafe code to create an uninitialized 
@@ -267,7 +270,7 @@ fixed and categorize their fixing strategies into four categories."
 The detailed strategies are labeled in columns "V" - "Y".
 
 Lines 786 - 788. "25 of these bugs were fixed by skipping unsafe code, 
-two were fixed by skipping interior unsafe code, and three skipped safe 
+four were fixed by skipping interior unsafe code, and one skipped safe 
 code." The detailed labels are in columns "AS" - "AU". 
 
 
@@ -289,7 +292,7 @@ in column "AG". Bugs caused by forgetting to unlock are labeled in
 column "AH". 
 
 
-Lines 906 - 910. "in five double-lock bugs, the first lock is in a match 
+Lines 906 - 910. "in six double-lock bugs, the first lock is in a match 
 condition and the second lock is in the corresponding match body (e.g., 
 Figure 6). In another five double-lock bugs, the first lock is in an 
 if condition, and the second lock is in the if block or the else block." 
@@ -313,7 +316,7 @@ Lines 946 - 947. "We have one bug of this type." The label is in column "P".
 The detailed labels for how each bug is fixed are in columns "V" - "Z". 
 
 Lines 960 - 961. "This strategy was used for the bug of Figure 6 and 
-16 other bugs." The detailed labels are in column "AA".
+20 other bugs." The detailed labels are in column "AA".
 
 Lines 969 - 972. "We found 11 such usages in our studied applications. 
 Among them, nine cases perform explicit drop to avoid double lock and 
@@ -333,26 +336,26 @@ unless otherwise specified.
 
 Table 4. Detailed labels are in columns "F" - "R". 
 
-Lines 1018 - 1019. "out of which 20 use interior-unsafe functions to 
+Lines 1018 - 1019. "out of which 19 use interior-unsafe functions to 
 share data." The detailed labels for whether an unsafe function or an 
 interior unsafe function is used are in columns "N" - "O". 
 
-Lines 1052 - 1054. "To ensure lifetime covers all usages, eight bugs 
-use Arc to wrap shareddata and the other six bugs use global variables 
+Lines 1052 - 1054. "To ensure lifetime covers all usages, nine bugs 
+use Arc to wrap shared data and the other six bugs use global variables 
 as shared variables." The detailed labels are in columns "T" - "X".  
 
-Lines 1067 - 1073. "15 of them do not synchronize (protect) the shared 
+Lines 1067 - 1073. "17 of them do not synchronize (protect) the shared 
 memory accesses at all, and the memory is shared using unsafe code. 
 This result shows that using unsafe code to bypass Rust compiler checks 
-can severely degrade concurrency safety of Rust programs. 22 of them 
+can severely degrade concurrency safety of Rust programs. 21 of them 
 synchronize their shared memory accesses, but there are issues in 
 the synchronization." The detailed labels are in columns "Z" - "AA". 
 
 Lines 1110 - 1111. "Improper use of interior mutability can cause 
-non-blocking bugs (14 in total in our studied set)." The detailed 
-labels are in column "AE"
+non-blocking bugs (13 in total in our studied set)." The detailed 
+labels are in column "AG"
 
-How to fix non-blocking bugs are labeled in columns "AG" - "AK".
+How to fix non-blocking bugs are labeled in columns "AJ" - "AN".
 
 
 
